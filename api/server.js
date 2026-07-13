@@ -1,4 +1,4 @@
-require('dotenv').config(); // Sabse upar hona chahiye
+
 const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
