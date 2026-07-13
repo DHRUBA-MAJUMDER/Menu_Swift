@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cart - MenuSwift</title>
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 0.5rem; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp { 0%{opacity:0;transform:translateY(30px)} 100%{opacity:1;transform:translateY(0)} }
+    @keyframes fadeInDown { 0%{opacity:0;transform:translateY(-30px)} 100%{opacity:1;transform:translateY(0)} }
+    @keyframes fadeInLeft { 0%{opacity:0;transform:translateX(-30px)} 100%{opacity:1;transform:translateX(0)} }
+    @keyframes fadeInRight { 0%{opacity:0;transform:translateX(30px)} 100%{opacity:1;transform:translateX(0)} }
+    @keyframes scaleIn { 0%{opacity:0;transform:scale(0.8)} 100%{opacity:1;transform:scale(1)} }
+    @keyframes scaleInBounce { 0%{transform:scale(0)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+    @keyframes slideUp { 0%{transform:translateY(100%);opacity:0} 100%{transform:translateY(0);opacity:1} }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @keyframes bounce { 0%,20%,50%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-10px)} 60%{transform:translateY(-5px)} }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(59,130,246,0.3)} 50%{box-shadow:0 0 20px rgba(59,130,246,0.6)} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @keyframes borderGlow { 0%,100%{border-color:rgba(59,130,246,0.3)} 50%{border-color:rgba(59,130,246,0.8)} }
+    @keyframes confetti1 { 0%{transform:translateY(0) rotate(0);opacity:1} 100%{transform:translateY(-200px) rotate(720deg);opacity:0} }
+    @keyframes confetti2 { 0%{transform:translateY(0) rotate(0);opacity:1} 100%{transform:translateY(-250px) rotate(-540deg);opacity:0} }
+    @keyframes colorPulse { 0%{color:#3b82f6} 50%{color:#06b6d4} 100%{color:#3b82f6} }
+    @keyframes textGlow { 0%,100%{text-shadow:0 0 5px rgba(59,130,246,0.5)} 50%{text-shadow:0 0 20px rgba(59,130,246,0.8)} }
+
+    .anim-fadeInUp { animation: fadeInUp 0.6s ease-out both; }
+    .anim-fadeInDown { animation: fadeInDown 0.5s ease-out both; }
+    .anim-fadeInLeft { animation: fadeInLeft 0.5s ease-out both; }
+    .anim-fadeInRight { animation: fadeInRight 0.5s ease-out both; }
+    .anim-scaleIn { animation: scaleIn 0.4s ease-out both; }
+    .anim-slideUp { animation: slideUp 0.5s ease-out both; }
+    .anim-float { animation: float 3s ease-in-out infinite; }
+    .anim-pulse { animation: pulse 2s ease-in-out infinite; }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-top: 1rem;
+      animation: fadeInDown 0.6s ease-out;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #8b5cf6 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      animation: gradientShift 3s ease infinite;
+    }
+    .header p { color: #94a3b8; font-size: 1rem; }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: rgba(30,41,59,0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      border: 1px solid rgba(148,163,184,0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .card-header { padding:1.5rem; border-bottom:1px solid rgba(148,163,184,0.1); }
+    .card-header h2 {
+      font-size:1.5rem; font-weight:700; color:#f1f5f9;
+      display:flex; align-items:center; gap:0.5rem;
+    }
+    .card-body { padding:1.5rem; }
+
+    /* ===== CART ITEMS ===== */
+    .cart-items { display:flex; flex-direction:column; gap:1rem; }
+    .cart-item {
+      background: rgba(15,23,42,0.5);
+      border-radius: 16px;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      border: 1px solid rgba(148,163,184,0.1);
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+      animation: fadeInLeft 0.5s ease-out both;
+    }
+    .cart-item:hover { border-color:rgba(59,130,246,0.4); box-shadow:0 4px 20px rgba(59,130,246,0.15); transform: translateX(4px); }
+    @media (min-width:640px) { .cart-item { grid-template-columns:2fr 1fr auto; align-items:center; } }
+
+    .item-details h3 { font-size:1.125rem; font-weight:600; color:#f1f5f9; margin-bottom:0.25rem; }
+    .item-details p { font-size:0.875rem; color:#94a3b8; }
+    .item-pricing { display:flex; flex-direction:column; gap:0.25rem; }
+    .item-pricing .quantity { font-size:0.875rem; color:#94a3b8; }
+    .item-pricing .price { font-size:1.125rem; font-weight:700; color:#3b82f6; animation: colorPulse 3s ease infinite; }
+
+    .remove-btn {
+      background: linear-gradient(135deg,#ef4444,#dc2626);
+      color:white; border:none; border-radius:10px; padding:0.5rem 1.25rem;
+      font-size:0.875rem; font-weight:600; cursor:pointer;
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .remove-btn:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(239,68,68,0.4); }
+    .remove-btn:active { transform: scale(0.95); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state { text-align:center; padding:3rem 1rem; animation: fadeInUp 0.6s ease-out; }
+    .empty-state-icon { font-size:5rem; margin-bottom:1rem; animation: float 3s ease-in-out infinite; }
+    .empty-state h3 { font-size:1.5rem; font-weight:700; margin-bottom:0.5rem; color:#f1f5f9; }
+    .empty-state p { color:#94a3b8; margin-bottom:2rem; }
+
+    /* ===== ORDER SUMMARY ===== */
+    .summary-row { display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid rgba(148,163,184,0.1); transition: all 0.3s ease; }
+    .summary-row:hover { background: rgba(59,130,246,0.05); padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 8px; }
+    .summary-row:last-child { border-bottom:none; }
+    .summary-row.total {
+      font-size:1.25rem; font-weight:700; color:#3b82f6;
+      padding-top:1rem; margin-top:0.5rem;
+      border-top:2px solid rgba(59,130,246,0.3);
+      animation: textGlow 2s ease infinite;
+    }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom:1.25rem; }
+    .form-group label { display:block; font-size:0.875rem; font-weight:600; color:#cbd5e1; margin-bottom:0.5rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:0.75rem 1rem; border-radius:12px;
+      border:1px solid rgba(148,163,184,0.2); background:rgba(15,23,42,0.5);
+      color:#f1f5f9; font-size:1rem; font-family:'Inter',sans-serif;
+      transition: all 0.3s ease;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline:none; border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,0.15);
+      background: rgba(15,23,42,0.8);
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      padding:0.875rem 1.5rem; border-radius:12px; font-weight:600; font-size:1rem;
+      cursor:pointer; border:none; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
+      position: relative; overflow: hidden;
+    }
+    .btn::after {
+      content:''; position:absolute; top:50%; left:50%; width:0; height:0;
+      background:rgba(255,255,255,0.2); border-radius:50%;
+      transform:translate(-50%,-50%); transition:width 0.6s,height 0.6s;
+    }
+    .btn:active::after { width:300px; height:300px; }
+    .btn-primary { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; }
+    .btn-primary:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 8px 25px rgba(59,130,246,0.4); }
+    .btn-success { background:linear-gradient(135deg,#10b981,#059669); color:white; }
+    .btn-success:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 8px 25px rgba(16,185,129,0.4); }
+    .btn-secondary { background:rgba(100,116,139,0.3); color:#e2e8f0; border:1px solid rgba(148,163,184,0.2); }
+    .btn-secondary:hover { background:rgba(100,116,139,0.5); transform:translateY(-2px); }
+    .btn-warning { background:linear-gradient(135deg,#f59e0b,#d97706); color:white; }
+    .btn-warning:hover:not(:disabled) { transform:translateY(-3px); box-shadow:0 8px 25px rgba(245,158,11,0.4); }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-group { display:grid; grid-template-columns:1fr; gap:1rem; margin-top:1.5rem; }
+    @media (min-width:640px) { .btn-group { grid-template-columns:1fr 1fr; } }
+
+    /* ===== PAYMENT TYPE SELECTION ===== */
+    .payment-type-section { margin-top: 1.5rem; animation: fadeInUp 0.5s ease-out; }
+    .payment-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+    @media (max-width:480px) { .payment-type-grid { grid-template-columns: 1fr; } }
+    .payment-type-card {
+      background: rgba(15,23,42,0.6);
+      border: 2px solid rgba(148,163,184,0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .payment-type-card::before {
+      content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
+      transition:left 0.5s;
+    }
+    .payment-type-card:hover::before { left:100%; }
+    .payment-type-card:hover { border-color:#3b82f6; transform:translateY(-4px); box-shadow:0 8px 30px rgba(59,130,246,0.2); }
+    .payment-type-card.selected { border-color:#3b82f6; background:rgba(59,130,246,0.1); animation: borderGlow 2s ease infinite; }
+    .payment-type-card .icon { font-size:3rem; margin-bottom:0.75rem; display:block; animation: float 3s ease-in-out infinite; }
+    .payment-type-card h4 { font-size:1.1rem; font-weight:700; color:#f1f5f9; margin-bottom:0.25rem; }
+    .payment-type-card p { font-size:0.8rem; color:#94a3b8; }
+
+    /* ===== ONLINE PAYMENT SECTION ===== */
+    .online-payment-section {
+      display: none;
+      background: rgba(15,23,42,0.5);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      animation: slideUp 0.5s ease-out;
+    }
+    .online-payment-section.show { display: block; }
+    .upi-display {
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    .upi-display img { max-width: 200px; margin: 1rem auto; border-radius: 8px; background: white; padding: 8px; display: block; }
+    .upi-display .upi-id { font-family: 'Courier New',monospace; color:#10b981; font-weight:600; font-size:1rem; }
+    .screenshot-upload {
+      border: 2px dashed rgba(59,130,246,0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 1rem 0;
+    }
+    .screenshot-upload:hover { border-color:#3b82f6; background:rgba(59,130,246,0.05); }
+    .screenshot-upload.has-file { border-color:#10b981; background:rgba(16,185,129,0.05); }
+    .screenshot-preview { max-width:200px; max-height:200px; border-radius:8px; margin:0.5rem auto; display:block; }
+
+    /* ===== RECENT ORDERS ===== */
+    .recent-orders { margin-top:2rem; }
+    .order-card {
+      background:rgba(15,23,42,0.5); border-radius:16px; padding:1rem; margin-bottom:1rem;
+      border:1px solid rgba(148,163,184,0.1); transition:all 0.4s ease;
+      animation: fadeInRight 0.5s ease-out both;
+    }
+    .order-card:hover { border-color:rgba(59,130,246,0.3); transform:translateX(6px); }
+    .order-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem; }
+    .order-info h4 { font-size:1rem; font-weight:600; color:#f1f5f9; margin-bottom:0.25rem; }
+    .order-info p { font-size:0.875rem; color:#94a3b8; }
+    .order-status { padding:0.25rem 0.75rem; border-radius:8px; font-size:0.75rem; font-weight:600; text-transform:uppercase; }
+    .order-status.pending { background:rgba(234,179,8,0.2); color:#fbbf24; }
+    .order-status.completed { background:rgba(16,185,129,0.2); color:#10b981; }
+    .order-items-list { font-size:0.875rem; color:#cbd5e1; margin-top:0.5rem; }
+    .order-items-list li { margin-left:1.5rem; margin-bottom:0.25rem; }
+    .payment-badge { display:inline-flex; align-items:center; gap:0.25rem; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.7rem; font-weight:600; }
+    .payment-badge.online { background:rgba(59,130,246,0.2); color:#60a5fa; }
+    .payment-badge.counter { background:rgba(245,158,11,0.2); color:#fbbf24; }
+
+    /* ===== ALERTS ===== */
+    .alert {
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+      background:linear-gradient(135deg,#10b981,#059669); color:white;
+      padding:2.5rem; border-radius:20px;
+      box-shadow:0 25px 60px rgba(0,0,0,0.5); text-align:center;
+      z-index:10000; min-width:320px; max-width:90vw;
+      opacity:0;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .alert.show { opacity:1; transform: translate(-50%,-50%) scale(1); }
+    .alert-icon { font-size:4rem; margin-bottom:1rem; animation:bounce 1s infinite; }
+    .alert h3 { font-size:1.5rem; font-weight:800; margin-bottom:0.5rem; }
+    .alert p { font-size:1rem; opacity:0.95; line-height:1.6; }
+    .alert-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+      z-index:9999; opacity:0; visibility:hidden; transition:all 0.3s ease;
+    }
+    .alert-backdrop.show { opacity:1; visibility:visible; }
+
+    /* ===== LOADING ===== */
+    .loading-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
+      display:none; justify-content:center; align-items:center; z-index:9999;
+    }
+    .loading-overlay.show { display:flex; }
+    .spinner { width:50px; height:50px; border:4px solid rgba(59,130,246,0.2); border-top-color:#3b82f6; border-radius:50%; animation:spin 0.8s linear infinite; }
+    .loading-content { text-align:center; }
+    .loading-content p { margin-top:1rem; font-size:1.125rem; font-weight:600; animation: pulse 1.5s ease infinite; }
+
+    /* ===== MESSAGE ===== */
+    .message { max-width:600px; margin:1rem auto; padding:1rem 1.5rem; border-radius:12px; font-weight:500; display:none; animation:slideDown 0.3s ease; }
+    .message.error { background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+    .message.success { background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
+
+    /* ===== BADGE ===== */
+    .badge {
+      display:inline-block; padding:0.25rem 0.6rem; border-radius:8px;
+      font-size:0.75rem; font-weight:700;
+      background:rgba(59,130,246,0.2); color:#60a5fa;
+      animation: pulse 2s ease infinite;
+    }
+
+    /* ===== BACK TO TOP ===== */
+    .back-to-top {
+      position:fixed; bottom:20px; right:20px; width:48px; height:48px;
+      background:linear-gradient(135deg,#3b82f6,#2563eb); color:white;
+      border:none; border-radius:50%; cursor:pointer; font-size:1.2rem;
+      box-shadow:0 4px 15px rgba(59,130,246,0.4);
+      transition:all 0.3s ease; z-index:100; display:none;
+    }
+    .back-to-top:hover { transform:translateY(-3px) scale(1.1); }
+    .back-to-top.show { display:flex; align-items:center; justify-content:center; animation: fadeInUp 0.3s ease; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:640px) {
+      .header h1 { font-size:1.75rem; }
+      .card-header h2 { font-size:1.25rem; }
+      .card-body { padding: 1rem; }
+      .btn { padding: 0.75rem 1.25rem; font-size: 0.9rem; }
+    }
+
+    /* ===== CONFETTI ===== */
+    .confetti-container { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10001; overflow:hidden; }
+    .confetti-piece {
+      position:absolute; width:10px; height:10px; top:-10px;
+      animation-duration: 2.5s; animation-timing-function: ease-out; animation-fill-mode: forwards;
+    }
+
+    /* ===== STEP INDICATOR ===== */
+    .step-indicator { display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-bottom:1.5rem; }
+    .step { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:0.85rem; font-weight:700; transition:all 0.4s ease; cursor:pointer; }
+    .step.active { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; box-shadow:0 4px 12px rgba(59,130,246,0.4); transform:scale(1.15); }
+    .step.done { background:#10b981; color:white; }
+    .step.pending { background:rgba(100,116,139,0.3); color:#94a3b8; }
+    .step-line { width:40px; height:3px; background:rgba(148,163,184,0.3); transition:all 0.4s ease; border-radius:2px; }
+    .step-line.done { background:#10b981; }
+    .step-label { font-size:0.65rem; color:#94a3b8; text-align:center; margin-top:0.25rem; }
+
+    /* ===== MULTI-STEP PAGES ===== */
+    .step-page {
+      display: none;
+      animation: fadeInUp 0.4s ease-out both;
+    }
+    .step-page.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛒 Your Cart</h1>
+      <p>Review your order and complete checkout</p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator anim-fadeInDown">
+      <div>
+        <div class="step active" id="step1" onclick="goToStep(1)">1</div>
+        <div class="step-label">Cart</div>
+      </div>
+      <div class="step-line" id="stepLine1"></div>
+      <div>
+        <div class="step pending" id="step2" onclick="goToStep(2)">2</div>
+        <div class="step-label">Details</div>
+      </div>
+      <div class="step-line" id="stepLine2"></div>
+      <div>
+        <div class="step pending" id="step3" onclick="goToStep(3)">3</div>
+        <div class="step-label">Payment</div>
+      </div>
+    </div>
+
+    <div id="errorMessage" class="message error"></div>
+    <div id="successMessage" class="message success"></div>
+
+    <!-- ====== STEP 1: Cart Items ====== -->
+    <div id="stepPage1" class="step-page active">
+      <div class="card anim-fadeInLeft">
+        <div class="card-header">
+          <h2>
+            <span>🍽️</span>
+            <span>Cart Items</span>
+            <span id="cartCount" class="badge">0</span>
+          </h2>
+        </div>
+        <div class="card-body">
+          <div id="cartItemsContainer" class="cart-items"></div>
+          <div id="emptyCart" class="empty-state" style="display:none;">
+            <div class="empty-state-icon">🛒</div>
+            <h3>Your cart is empty</h3>
+            <p>Add some delicious items from our menu!</p>
+            <button onclick="goBackToMenu()" class="btn btn-primary">← Back to Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary (visible in step 1) -->
+      <div id="orderSummaryCard" class="card anim-fadeInRight" style="display:none; margin-top:1.5rem;">
+        <div class="card-header">
+          <h2><span>💳</span> <span>Order Summary</span></h2>
+        </div>
+        <div class="card-body">
+          <div class="summary-row"><span>Subtotal</span><span id="subtotalAmount">₹0.00</span></div>
+          <div class="summary-row"><span id="gstLabel">GST (0%)</span><span id="taxAmount">₹0.00</span></div>
+          <div class="summary-row total"><span>Total</span><span id="totalAmount">₹0.00</span></div>
+        </div>
+      </div>
+
+      <div class="btn-group" id="step1Buttons" style="display:none;">
+        <button onclick="goBackToMenu()" class="btn btn-secondary">← Back to Menu</button>
+        <button onclick="goToStep(2)" class="btn btn-primary">Next: Your Details →</button>
+      </div>
+    </div>
+
+    <!-- ====== STEP 2: Customer Details ====== -->
+    <div id="stepPage2" class="step-page">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>📝</span> <span>Your Details</span></h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="customerName">Customer Name *</label>
+            <input type="text" id="customerName" placeholder="Enter your name" />
+          </div>
+          <div class="form-group">
+            <label for="tableNumber">Table Number *</label>
+            <input type="number" id="tableNumber" placeholder="Enter table number" />
+          </div>
+          <div class="form-group">
+            <label for="orderType">Order Type *</label>
+            <select id="orderType">
+              <option value="Dine-In">🍽️ Dine-In</option>
+              <option value="Takeaway">📦 Takeaway</option>
+            </select>
+          </div>
+
+          <div class="btn-group">
+            <button onclick="goToStep(1)" class="btn btn-secondary">← Back to Cart</button>
+            <button onclick="goToStep(3)" class="btn btn-primary" id="toPaymentBtn">Next: Payment →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== STEP 3: Payment ====== -->
+    <div id="stepPage3" class="step-page">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>💳</span> <span>Choose Payment Method</span></h2>
+        </div>
+        <div class="card-body">
+          <!-- PAYMENT TYPE SELECTION -->
+          <div class="payment-type-grid">
+            <div class="payment-type-card" id="payCounterCard" onclick="selectPaymentType('counter')">
+              <span class="icon">💵</span>
+              <h4>Pay at Counter</h4>
+              <p>Pay when you pick up your order</p>
+            </div>
+            <div class="payment-type-card" id="payOnlineCard" onclick="selectPaymentType('online')">
+              <span class="icon">📱</span>
+              <h4>Pay Online (UPI)</h4>
+              <p>Scan QR & upload screenshot</p>
+            </div>
+          </div>
+
+          <!-- ONLINE PAYMENT DETAILS (hidden by default) -->
+          <div id="onlinePaymentSection" class="online-payment-section">
+            <h3 style="font-size:1.1rem; font-weight:700; color:#f1f5f9; margin-bottom:1rem; text-align:center;">
+              💳 Complete Payment Online
+            </h3>
+            <div class="upi-display" id="upiDisplayArea">
+              <p style="color:#94a3b8; margin-bottom:0.5rem;">Loading payment details...</p>
+            </div>
+
+            <div class="form-group">
+              <label>Upload Payment Screenshot *</label>
+              <div class="screenshot-upload" id="screenshotUpload" onclick="document.getElementById('screenshotInput').click()">
+                <div id="uploadPlaceholder">
+                  <div style="font-size:2.5rem; margin-bottom:0.5rem;">📷</div>
+                  <p style="color:#94a3b8;">Click or tap to upload payment screenshot</p>
+                  <p style="color:#64748b; font-size:0.75rem; margin-top:0.25rem;">JPG, PNG supported</p>
+                </div>
+                <img id="screenshotPreview" class="screenshot-preview" style="display:none;" />
+              </div>
+              <input type="file" id="screenshotInput" accept="image/*" style="display:none;" onchange="handleScreenshot(this)" />
+            </div>
+            <p style="font-size:0.75rem; color:#f59e0b; text-align:center;">
+              ⚠️ Show this screenshot at the counter for verification
+            </p>
+          </div>
+
+          <div class="btn-group">
+            <button onclick="goToStep(2)" class="btn btn-secondary">← Back to Details</button>
+            <button onclick="submitOrder()" id="submitBtn" class="btn btn-success">✅ Submit Order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders (always visible at bottom) -->
+    <div id="recentOrdersCard" class="card recent-orders" style="display:none; margin-top:1.5rem;">
+      <div class="card-header">
+        <h2><span>📋</span> <span>Recent Orders</span></h2>
+      </div>
+      <div class="card-body">
+        <div id="recentOrdersContainer"></div>
+        <div id="noRecentOrders" class="empty-state" style="display:none;">
+          <p style="font-size:0.875rem; color:#94a3b8;">No recent orders</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert-backdrop" id="alertBackdrop"></div>
+  <div class="alert" id="successAlert">
+    <div class="alert-icon">👨‍🍳</div>
+    <h3 id="alertTitle">Order Submitted!</h3>
+    <p id="alertMessage">Your order is being prepared by our chef.<br>We'll notify you when it's ready!</p>
+  </div>
+
+  <!-- Confetti -->
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Placing your order...</p>
+    </div>
+  </div>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const restaurantId = new URLSearchParams(window.location.search).get('restaurantId');
+    let cart = [];
+    let recentOrders = [];
+    let gstPercent = 0;
+    let selectedPaymentType = null;
+    let screenshotBase64 = null;
+    let upiData = null;
+    let currentStep = 1;
+
+    // Back to top
+    window.addEventListener('scroll', () => {
+      document.getElementById('backToTop').classList.toggle('show', window.scrollY > 300);
+    });
+
+    // ===== MULTI-STEP NAVIGATION =====
+    function goToStep(step) {
+      // Validation before moving forward
+      if (step === 2 && currentStep === 1) {
+        if (!cart || cart.length === 0) {
+          showMessage('error', '❌ Your cart is empty. Add items first!');
+          return;
+        }
+      }
+      if (step === 3 && currentStep === 2) {
+        const name = document.getElementById('customerName').value.trim();
+        const table = document.getElementById('tableNumber').value.trim();
+        if (!name || !table) {
+          showMessage('error', '❌ Please fill in your name and table number.');
+          return;
+        }
+      }
+      // Don't allow jumping ahead past validation
+      if (step > currentStep + 1) return;
+
+      currentStep = step;
+
+      // Update step indicator
+      for (let i = 1; i <= 3; i++) {
+        const stepEl = document.getElementById('step' + i);
+        const page = document.getElementById('stepPage' + i);
+        if (i < step) {
+          stepEl.className = 'step done';
+        } else if (i === step) {
+          stepEl.className = 'step active';
+        } else {
+          stepEl.className = 'step pending';
+        }
+        // Update step lines
+        if (i < 3) {
+          const line = document.getElementById('stepLine' + i);
+          line.className = i < step ? 'step-line done' : 'step-line';
+        }
+        // Show/hide pages
+        page.className = i === step ? 'step-page active' : 'step-page';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function loadGST() {
+      db.ref(`restaurants/${restaurantId}/settings/gstPercent`).on("value", (snap) => {
+        gstPercent = snap.val() || 0;
+        renderCart();
+      });
+    }
+
+    function loadUPISettings() {
+      db.ref(`restaurants/${restaurantId}/settings/upi`).on("value", (snap) => {
+        upiData = snap.val();
+        updateUPIDisplay();
+      });
+    }
+
+    function updateUPIDisplay() {
+      const area = document.getElementById('upiDisplayArea');
+      if (!upiData) {
+        area.innerHTML = '<p style="color:#f59e0b;">⚠️ Online payment not configured by the restaurant yet.</p>';
+        return;
+      }
+      let html = '';
+      // Show QR image - support both qrImageUrl and qrCode field names
+      const qrUrl = upiData.qrImageUrl || upiData.qrCode || upiData.qrImage || upiData.qr || null;
+      if (qrUrl) {
+        html += `<img src="${qrUrl}" alt="QR Code" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" style="max-width:220px; margin:0.5rem auto; display:block; border-radius:12px; background:white; padding:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" />
+        <p style="display:none; color:#f59e0b; font-size:0.8rem;">⚠️ QR image could not be loaded</p>`;
+      }
+      if (upiData.upiId) {
+        html += `<div style="margin-top:0.75rem;">
+          <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:0.25rem;">UPI ID:</p>
+          <div class="upi-id" style="display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <span style="font-family:'Courier New',monospace; color:#10b981; font-weight:700; font-size:1rem;">${upiData.upiId}</span>
+            <button onclick="copyUPI()" style="background:#10b981; color:white; border:none; padding:0.25rem 0.75rem; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:600;">Copy</button>
+          </div>
+        </div>`;
+      }
+      if (!upiData.upiId && !qrUrl) {
+        html = '<p style="color:#f59e0b;">⚠️ Payment details not configured yet.</p>';
+      }
+      area.innerHTML = html;
+    }
+
+    function copyUPI() {
+      if (upiData && upiData.upiId) {
+        navigator.clipboard.writeText(upiData.upiId).then(() => showMessage('success', '✅ UPI ID copied!'));
+      }
+    }
+
+    if (!restaurantId) { showMessage('error', '❌ Restaurant ID not found in URL.'); }
+
+    function selectPaymentType(type) {
+      selectedPaymentType = type;
+      document.getElementById('payCounterCard').classList.toggle('selected', type === 'counter');
+      document.getElementById('payOnlineCard').classList.toggle('selected', type === 'online');
+      const onlineSection = document.getElementById('onlinePaymentSection');
+      if (type === 'online') {
+        onlineSection.classList.add('show');
+        loadUPISettings();
+      } else {
+        onlineSection.classList.remove('show');
+      }
+    }
+
+    function handleScreenshot(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        screenshotBase64 = e.target.result;
+        document.getElementById('screenshotPreview').src = screenshotBase64;
+        document.getElementById('screenshotPreview').style.display = 'block';
+        document.getElementById('uploadPlaceholder').style.display = 'none';
+        document.getElementById('screenshotUpload').classList.add('has-file');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadCart() {
+      try {
+        const cartKey = `cart_${restaurantId}`;
+        const savedCart = localStorage.getItem(cartKey);
+        if (savedCart) cart = JSON.parse(savedCart);
+      } catch (error) { cart = []; }
+    }
+    function saveCart() {
+      try { localStorage.setItem(`cart_${restaurantId}`, JSON.stringify(cart)); } catch(e) {}
+    }
+
+    function loadRecentOrders() {
+      const savedOrders = localStorage.getItem(`recent_orders_${restaurantId}`);
+      if (savedOrders) { recentOrders = JSON.parse(savedOrders); renderRecentOrders(); }
+    }
+    function saveRecentOrder(order) {
+      recentOrders.unshift(order);
+      if (recentOrders.length > 5) recentOrders = recentOrders.slice(0,5);
+      localStorage.setItem(`recent_orders_${restaurantId}`, JSON.stringify(recentOrders));
+      renderRecentOrders();
+    }
+
+  function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const emptyCart = document.getElementById('emptyCart');
+      const orderSummaryCard = document.getElementById('orderSummaryCard');
+      const cartCount = document.getElementById('cartCount');
+      const step1Buttons = document.getElementById('step1Buttons');
+      container.innerHTML = '';
+
+      if (!cart || cart.length === 0) {
+        emptyCart.style.display = 'block';
+        orderSummaryCard.style.display = 'none';
+        step1Buttons.style.display = 'none';
+        cartCount.textContent = '0';
+        return;
+      }
+
+      emptyCart.style.display = 'none';
+      orderSummaryCard.style.display = 'block';
+      step1Buttons.style.display = 'grid';
+      cartCount.textContent = cart.length;
+
+      let subtotal = 0;
+
+      // Single, clean loop for both BOGO and standard pricing
+      cart.forEach((item, index) => {
+        // Read the exact plate price set by menu.html
+        const unitPrice = Number(item.price || item.unitPrice || 0);
+        
+        let itemSubtotal = 0;
+        let bogoBadge = '';
+        
+        if (item.isBogo) {
+          // Pay for half the items, get the other half free
+          const paidQty = Math.ceil(item.quantity / 2);
+          itemSubtotal = paidQty * unitPrice;
+          bogoBadge = '<span class="badge" style="background:#059669; color:white; font-size:0.65rem; margin-left:8px;">🎁 BOGO</span>';
+        } else {
+          itemSubtotal = unitPrice * item.quantity;
+        }
+
+        subtotal += itemSubtotal;
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cart-item';
+        itemEl.style.animationDelay = `${index * 0.1}s`;
+        itemEl.innerHTML = `
+          <div class="item-details">
+            <h3>${item.name} ${bogoBadge}</h3>
+            <p>${item.plateType || 'Standard'}</p>
+          </div>
+          <div class="item-pricing">
+            <span class="quantity">Qty: ${item.quantity}</span>
+            <span class="price">₹${itemSubtotal.toFixed(2)}</span>
+          </div>
+          <div class="item-actions">
+            <button class="remove-btn" onclick="removeItem(${index})">✕ Remove</button>
+          </div>
+        `;
+        container.appendChild(itemEl);
+      });
+
+      const gstAmount = (subtotal * gstPercent) / 100;
+      const total = subtotal + gstAmount;
+      document.getElementById('gstLabel').textContent = `GST (${gstPercent}%)`;
+      document.getElementById('subtotalAmount').textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('taxAmount').textContent = `₹${gstAmount.toFixed(2)}`;
+      document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+    }
+
+    function renderRecentOrders() {
+      const container = document.getElementById('recentOrdersContainer');
+      const noOrders = document.getElementById('noRecentOrders');
+      const recentOrdersCard = document.getElementById('recentOrdersCard');
+      container.innerHTML = '';
+
+      if (!recentOrders || recentOrders.length === 0) {
+        noOrders.style.display = 'block';
+        recentOrdersCard.style.display = 'none';
+        return;
+      }
+      recentOrdersCard.style.display = 'block';
+      noOrders.style.display = 'none';
+
+      recentOrders.forEach((order, idx) => {
+        const date = new Date(order.timestamp);
+        const orderEl = document.createElement('div');
+        orderEl.className = 'order-card';
+        orderEl.style.animationDelay = `${idx * 0.1}s`;
+        const payBadge = order.paymentType === 'online' ?
+          '<span class="payment-badge online">💳 Online</span>' :
+          '<span class="payment-badge counter">💵 Counter</span>';
+        orderEl.innerHTML = `
+          <div class="order-header">
+            <div class="order-info">
+              <h4>${order.customerName} - Table ${order.tableNumber} ${payBadge}</h4>
+              <p>${date.toLocaleDateString()} at ${date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p>
+            </div>
+            <span class="order-status ${order.status || 'pending'}">${order.status || 'pending'}</span>
+          </div>
+          <div class="order-items-list">
+            <ul>
+              ${order.cartItems.map(item => `
+                <li>${item.name} x${item.quantity} - ₹${(item.totalPrice || (item.price * item.quantity)).toFixed(2)}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+        container.appendChild(orderEl);
+      });
+    }
+
+    function removeItem(index) {
+      if (index >= 0 && index < cart.length) {
+        const item = document.querySelectorAll('.cart-item')[index];
+        if (item) { item.style.animation = 'fadeInLeft 0.3s ease reverse'; }
+        setTimeout(() => { cart.splice(index,1); saveCart(); renderCart(); }, 300);
+      }
+    }
+
+    function showMessage(type, message) {
+      const el = document.getElementById(type === 'error' ? 'errorMessage' : 'successMessage');
+      el.textContent = message; el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function showConfetti() {
+      const container = document.getElementById('confettiContainer');
+      const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899'];
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.width = (Math.random() * 8 + 6) + 'px';
+        piece.style.height = (Math.random() * 8 + 6) + 'px';
+        piece.style.animationName = Math.random() > 0.5 ? 'confetti1' : 'confetti2';
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        container.appendChild(piece);
+      }
+      setTimeout(() => { container.innerHTML = ''; }, 3000);
+    }
+
+    function showSuccessAlert(title, message) {
+      document.getElementById('alertTitle').textContent = title || 'Order Submitted!';
+      document.getElementById('alertMessage').innerHTML = message || 'Your order is being prepared by our chef.<br>We\'ll notify you when it\'s ready!';
+      const backdrop = document.getElementById('alertBackdrop');
+      const alertEl = document.getElementById('successAlert');
+      
+      // Reset animation state first
+      alertEl.classList.remove('show');
+      backdrop.classList.remove('show');
+      
+      // Force reflow to restart animation
+      void alertEl.offsetWidth;
+      
+      // Show with smooth transition (no keyframe animation - uses CSS transition instead)
+      requestAnimationFrame(() => {
+        backdrop.classList.add('show');
+        alertEl.classList.add('show');
+        showConfetti();
+      });
+      
+      setTimeout(() => { 
+        alertEl.classList.remove('show');
+        backdrop.classList.remove('show'); 
+      }, 5000);
+    }
+
+    async function submitOrder() {
+      // --- NEW BOGO SUBTOTAL LOGIC ---
+      let subtotal = 0;
+      cart.forEach(item => { 
+        const unitPrice = Number(item.price || 0);
+        if (item.isBogo) {
+          subtotal += (Math.ceil(item.quantity / 2) * unitPrice);
+        } else {
+          subtotal += (unitPrice * item.quantity);
+        }
+      });
+      // ---------------------------------
+
+      const gstAmount = (subtotal * gstPercent) / 100;
+      const totalPrice = subtotal + gstAmount;
+
+      const name = document.getElementById('customerName').value.trim();
+      const table = document.getElementById('tableNumber').value.trim();
+      const type = document.getElementById('orderType').value;
+      const loading = document.getElementById('loadingOverlay');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!name || !table || cart.length === 0) {
+        showMessage('error','❌ Please fill all fields and add items to cart.');
+        return;
+      }
+      if (!selectedPaymentType) {
+        showMessage('error','❌ Please select a payment method.');
+        return;
+      }
+      if (selectedPaymentType === 'online' && !screenshotBase64) {
+        showMessage('error','❌ Please upload your payment screenshot.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      loading.classList.add('show');
+
+      try {
+        const orderId = Date.now().toString();
+        const order = {
+          restaurantId: restaurantId,
+          customerName: name,
+          tableNumber: table,
+          orderType: type,
+          paymentType: selectedPaymentType,
+          paymentVerified: selectedPaymentType === 'counter' ? true : false,
+          paymentScreenshot: selectedPaymentType === 'online' ? screenshotBase64 : null,
+          
+          // --- NEW BOGO CART ITEMS LOGIC ---
+          cartItems: cart.map(item => {
+            const unitPrice = Number(item.price || 0);
+            let itemTotalPrice = unitPrice * item.quantity;
+            
+            if (item.isBogo) {
+              itemTotalPrice = Math.ceil(item.quantity / 2) * unitPrice;
+            }
+            
+            return { 
+              name: item.name, 
+              plateType: item.plateType || "Standard", 
+              quantity: item.quantity, 
+              unitPrice: unitPrice, 
+              totalPrice: itemTotalPrice,
+              isBogo: item.isBogo || false
+            };
+          }),
+          // ---------------------------------
+
+          subtotal: subtotal,
+          gstPercent: gstPercent,
+          gstAmount: gstAmount,
+          totalAmount: totalPrice,
+          timestamp: Date.now(),
+          status: "new"
+        };
+
+        await db.ref(`restaurants/${restaurantId}/orders/${orderId}`).set(order);
+        saveRecentOrder(order);
+        localStorage.removeItem(`cart_${restaurantId}`);
+        cart = [];
+        document.getElementById('customerName').value = '';
+        document.getElementById('tableNumber').value = '';
+        document.getElementById('orderType').selectedIndex = 0;
+        selectedPaymentType = null;
+        screenshotBase64 = null;
+        document.getElementById('payCounterCard').classList.remove('selected');
+        document.getElementById('payOnlineCard').classList.remove('selected');
+        document.getElementById('onlinePaymentSection').classList.remove('show');
+
+        // Reset to step 1
+        goToStep(1);
+        renderCart();
+
+        if (order.paymentType === 'online') {
+          showSuccessAlert('Order Submitted! 💳', 'Your order has been placed with online payment.<br>Please show the screenshot at the counter for verification.');
+        } else {
+          showSuccessAlert('Order Submitted! 👨‍🍳', 'Your order is being prepared.<br>Please pay at the counter when ready!');
+        }
+      } catch (err) {
+        console.error('Submit error:', err);
+        showMessage('error','❌ Failed to submit order. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        loading.classList.remove('show');
+      }
+    }
+    function goBackToMenu() {
+      saveCart();
+      window.location.href = `menu.html?restaurantId=${restaurantId}`;
+    }
+
+    window.addEventListener('beforeunload', saveCart);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCart();
+      loadRecentOrders();
+      loadGST();
+      renderCart();
+    });
+
+    window.removeItem = removeItem;
+    window.submitOrder = submitOrder;
+    window.goBackToMenu = goBackToMenu;
+    window.selectPaymentType = selectPaymentType;
+    window.handleScreenshot = handleScreenshot;
+    window.copyUPI = copyUPI;
+    window.goToStep = goToStep;
+  </script>
+</body>
+</html>

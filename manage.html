@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Menu Management - MenuSwift</title>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-lg border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Menu Management</h1>
+            <p class="text-sm text-slate-600">Manage your restaurant menu items</p>
+          </div>
+        </div>
+        
+        <button onclick="toggleModal('addModal')" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          <span>Add New Item</span>
+        </button>
+        <button onclick="openGSTPopup()" 
+  class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold ml-3">
+  GST Settings
+</button>
+      </div>
+    </div>
+   
+    
+
+    <span id="gstStatus" class="text-sm text-green-600 hidden"></span>
+  </div>
+</div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Search and Filter Controls -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+      <div class="flex flex-col lg:flex-row gap-4 mb-4">
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Search Menu Items</label>
+          <div class="relative">
+            <input id="searchInput" type="text" placeholder="Search by name..." 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" 
+                   oninput="loadItems()" />
+            <svg class="w-5 h-5 absolute left-4 top-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="lg:w-64">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Filter & Sort</label>
+          <select id="filterOption" onchange="loadItems()" 
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+            <option value="">All Items</option>
+            <option value="drinks">Drinks Only</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="cheapest">Price: Low to High</option>
+            <option value="costliest">Price: High to Low</option>
+            <option value="veg">Vegetarian Only</option>
+            <option value="nonveg">Non-Vegetarian Only</option>
+          </select>
+        </div>
+      </div>
+      
+    <!-- Bulk Actions -->
+<div class="pt-4 border-t border-slate-200 mb-6">
+
+  <!-- Top Row -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+
+    <!-- Select All -->
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" 
+      class="w-4 h-4 text-primary-600 bg-slate-100 border-slate-300 rounded focus:ring-primary-500 focus:ring-2">
+      <label for="selectAll" class="text-sm font-medium text-slate-700">
+        Select All
+      </label>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+
+      <button onclick="bulkEdit()" 
+      class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-3 rounded-xl font-medium transition disabled:opacity-50"
+      id="bulkEditBtn" disabled>
+        ✏️ Bulk Edit
+      </button>
+
+      <button onclick="openOffersPage()" 
+      class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl font-medium transition shadow-md">
+        🎯 Offers & Trending
+      </button>
+
+      <button onclick="bulkDelete()" 
+      class="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium transition disabled:opacity-50"
+      id="bulkDeleteBtn" disabled>
+        🗑️ Bulk Delete
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+
+
+    <!-- Menu Items Grid -->
+    
+    <!-- Menu Items Grid -->
+    <div class="w-full">
+      <div id="menuContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+    <!-- JS se items append honge -->
+      </div>
+    </div>
+
+
+
+
+  </main>
+
+  <!-- Add Item Modal -->
+  <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-900">Add New Item</h2>
+          <button onclick="toggleModal('addModal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Item Name</label>
+            <input id="itemName" type="text" placeholder="Enter item name" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Price (₹)</label>
+            <input id="itemPrice" type="number" placeholder="0.00" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Item Image</label>
+            <input id="itemImage" type="file" accept="image/*" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Type</label>
+            <select id="itemVegType" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+              <option value="Veg">🥬 Vegetarian</option>
+              <option value="Non-Veg">🍖 Non-Vegetarian</option>
+              <option value="Drinks">🥤 Drinks</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="hasPlateType" class="w-4 h-4 text-primary-600 bg-slate-100 border-slate-300 rounded focus:ring-primary-500 focus:ring-2">
+            <label for="hasPlateType" class="ml-2 text-sm font-medium text-slate-700">Has plate size options</label>
+          </div>
+          
+          <!-- Plate Type Pricing Section -->
+          <div id="plateTypeSection" class="hidden space-y-4 p-4 bg-slate-50 rounded-xl">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-slate-700">Plate Size Pricing</h4>
+              <button type="button" onclick="autoAdjustHalfPrice()" class="text-xs bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-1 rounded-lg transition-colors">
+                Auto Adjust (50%)
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Half Plate (₹)</label>
+                <input id="halfPlatePrice" type="number" placeholder="0.00" 
+                       class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Full Plate (₹)</label>
+                <input id="fullPlatePrice" type="number" placeholder="0.00" 
+                       class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-8">
+          <button onclick="uploadItem()" class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            Upload Item
+          </button>
+          <button onclick="toggleModal('addModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-colors">
+            Cancel
+          </button>
+        </div>
+        
+        <p id="uploadStatus" class="text-emerald-600 mt-4 text-center font-medium hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-900">Edit Menu Item</h2>
+          <button onclick="toggleModal('editModal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Item Name</label>
+            <input id="editName" type="text" placeholder="Enter item name" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Price (₹)</label>
+            <input id="editPrice" type="number" placeholder="0.00" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Update Image (optional)</label>
+            <input id="editImage" type="file" accept="image/*" 
+                   class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Type</label>
+            <select id="editVegType" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+              <option value="Veg">🥬 Vegetarian</option>
+              <option value="Non-Veg">🍖 Non-Vegetarian</option>
+              <option value="Drinks">🥤 Drinks</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="editHasPlateType" class="w-4 h-4 text-primary-600 bg-slate-100 border-slate-300 rounded focus:ring-primary-500 focus:ring-2">
+            <label for="editHasPlateType" class="ml-2 text-sm font-medium text-slate-700">Has plate size options</label>
+          </div>
+          
+          <!-- Edit Plate Type Pricing Section -->
+          <div id="editPlateTypeSection" class="hidden space-y-4 p-4 bg-slate-50 rounded-xl">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-slate-700">Plate Size Pricing</h4>
+              <button type="button" onclick="autoAdjustEditHalfPrice()" class="text-xs bg-primary-100 hover:bg-primary-200 text-primary-700 px-3 py-1 rounded-lg transition-colors">
+                Auto Adjust (50%)
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Half Plate (₹)</label>
+                <input id="editHalfPlatePrice" type="number" placeholder="0.00" 
+                       class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Full Plate (₹)</label>
+                <input id="editFullPlatePrice" type="number" placeholder="0.00" 
+                       class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <input type="hidden" id="editItemId" />
+        
+        <div class="flex gap-3 mt-8">
+          <button onclick="saveEdit()" class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            Save Changes
+          </button>
+          <button onclick="toggleModal('editModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-colors">
+            Cancel
+          </button>
+        </div>
+        
+        <p id="editStatus" class="text-emerald-600 mt-4 text-center font-medium hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Edit Modal -->
+  <div id="bulkEditModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-slate-900">Bulk Edit Items</h2>
+          <button onclick="toggleModal('bulkEditModal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Update Type</label>
+            <select id="bulkVegType" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+              <option value="">Don't Change</option>
+              <option value="Veg">🥬 Vegetarian</option>
+              <option value="Non-Veg">🍖 Non-Vegetarian</option>
+              <option value="Drinks">🥤 Drinks</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Update Status</label>
+            <select id="bulkStatus" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+              <option value="">Don't Change</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-8">
+          <button onclick="saveBulkEdit()" class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+            Apply Changes
+          </button>
+          <button onclick="toggleModal('bulkEditModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-colors">
+            Cancel
+          </button>
+        </div>
+        
+        <p id="bulkEditStatus" class="text-emerald-600 mt-4 text-center font-medium hidden"></p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+    authDomain: "menuswift-fe577.firebaseapp.com",
+    databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+    projectId: "menuswift-fe577",
+    storageBucket: "menuswift-fe577.appspot.com",
+    messagingSenderId: "417323386413",
+    appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  
+  const db = firebase.database();
+  const auth = firebase.auth(); // <-- NAYA: Auth Initialize kiya
+  
+  const restaurantId = localStorage.getItem("restaurantId");
+  let selectedItems = new Set();
+
+  // --- NAYA: Login Check Code ---
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      console.log("Admin successfully logged in:", user.email);
+      // Data tabhi load hoga jab Admin ka login confirm ho jayega
+      loadItems();
+      loadGST();
+    } else {
+      console.warn("No Admin logged in!");
+      alert("Aapka session expire ho gaya hai ya aap logged in nahi hain. Redirecting to Login...");
+      // Niche "login.html" ki jagah apne admin login page ka sahi naam likhein
+      window.location.href = "login.html"; 
+    }
+  });
+  // -----------------------------
+
+  function toggleModal(id) {
+    document.getElementById(id).classList.toggle("hidden");
+  }
+
+  function uploadItem() {
+    const name = document.getElementById("itemName").value.trim();
+    const price = parseFloat(document.getElementById("itemPrice").value);
+    const file = document.getElementById("itemImage").files[0];
+    const vegType = document.getElementById("itemVegType").value;
+    const hasPlateType = document.getElementById("hasPlateType").checked;
+    const halfPlatePrice = hasPlateType ? parseFloat(document.getElementById("halfPlatePrice").value) : null;
+    const fullPlatePrice = hasPlateType ? parseFloat(document.getElementById("fullPlatePrice").value) : null;
+
+    if (!name || !file) {
+      alert("Please fill all fields.");
+      return;
+    }
+    
+    if (hasPlateType && (!halfPlatePrice || !fullPlatePrice)) {
+      alert("Please enter both half plate and full plate prices.");
+      return;
+    }
+    
+    if (!hasPlateType && !price) {
+      alert("Please enter the price.");
+      return;
+    }
+
+    const status = document.getElementById("uploadStatus");
+    status.textContent = "Uploading...";
+    status.classList.remove("hidden");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_preset");
+
+    fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      const newItem = {
+        name,
+        price: hasPlateType ? fullPlatePrice : price,
+        imageUrl: data.secure_url,
+        imagePublicId: data.public_id,
+        vegType,
+        quantity: 10,
+        active: true,
+        hasPlateType,
+        halfPlatePrice: hasPlateType ? halfPlatePrice : null,
+        fullPlatePrice: hasPlateType ? fullPlatePrice : null,
+        timestamp: Date.now(),
+        restaurantId
+      };
+      return db.ref(`restaurants/${restaurantId}/menuItems`).push(newItem);
+    })
+    .then(() => {
+      status.textContent = "✅ Item uploaded successfully!";
+      setTimeout(() => {
+        toggleModal('addModal');
+        status.classList.add("hidden");
+        resetAddForm();
+        loadItems();
+      }, 1500);
+    })
+    .catch(err => {
+      console.error(err);
+      status.textContent = "❌ Upload failed. Please try again.";
+      setTimeout(() => status.classList.add("hidden"), 3000);
+    });
+  }
+
+  function resetAddForm() {
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemImage").value = "";
+    document.getElementById("hasPlateType").checked = false;
+    document.getElementById("halfPlatePrice").value = "";
+    document.getElementById("fullPlatePrice").value = "";
+    document.getElementById("plateTypeSection").classList.add("hidden");
+  }
+
+  function loadItems() {
+    db.ref(`restaurants/${restaurantId}/menuItems`).once("value", snapshot => {
+      const container = document.getElementById("menuContainer");
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const filter = document.getElementById("filterOption").value;
+      container.innerHTML = "";
+
+      let items = [];
+      snapshot.forEach(child => {
+        const item = child.val();
+        item.id = child.key;
+        if (item.name.toLowerCase().includes(search)) {
+          items.push(item);
+        }
+      });
+
+      switch (filter) {
+        case "newest":
+          items.sort((a, b) => b.timestamp - a.timestamp);
+          break;
+        case "oldest":
+          items.sort((a, b) => a.timestamp - b.timestamp);
+          break;
+        case "cheapest":
+          items.sort((a, b) => a.price - b.price);
+          break;
+        case "costliest":
+          items.sort((a, b) => b.price - a.price);
+          break;
+        case "veg":
+          items = items.filter(i => i.vegType === "Veg");
+          break;
+        case "nonveg":
+          items = items.filter(i => i.vegType === "Non-Veg");
+          break;
+        case "drinks":
+          items = items.filter(i => i.vegType === "Drinks");
+          break;
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full flex flex-col items-center justify-center py-16 text-slate-500">
+            <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-lg font-medium">No items found</p>
+            <p class="text-sm">Try adjusting your search or filter criteria</p>
+          </div>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group";
+        
+        let vegIcon, vegColor;
+        if (item.vegType === "Veg") {
+          vegIcon = "🥬";
+          vegColor = "text-emerald-600 bg-emerald-50";
+        } else if (item.vegType === "Non-Veg") {
+          vegIcon = "🍖";
+          vegColor = "text-red-600 bg-red-50";
+        } else if (item.vegType === "Drinks") {
+          vegIcon = "🥤";
+          vegColor = "text-blue-600 bg-blue-50";
+        }
+        
+        const priceDisplay = item.hasPlateType ? 
+          `<div class="text-xs sm:text-sm text-slate-600">Half: ₹${item.halfPlatePrice}<br class="sm:hidden"><span class="hidden sm:inline"> | </span>Full: ₹${item.fullPlatePrice}</div>` :
+          `<span class="text-lg sm:text-2xl font-bold text-primary-600">₹${item.price}</span>`;
+        
+        div.innerHTML = `
+          <div class="relative">
+            <img src="${item.imageUrl}" class="w-full h-32 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300" alt="${item.name}" />
+            <div class="absolute top-2 left-2 flex items-center space-x-2">
+              <input type="checkbox" class="item-checkbox w-3 h-3 sm:w-4 sm:h-4 text-primary-600 bg-white border-slate-300 rounded focus:ring-primary-500 focus:ring-2" data-item-id="${item.id}" onchange="updateBulkButtons()">
+            </div>
+            <div class="absolute top-2 right-2">
+              <div class="toggle-switch">
+                <input type="checkbox" id="toggle-${item.id}" ${item.active ? "checked" : ""} onchange="toggleStatus('${item.id}', this.checked)" class="toggle-input">
+                <label for="toggle-${item.id}" class="toggle-label"></label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-3 sm:p-6">
+            <div class="mb-3">
+              <span class="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-medium ${vegColor}">
+                ${vegIcon} ${item.vegType}
+              </span>
+            </div>
+            
+            <h3 class="text-sm sm:text-lg font-bold text-slate-900 mb-2 line-clamp-2">${item.name}</h3>
+            
+            <div class="flex items-center justify-between mb-4">
+              ${priceDisplay}
+              <span class="text-xs sm:text-sm text-slate-500">${item.hasPlateType ? 'Multiple' : 'Single'}</span>
+            </div>
+            
+            <div class="flex gap-1 sm:gap-2">
+              <button onclick="editItem('${item.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center justify-center space-x-1 sm:space-x-2">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <span class="hidden sm:inline">Edit</span>
+              </button>
+              <button onclick="deleteItem('${item.id}')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-1.5 px-2 sm:py-2 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center justify-center space-x-1 sm:space-x-2">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <span class="hidden sm:inline">Delete</span>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    });
+  }
+
+  function toggleStatus(itemId, status) {
+    db.ref(`restaurants/${restaurantId}/menuItems/${itemId}/active`).set(status);
+  }
+
+  // ===== UPDATED: Delete item completely including image and offer references =====
+  // ===== UPDATED: Delete item completely including image and offer references =====
+  function deleteItem(itemId) {
+    if (confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      
+      db.ref(`restaurants/${restaurantId}/menuItems/${itemId}`).once("value").then(async snapshot => {
+        const item = snapshot.val();
+        const updates = {};
+        
+        // 1. DELETE IMAGE FROM CLOUDINARY VIA BACKEND
+        if (item.imagePublicId) {
+            try {
+                // IMPORTANT: Replace with your actual backend URL (e.g., https://your-api.com/delete-image)
+                await fetch('https://menu-swift.vercel.app/delete-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ public_id: item.imagePublicId })
+                });
+                console.log("Image deleted from Cloudinary");
+            } catch (err) {
+                console.error("Failed to delete image from Cloudinary:", err);
+            }
+        }
+        
+        // 2. Remove the menu item from Firebase
+        updates[`restaurants/${restaurantId}/menuItems/${itemId}`] = null;
+        
+        // Remove any offer references for this item
+        return db.ref(`restaurants/${restaurantId}/offers`).once("value").then(offersSnap => {
+          if (offersSnap.exists()) {
+            offersSnap.forEach(offerChild => {
+              const offer = offerChild.val();
+              if (offer.itemId === itemId) {
+                updates[`restaurants/${restaurantId}/offers/${offerChild.key}`] = null;
+              }
+            });
+          }
+          
+          // Remove any trending references for this item
+          return db.ref(`restaurants/${restaurantId}/trending`).once("value").then(trendSnap => {
+            if (trendSnap.exists()) {
+              trendSnap.forEach(trendChild => {
+                const trend = trendChild.val();
+                if (trend.itemId === itemId) {
+                  updates[`restaurants/${restaurantId}/trending/${trendChild.key}`] = null;
+                }
+              });
+            }
+            
+            // Apply all deletions at once
+            return db.ref().update(updates);
+          });
+        });
+      }).then(() => {
+        loadItems();
+        alert("✅ Item and Image deleted successfully!");
+      }).catch(err => {
+        console.error("Delete error:", err);
+        alert("❌ Failed to delete item. Please try again.");
+      });
+    }
+  }
+
+  function editItem(id) {
+    db.ref(`restaurants/${restaurantId}/menuItems/${id}`).once("value").then(snapshot => {
+      const item = snapshot.val();
+      document.getElementById("editName").value = item.name;
+      document.getElementById("editPrice").value = item.price;
+      document.getElementById("editVegType").value = item.vegType;
+      document.getElementById("editHasPlateType").checked = item.hasPlateType || false;
+      
+      if (item.hasPlateType) {
+        document.getElementById("editHalfPlatePrice").value = item.halfPlatePrice || "";
+        document.getElementById("editFullPlatePrice").value = item.fullPlatePrice || "";
+        document.getElementById("editPlateTypeSection").classList.remove("hidden");
+      } else {
+        document.getElementById("editPlateTypeSection").classList.add("hidden");
+      }
+      
+      document.getElementById("editItemId").value = id;
+      toggleModal('editModal');
+    });
+  }
+
+  function saveEdit() {
+    const id = document.getElementById("editItemId").value;
+    const name = document.getElementById("editName").value.trim();
+    const price = parseFloat(document.getElementById("editPrice").value);
+    const vegType = document.getElementById("editVegType").value;
+    const hasPlateType = document.getElementById("editHasPlateType").checked;
+    const halfPlatePrice = hasPlateType ? parseFloat(document.getElementById("editHalfPlatePrice").value) : null;
+    const fullPlatePrice = hasPlateType ? parseFloat(document.getElementById("editFullPlatePrice").value) : null;
+    const newFile = document.getElementById("editImage").files[0];
+    const status = document.getElementById("editStatus");
+
+    if (!name) {
+      alert("Please enter a valid name.");
+      return;
+    }
+    
+    if (hasPlateType && (!halfPlatePrice || !fullPlatePrice)) {
+      alert("Please enter both half plate and full plate prices.");
+      return;
+    }
+    
+    if (!hasPlateType && !price) {
+      alert("Please enter the price.");
+      return;
+    }
+
+    status.textContent = "Saving changes...";
+    status.classList.remove("hidden");
+
+    const updateData = { 
+      name, 
+      price: hasPlateType ? fullPlatePrice : price, 
+      vegType, 
+      hasPlateType,
+      halfPlatePrice: hasPlateType ? halfPlatePrice : null,
+      fullPlatePrice: hasPlateType ? fullPlatePrice : null
+    };
+
+    const update = () => {
+      db.ref(`restaurants/${restaurantId}/menuItems/${id}`).update(updateData).then(() => {
+        status.textContent = "✅ Changes saved successfully!";
+        setTimeout(() => {
+          toggleModal('editModal');
+          status.classList.add("hidden");
+          document.getElementById("editImage").value = "";
+          document.getElementById("editPlateTypeSection").classList.add("hidden");
+          loadItems();
+        }, 1500);
+      });
+    };
+
+    if (newFile) {
+      const formData = new FormData();
+      formData.append("file", newFile);
+      formData.append("upload_preset", "unsigned_preset");
+
+      fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        updateData.imageUrl = data.secure_url;
+        updateData.imagePublicId = data.public_id;
+        update();
+      })
+      .catch(err => {
+        status.textContent = "❌ Image upload failed. Please try again.";
+        console.error(err);
+        setTimeout(() => status.classList.add("hidden"), 3000);
+      });
+    } else {
+      update();
+    }
+  }
+
+  // Plate type functionality
+  document.getElementById("hasPlateType").addEventListener("change", function() {
+    const section = document.getElementById("plateTypeSection");
+    if (this.checked) {
+      section.classList.remove("hidden");
+    } else {
+      section.classList.add("hidden");
+      document.getElementById("halfPlatePrice").value = "";
+      document.getElementById("fullPlatePrice").value = "";
+    }
+  });
+
+  document.getElementById("editHasPlateType").addEventListener("change", function() {
+    const section = document.getElementById("editPlateTypeSection");
+    if (this.checked) {
+      section.classList.remove("hidden");
+    } else {
+      section.classList.add("hidden");
+      document.getElementById("editHalfPlatePrice").value = "";
+      document.getElementById("editFullPlatePrice").value = "";
+    }
+  });
+
+  function autoAdjustHalfPrice() {
+    const fullPrice = parseFloat(document.getElementById("itemPrice").value) || parseFloat(document.getElementById("fullPlatePrice").value);
+    if (fullPrice) {
+      document.getElementById("halfPlatePrice").value = (fullPrice * 0.5).toFixed(2);
+      document.getElementById("fullPlatePrice").value = fullPrice.toFixed(2);
+    }
+  }
+
+  function autoAdjustEditHalfPrice() {
+    const fullPrice = parseFloat(document.getElementById("editPrice").value) || parseFloat(document.getElementById("editFullPlatePrice").value);
+    if (fullPrice) {
+      document.getElementById("editHalfPlatePrice").value = (fullPrice * 0.5).toFixed(2);
+      document.getElementById("editFullPlatePrice").value = fullPrice.toFixed(2);
+    }
+  }
+
+  // Bulk operations
+  function toggleSelectAll() {
+    const selectAll = document.getElementById("selectAll");
+    const checkboxes = document.querySelectorAll(".item-checkbox");
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll.checked;
+      if (selectAll.checked) {
+        selectedItems.add(checkbox.dataset.itemId);
+      } else {
+        selectedItems.delete(checkbox.dataset.itemId);
+      }
+    });
+    
+    updateBulkButtons();
+  }
+
+  function updateBulkButtons() {
+    const checkboxes = document.querySelectorAll(".item-checkbox:checked");
+    const bulkEditBtn = document.getElementById("bulkEditBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+    
+    selectedItems.clear();
+    checkboxes.forEach(checkbox => {
+      selectedItems.add(checkbox.dataset.itemId);
+    });
+    
+    const hasSelection = selectedItems.size > 0;
+    bulkEditBtn.disabled = !hasSelection;
+    bulkDeleteBtn.disabled = !hasSelection;
+    
+    // Update select all checkbox
+    const allCheckboxes = document.querySelectorAll(".item-checkbox");
+    const selectAllCheckbox = document.getElementById("selectAll");
+    selectAllCheckbox.indeterminate = selectedItems.size > 0 && selectedItems.size < allCheckboxes.length;
+    selectAllCheckbox.checked = selectedItems.size === allCheckboxes.length && allCheckboxes.length > 0;
+  }
+
+  function bulkEdit() {
+    if (selectedItems.size === 0) return;
+    toggleModal('bulkEditModal');
+  }
+
+  // ===== UPDATED: Bulk delete with full cleanup =====
+ // ===== UPDATED: Bulk delete with full cleanup & image deletion =====
+  async function bulkDelete() {
+    if (selectedItems.size === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedItems.size} selected items? This action cannot be undone.`)) {
+      const itemIds = Array.from(selectedItems);
+      const updates = {};
+      
+      try {
+        // 1. Fetch data for all selected items to get their imagePublicIds
+        for (const itemId of itemIds) {
+          const snapshot = await db.ref(`restaurants/${restaurantId}/menuItems/${itemId}`).once("value");
+          const item = snapshot.val();
+          
+          // Delete image from Cloudinary if public_id exists
+          if (item && item.imagePublicId) {
+              try {
+                  await fetch('https://menu-swift.vercel.app/delete-image', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ public_id: item.imagePublicId })
+                  });
+              } catch (err) {
+                  console.error("Failed to delete bulk image from Cloudinary:", err);
+              }
+          }
+          
+          // Mark for Firebase deletion
+          updates[`restaurants/${restaurantId}/menuItems/${itemId}`] = null;
+        }
+        
+        // 2. Clean up any offer/trending references
+        const [offersSnap, trendSnap] = await Promise.all([
+          db.ref(`restaurants/${restaurantId}/offers`).once("value"),
+          db.ref(`restaurants/${restaurantId}/trending`).once("value")
+        ]);
+
+        if (offersSnap.exists()) {
+          offersSnap.forEach(child => {
+            if (itemIds.includes(child.val().itemId)) {
+              updates[`restaurants/${restaurantId}/offers/${child.key}`] = null;
+            }
+          });
+        }
+        if (trendSnap.exists()) {
+          trendSnap.forEach(child => {
+            if (itemIds.includes(child.val().itemId)) {
+              updates[`restaurants/${restaurantId}/trending/${child.key}`] = null;
+            }
+          });
+        }
+        
+        // 3. Apply Firebase deletions
+        await db.ref().update(updates);
+        
+        selectedItems.clear();
+        loadItems();
+        alert(`✅ ${itemIds.length} items and their images deleted successfully!`);
+        
+      } catch (err) {
+        console.error(err);
+        alert("❌ Delete failed. Please try again.");
+      }
+    }
+  }
+
+  function saveBulkEdit() {
+    const vegType = document.getElementById("bulkVegType").value;
+    const status = document.getElementById("bulkStatus").value;
+    const statusElement = document.getElementById("bulkEditStatus");
+    
+    if (!vegType && !status) {
+      alert("Please select at least one field to update.");
+      return;
+    }
+    
+    statusElement.textContent = "Updating items...";
+    statusElement.classList.remove("hidden");
+    
+    const updates = {};
+    Array.from(selectedItems).forEach(itemId => {
+      if (vegType) updates[`restaurants/${restaurantId}/menuItems/${itemId}/vegType`] = vegType;
+      if (status) updates[`restaurants/${restaurantId}/menuItems/${itemId}/active`] = status === "true";
+    });
+    
+    db.ref().update(updates).then(() => {
+      statusElement.textContent = `✅ ${selectedItems.size} items updated successfully!`;
+      setTimeout(() => {
+        toggleModal('bulkEditModal');
+        statusElement.classList.add("hidden");
+        document.getElementById("bulkVegType").value = "";
+        document.getElementById("bulkStatus").value = "";
+        selectedItems.clear();
+        loadItems();
+      }, 1500);
+    }).catch(err => {
+      console.error(err);
+      statusElement.textContent = "❌ Update failed. Please try again.";
+      setTimeout(() => statusElement.classList.add("hidden"), 3000);
+    });
+  }
+
+  function openOffersPage(){
+    window.location.href = "offers.html";
+  }
+
+  function openGSTPopup() {
+    document.getElementById("gstPopup").style.display = "flex";
+    db.ref(`restaurants/${restaurantId}/settings/gstPercent`)
+      .once("value", snap => {
+        document.getElementById("gstInput").value = snap.val() || 0;
+      });
+  }
+
+  function closeGSTPopup() {
+    document.getElementById("gstPopup").style.display = "none";
+  }
+
+  function saveGST() {
+    const gst = Number(document.getElementById("gstInput").value || 0);
+    db.ref(`restaurants/${restaurantId}/settings`).update({
+      gstPercent: gst
+    });
+    closeGSTPopup();
+  }
+
+  function loadGST() {
+    db.ref(`restaurants/${restaurantId}/settings/gstPercent`)
+      .once("value", snap => {
+        const value = snap.val() || 0;
+        if (document.getElementById("gstInput")) {
+          document.getElementById("gstInput").value = value;
+        }
+      });
+  }
+
+ 
+</script>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .menu-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  @media (min-width: 640px) {
+    .menu-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .menu-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .menu-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .menu-grid {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .menu-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 0.75rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .notification {
+      display: none;
+    }
+  }
+
+  /* Custom Toggle Switch */
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+  }
+
+  .toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-label {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 18px;
+    background-color: #ef4444;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (min-width: 640px) {
+    .toggle-label {
+      width: 48px;
+      height: 24px;
+      border-radius: 12px;
+    }
+  }
+  .toggle-label:before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (min-width: 640px) {
+    .toggle-label:before {
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+  .toggle-input:checked + .toggle-label {
+    background-color: #10b981;
+  }
+
+  .toggle-input:checked + .toggle-label:before {
+    transform: translateX(18px);
+  }
+
+  @media (min-width: 640px) {
+    .toggle-input:checked + .toggle-label:before {
+      transform: translateX(24px);
+    }
+  }
+
+  .toggle-label:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+</style>
+
+<!-- GST POPUP -->
+<div id="gstPopup" style="
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+">
+  <div style="
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    width:300px;
+    text-align:center;
+  ">
+    <h3 style="margin-bottom:10px;">Set GST</h3>
+    <input type="number" id="gstInput" placeholder="Enter GST %"
+      style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+    <button onclick="saveGST()" style="
+      width:100%;
+      padding:10px;
+      background:#22c55e;
+      color:white;
+      border:none;
+      border-radius:8px;
+    ">
+      Save
+    </button>
+    <button onclick="closeGSTPopup()" style="
+      margin-top:10px;
+      background:red;
+      color:white;
+      padding:8px;
+      border:none;
+      border-radius:8px;
+      width:100%;
+    ">
+      Cancel
+    </button>
+  </div>
+</div>
+</body>
+</html>

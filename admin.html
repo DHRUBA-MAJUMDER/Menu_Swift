@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhruba Majumder | Contactless Ordering System</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#030712;color:#e2e8f0;overflow-x:hidden}
+html, body {
+    overflow-x: hidden;
+}
+header {
+    padding:20px 50px; /* keep this only */
+}
+nav a {
+    margin-left:15px; /* slightly smaller */
+    color:white;
+    text-decoration:none;
+    transition:0.3s;
+}
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    nav {
+        margin-top:10px;
+    }
+
+   .hero {
+    padding:120px 40px 80px;
+}
+
+    section {
+        padding:40px 20px;
+    }
+}
+/* ===== CUSTOM SCROLLBAR ===== */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#0f172a}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#38bdf8,#818cf8);border-radius:10px}
+
+/* ===== PRELOADER ===== */
+#preloader{position:fixed;inset:0;background:#030712;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.8s,visibility 0.8s}
+#preloader.hidden{opacity:0;visibility:hidden}
+.loader{width:60px;height:60px;border:4px solid transparent;border-top:4px solid #38bdf8;border-right:4px solid #818cf8;border-radius:50%;animation:loaderSpin 0.8s linear infinite}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
+
+/* ===== CURSOR ===== */
+.cursor-dot{width:8px;height:8px;background:#38bdf8;border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transition:transform 0.1s}
+.cursor-ring{width:35px;height:35px;border:2px solid rgba(56,189,248,0.4);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transition:transform 0.15s,width 0.3s,height 0.3s}
+
+/* ===== PARTICLES ===== */
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ===== HEADER ===== */
+header{position:fixed;top:0;width:100%;padding:18px 50px;display:flex;justify-content:space-between;align-items:center;background:rgba(3,7,18,0.85);backdrop-filter:blur(20px);z-index:1000;border-bottom:1px solid rgba(56,189,248,0.1);animation:headerSlide 1s ease-out}
+@keyframes headerSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.logo{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoGlow 3s ease-in-out infinite alternate}
+@keyframes logoGlow{0%{filter:brightness(1)}50%{filter:brightness(1.3)}100%{filter:brightness(1)}}
+nav{display:flex;gap:8px;align-items:center}
+nav a{color:#94a3b8;text-decoration:none;padding:8px 18px;border-radius:8px;font-size:0.9rem;font-weight:500;position:relative;overflow:hidden;transition:all 0.3s}
+nav a::before{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:linear-gradient(90deg,#38bdf8,#818cf8);transition:all 0.3s;transform:translateX(-50%)}
+nav a:hover{color:#38bdf8}
+nav a:hover::before{width:80%}
+.nav-indicator{position:absolute;height:100%;background:rgba(56,189,248,0.08);border-radius:8px;transition:all 0.4s cubic-bezier(0.68,-0.55,0.27,1.55)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001}
+.hamburger span{width:25px;height:2px;background:#38bdf8;transition:all 0.3s}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:120px 40px 80px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-gradient{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:0.15}
+.hero-gradient-1{background:#38bdf8;top:-200px;right:-100px;animation:floatGrad1 8s ease-in-out infinite}
+.hero-gradient-2{background:#818cf8;bottom:-200px;left:-100px;animation:floatGrad2 10s ease-in-out infinite}
+.hero-gradient-3{background:#c084fc;top:50%;left:50%;transform:translate(-50%,-50%);animation:floatGrad3 12s ease-in-out infinite}
+@keyframes floatGrad1{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,50px)}}
+@keyframes floatGrad2{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-50px)}}
+@keyframes floatGrad3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
+.hero-content{display:flex;align-items:center;gap:80px;max-width:1200px;position:relative;z-index:1;flex-wrap:wrap;justify-content:center}
+.hero-image-wrapper{position:relative;animation:heroImageEntry 1.2s cubic-bezier(0.16,1,0.3,1) forwards;opacity:0}
+@keyframes heroImageEntry{from{opacity:0;transform:scale(0.5) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.hero-image-container{width:300px;height:300px;border-radius:50%;position:relative;overflow:hidden}
+.hero-image-ring{position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#38bdf8,#818cf8,#c084fc,#38bdf8);animation:ringRotate 4s linear infinite}
+@keyframes ringRotate{to{transform:rotate(360deg)}}
+.hero-image-inner{position:absolute;inset:4px;border-radius:50%;overflow:hidden;background:#0f172a}
+.hero-image-inner img{width:100%;height:100%;object-fit:cover}
+.hero-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,#0f172a,#1e293b);color:#38bdf8}
+.orbit-dot{position:absolute;width:12px;height:12px;background:#38bdf8;border-radius:50%;box-shadow:0 0 20px #38bdf8}
+.orbit-dot:nth-child(2){animation:orbit1 6s linear infinite}
+.orbit-dot:nth-child(3){animation:orbit2 8s linear infinite}
+.orbit-dot:nth-child(4){animation:orbit3 10s linear infinite}
+@keyframes orbit1{from{transform:rotate(0) translateX(170px) rotate(0)}to{transform:rotate(360deg) translateX(170px) rotate(-360deg)}}
+@keyframes orbit2{from{transform:rotate(120deg) translateX(170px) rotate(-120deg)}to{transform:rotate(480deg) translateX(170px) rotate(-480deg)}}
+@keyframes orbit3{from{transform:rotate(240deg) translateX(170px) rotate(-240deg)}to{transform:rotate(600deg) translateX(170px) rotate(-600deg)}}
+.hero-text{max-width:550px;animation:heroTextEntry 1s ease-out 0.3s forwards;opacity:0}
+@keyframes heroTextEntry{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);border-radius:50px;font-size:0.8rem;color:#38bdf8;margin-bottom:20px;animation:badgePulse 2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.2)}50%{box-shadow:0 0 0 10px rgba(56,189,248,0)}}
+.hero-badge .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:dotBlink 1.5s ease-in-out infinite}
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero-text h1{font-size:3.5rem;font-weight:800;line-height:1.1;margin-bottom:8px}
+.hero-text h1 .gradient-text{background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientShift 5s ease-in-out infinite;background-size:200% 200%}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero-subtitle{font-size:1.15rem;color:#64748b;margin-bottom:10px;animation:subtitleFade 1s ease-out 0.6s forwards;opacity:0}
+@keyframes subtitleFade{to{opacity:1}}
+.hero-tagline{font-size:0.95rem;color:#475569;margin-bottom:30px;animation:taglineFade 1s ease-out 0.8s forwards;opacity:0}
+@keyframes taglineFade{to{opacity:1}}
+.typewriter{overflow:hidden;white-space:nowrap;border-right:3px solid #38bdf8;animation:typing 3s steps(40) 1s forwards,blink 0.7s step-end infinite}
+@keyframes typing{from{width:0}to{width:100%}}
+@keyframes blink{50%{border-color:transparent}}
+.hero-buttons{display:flex;gap:15px;flex-wrap:wrap;animation:btnEntry 1s ease-out 1s forwards;opacity:0}
+@keyframes btnEntry{to{opacity:1}}
+.btn{padding:14px 32px;border:none;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;position:relative;overflow:hidden;transition:all 0.4s;font-family:'Poppins',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,#38bdf8,#818cf8);color:#fff;box-shadow:0 4px 25px rgba(56,189,248,0.3)}
+.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 40px rgba(56,189,248,0.5)}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.2),transparent);transform:translateX(-100%);transition:0.6s}
+.btn-primary:hover::after{transform:translateX(100%)}
+.btn-outline{background:transparent;color:#38bdf8;border:2px solid rgba(56,189,248,0.3);backdrop-filter:blur(10px)}
+.btn-outline:hover{border-color:#38bdf8;background:rgba(56,189,248,0.05);transform:translateY(-3px)}
+.hero-stats{display:flex;gap:40px;margin-top:40px;animation:statsFade 1s ease-out 1.2s forwards;opacity:0}
+@keyframes statsFade{to{opacity:1}}
+.stat{text-align:center}
+.stat-number{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:0.75rem;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.scroll-indicator{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:scrollBounce 2s ease-in-out infinite}
+@keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+.scroll-indicator span{font-size:0.7rem;color:#64748b;text-transform:uppercase;letter-spacing:2px}
+.scroll-indicator .mouse{width:24px;height:38px;border:2px solid #38bdf8;border-radius:12px;position:relative}
+.scroll-indicator .mouse::before{content:'';width:4px;height:8px;background:#38bdf8;border-radius:2px;position:absolute;top:6px;left:50%;transform:translateX(-50%);animation:scrollWheel 1.5s ease-in-out infinite}
+@keyframes scrollWheel{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(15px)}}
+
+/* ===== MARQUEE ===== */
+.marquee-section{padding:30px 0;border-top:1px solid rgba(56,189,248,0.1);border-bottom:1px solid rgba(56,189,248,0.1);overflow:hidden;background:rgba(15,23,42,0.5)}
+.marquee-track{display:flex;gap:60px;animation:marquee 20s linear infinite;width:max-content}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.marquee-item{display:flex;align-items:center;gap:10px;color:#475569;font-size:0.9rem;white-space:nowrap}
+.marquee-item i{color:#38bdf8;font-size:1.2rem}
+
+/* ===== SECTIONS ===== */
+section{padding:100px 40px;position:relative}
+.section-header{text-align:center;margin-bottom:60px}
+.section-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);border-radius:50px;font-size:0.75rem;color:#38bdf8;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}
+.section-title{font-size:2.8rem;font-weight:800;line-height:1.2;margin-bottom:16px}
+.section-title .highlight{background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section-desc{color:#64748b;max-width:600px;margin:0 auto;font-size:1rem;line-height:1.7}
+
+/* ===== ABOUT ===== */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1100px;margin:0 auto;align-items:center}
+.about-visual{position:relative}
+.about-card-stack{position:relative;height:400px}
+.about-card{position:absolute;background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.9));border:1px solid rgba(56,189,248,0.15);border-radius:20px;padding:30px;backdrop-filter:blur(10px);transition:all 0.5s cubic-bezier(0.16,1,0.3,1)}
+.about-card:nth-child(1){width:280px;top:0;left:0;z-index:3;animation:cardFloat1 6s ease-in-out infinite}
+.about-card:nth-child(2){width:260px;top:60px;left:120px;z-index:2;animation:cardFloat2 7s ease-in-out infinite}
+.about-card:nth-child(3){width:240px;top:120px;left:40px;z-index:1;animation:cardFloat3 8s ease-in-out infinite}
+@keyframes cardFloat1{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(1deg)}}
+@keyframes cardFloat2{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-15px) rotate(-1deg)}}
+@keyframes cardFloat3{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-8px) rotate(0.5deg)}}
+.about-card-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:15px}
+.about-card:nth-child(1) .about-card-icon{background:rgba(56,189,248,0.15);color:#38bdf8}
+.about-card:nth-child(2) .about-card-icon{background:rgba(129,140,248,0.15);color:#818cf8}
+.about-card:nth-child(3) .about-card-icon{background:rgba(192,132,252,0.15);color:#c084fc}
+.about-card h4{font-size:1rem;margin-bottom:8px}
+.about-card p{font-size:0.85rem;color:#64748b;line-height:1.6}
+.about-text h3{font-size:1.8rem;font-weight:700;margin-bottom:20px;line-height:1.3}
+.about-text p{color:#94a3b8;line-height:1.8;margin-bottom:20px}
+.about-highlights{display:flex;flex-direction:column;gap:15px}
+.about-highlight{display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(15,23,42,0.5);border:1px solid rgba(56,189,248,0.1);border-radius:12px;transition:all 0.3s}
+.about-highlight:hover{border-color:rgba(56,189,248,0.3);transform:translateX(5px);background:rgba(56,189,248,0.05)}
+.about-highlight i{color:#38bdf8;font-size:1.1rem}
+.about-highlight span{font-size:0.9rem}
+
+/* ===== FEATURES ===== */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:25px;max-width:1200px;margin:0 auto}
+.feature-card{background:linear-gradient(135deg,rgba(15,23,42,0.8),rgba(30,41,59,0.6));border:1px solid rgba(56,189,248,0.08);border-radius:20px;padding:35px;position:relative;overflow:hidden;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);cursor:default}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#38bdf8,#818cf8,#c084fc);transform:scaleX(0);transform-origin:left;transition:transform 0.5s}
+.feature-card:hover::before{transform:scaleX(1)}
+.feature-card:hover{transform:translateY(-8px);border-color:rgba(56,189,248,0.2);box-shadow:0 20px 60px rgba(56,189,248,0.1)}
+.feature-card::after{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(56,189,248,0.05),transparent);border-radius:50%;top:-100px;right:-100px;transition:all 0.5s}
+.feature-card:hover::after{transform:scale(1.5);opacity:0.8}
+.feature-icon{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px;position:relative;z-index:1}
+.feature-icon.blue{background:rgba(56,189,248,0.12);color:#38bdf8}
+.feature-icon.purple{background:rgba(129,140,248,0.12);color:#818cf8}
+.feature-icon.pink{background:rgba(192,132,252,0.12);color:#c084fc}
+.feature-icon.green{background:rgba(34,197,94,0.12);color:#22c55e}
+.feature-icon.orange{background:rgba(251,146,60,0.12);color:#fb923c}
+.feature-icon.red{background:rgba(248,113,113,0.12);color:#f87171}
+.feature-card h3{font-size:1.2rem;font-weight:700;margin-bottom:10px;position:relative;z-index:1}
+.feature-card p{color:#64748b;font-size:0.9rem;line-height:1.7;position:relative;z-index:1}
+.feature-tag{display:inline-block;padding:4px 12px;background:rgba(56,189,248,0.08);border-radius:20px;font-size:0.7rem;color:#38bdf8;margin-top:15px;position:relative;z-index:1}
+.feature-number{position:absolute;top:20px;right:25px;font-size:3rem;font-weight:900;color:rgba(56,189,248,0.05);font-family:'Orbitron',sans-serif}
+
+/* ===== HOW IT WORKS ===== */
+.steps-container{max-width:900px;margin:0 auto;position:relative}
+.steps-line{position:absolute;left:30px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#38bdf8,#818cf8,#c084fc,transparent)}
+.step{display:flex;gap:30px;margin-bottom:50px;position:relative}
+.step-dot{width:60px;height:60px;min-width:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;font-family:'Orbitron',sans-serif;position:relative;z-index:1}
+.step:nth-child(1) .step-dot{background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#fff;box-shadow:0 0 30px rgba(56,189,248,0.3)}
+.step:nth-child(2) .step-dot{background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;box-shadow:0 0 30px rgba(129,140,248,0.3)}
+.step:nth-child(3) .step-dot{background:linear-gradient(135deg,#c084fc,#a855f7);color:#fff;box-shadow:0 0 30px rgba(192,132,252,0.3)}
+.step:nth-child(4) .step-dot{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 0 30px rgba(34,197,94,0.3)}
+.step-content{background:rgba(15,23,42,0.6);border:1px solid rgba(56,189,248,0.1);border-radius:16px;padding:25px 30px;flex:1;transition:all 0.3s}
+.step-content:hover{border-color:rgba(56,189,248,0.25);transform:translateX(5px)}
+.step-content h3{font-size:1.15rem;font-weight:700;margin-bottom:8px}
+.step-content p{color:#64748b;font-size:0.9rem;line-height:1.6}
+
+/* ===== TECH STACK ===== */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:20px;max-width:1000px;margin:0 auto}
+.tech-item{background:rgba(15,23,42,0.6);border:1px solid rgba(56,189,248,0.08);border-radius:16px;padding:30px 20px;text-align:center;transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
+.tech-item:hover{transform:translateY(-8px) scale(1.03);border-color:rgba(56,189,248,0.3);box-shadow:0 15px 40px rgba(56,189,248,0.1)}
+.tech-item i{font-size:2.5rem;margin-bottom:12px;display:block}
+.tech-item span{font-size:0.85rem;font-weight:500;color:#94a3b8}
+
+/* ===== TESTIMONIALS ===== */
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;max-width:1100px;margin:0 auto}
+.testimonial-card{background:rgba(15,23,42,0.6);border:1px solid rgba(56,189,248,0.08);border-radius:20px;padding:35px;position:relative;transition:all 0.4s}
+.testimonial-card:hover{transform:translateY(-5px);border-color:rgba(56,189,248,0.2)}
+.testimonial-card .quote-icon{position:absolute;top:20px;right:25px;font-size:3rem;color:rgba(56,189,248,0.1)}
+.testimonial-card p{color:#94a3b8;font-size:0.95rem;line-height:1.7;font-style:italic;margin-bottom:20px}
+.testimonial-author{display:flex;align-items:center;gap:12px}
+.testimonial-avatar{width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#818cf8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
+.testimonial-info h4{font-size:0.9rem;font-weight:600}
+.testimonial-info span{font-size:0.75rem;color:#64748b}
+.stars{color:#fbbf24;margin-bottom:15px;font-size:0.85rem}
+
+/* ===== CTA ===== */
+.cta-section{text-align:center;position:relative;overflow:hidden}
+.cta-box{max-width:800px;margin:0 auto;background:linear-gradient(135deg,rgba(56,189,248,0.1),rgba(129,140,248,0.1));border:1px solid rgba(56,189,248,0.15);border-radius:30px;padding:60px 40px;position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;width:300px;height:300px;background:radial-gradient(circle,rgba(56,189,248,0.08),transparent);border-radius:50%;top:-150px;right:-100px;animation:ctaFloat 6s ease-in-out infinite}
+@keyframes ctaFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,30px)}}
+.cta-box h2{font-size:2.2rem;font-weight:800;margin-bottom:15px}
+.cta-box p{color:#64748b;margin-bottom:30px;font-size:1rem}
+.cta-box .btn{font-size:1.05rem;padding:16px 40px}
+
+/* ===== CONTACT ===== */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;max-width:1000px;margin:0 auto}
+.contact-info{display:flex;flex-direction:column;gap:25px}
+.contact-item{display:flex;align-items:center;gap:18px;padding:20px;background:rgba(15,23,42,0.6);border:1px solid rgba(56,189,248,0.08);border-radius:16px;transition:all 0.3s}
+.contact-item:hover{border-color:rgba(56,189,248,0.25);transform:translateX(5px)}
+.contact-item-icon{width:50px;height:50px;border-radius:12px;background:rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#38bdf8}
+.contact-item h4{font-size:0.9rem;font-weight:600;margin-bottom:4px}
+.contact-item p{font-size:0.85rem;color:#64748b}
+.contact-form{display:flex;flex-direction:column;gap:18px}
+.form-group{position:relative}
+.form-group input,.form-group textarea{width:100%;padding:14px 18px;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.1);border-radius:12px;color:#e2e8f0;font-family:'Poppins',sans-serif;font-size:0.9rem;transition:all 0.3s;outline:none}
+.form-group input:focus,.form-group textarea:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,0.1)}
+.form-group textarea{resize:vertical;min-height:120px}
+.form-group input::placeholder,.form-group textarea::placeholder{color:#475569}
+
+/* ===== FOOTER ===== */
+footer{background:rgba(3,7,18,0.95);border-top:1px solid rgba(56,189,248,0.1);padding:60px 40px 30px}
+.footer-content{display:flex;justify-content:space-between;align-items:start;max-width:1200px;margin:0 auto;gap:40px;flex-wrap:wrap}
+.footer-brand .logo{font-size:1.2rem;margin-bottom:12px;display:block}
+.footer-brand p{color:#64748b;font-size:0.85rem;max-width:300px;line-height:1.6}
+.footer-links h4{font-size:0.9rem;font-weight:600;margin-bottom:15px;color:#e2e8f0}
+.footer-links a{display:block;color:#64748b;text-decoration:none;font-size:0.85rem;margin-bottom:10px;transition:all 0.3s}
+.footer-links a:hover{color:#38bdf8;transform:translateX(5px)}
+.social-links{display:flex;gap:12px;margin-top:15px}
+.social-links a{width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:center;color:#38bdf8;text-decoration:none;transition:all 0.3s}
+.social-links a:hover{background:#38bdf8;color:#030712;transform:translateY(-3px)}
+.footer-bottom{text-align:center;padding-top:30px;margin-top:40px;border-top:1px solid rgba(56,189,248,0.08);max-width:1200px;margin-left:auto;margin-right:auto}
+.footer-bottom p{color:#475569;font-size:0.8rem}
+
+/* ===== BACK TO TOP ===== */
+.back-to-top{position:fixed;bottom:30px;right:30px;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#38bdf8,#818cf8);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transform:translateY(20px);transition:all 0.4s;z-index:100;box-shadow:0 5px 25px rgba(56,189,248,0.3)}
+.back-to-top.visible{opacity:1;visibility:visible;transform:translateY(0)}
+.back-to-top:hover{transform:translateY(-3px);box-shadow:0 8px 35px rgba(56,189,248,0.5)}
+
+/* ===== REVEAL ANIMATIONS ===== */
+.reveal{opacity:0;transform:translateY(40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.reveal.active{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.reveal-left.active{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.reveal-right.active{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(0.8);transition:all 0.8s cubic-bezier(0.16,1,0.3,1)}
+.reveal-scale.active{opacity:1;transform:scale(1)}
+
+/* ===== RIPPLE ===== */
+.ripple{position:absolute;border-radius:50%;background:rgba(56,189,248,0.3);transform:scale(0);animation:rippleAnim 0.6s linear;pointer-events:none}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+
+/* ===== RESPONSIVE ===== */
+
+/* Tablet */
+@media(max-width:1024px){
+  .hero-content{gap:50px}
+  .hero-text h1{font-size:2.8rem}
+  .about-grid{gap:40px}
+  .features-grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  section{padding:80px 30px}
+  .section-title{font-size:2.4rem}
+  .cta-box{padding:50px 30px}
+  .cta-box h2{font-size:1.8rem}
+}
+
+/* Mobile */
+@media(max-width:768px){
+  header{padding:15px 20px}
+  .hamburger{display:flex}
+  nav{position:fixed;top:0;right:-100%;width:75%;height:100vh;background:rgba(3,7,18,0.98);backdrop-filter:blur(20px);flex-direction:column;justify-content:center;align-items:center;transition:right 0.4s cubic-bezier(0.16,1,0.3,1);gap:0}
+  nav.active{right:0}
+  nav a{font-size:1.2rem;padding:15px 20px;width:100%;text-align:center}
+  .hero{padding:100px 20px 60px}
+  .hero-content{flex-direction:column;gap:30px;text-align:center}
+  .hero-text h1{font-size:2rem}
+  .hero-subtitle{font-size:0.95rem;white-space:normal;border-right:none;animation:subtitleFade 1s ease-out 0.6s forwards}
+  .hero-tagline{font-size:0.85rem}
+  .hero-stats{justify-content:center;gap:25px;flex-wrap:wrap}
+  .hero-stats .stat-number{font-size:1.5rem}
+  .hero-buttons{justify-content:center}
+  .hero-image-container{width:200px;height:200px}
+  .orbit-dot:nth-child(2){animation:orbit1m 6s linear infinite}
+  .orbit-dot:nth-child(3){animation:orbit2m 8s linear infinite}
+  .orbit-dot:nth-child(4){animation:orbit3m 10s linear infinite}
+  .scroll-indicator{display:none}
+  section{padding:60px 16px}
+  .section-title{font-size:1.8rem}
+  .section-desc{font-size:0.9rem}
+  .section-label{font-size:0.7rem}
+  .about-grid{grid-template-columns:1fr;gap:30px}
+  .about-card-stack{height:auto;position:relative;display:flex;flex-direction:column;gap:16px}
+  .about-card{position:relative!important;width:100%!important;top:auto!important;left:auto!important;animation:none!important}
+  .about-text h3{font-size:1.4rem}
+  .about-text p{font-size:0.9rem}
+  .features-grid{grid-template-columns:1fr;gap:16px}
+  .feature-card{padding:25px 20px}
+  .feature-number{font-size:2rem;top:15px;right:15px}
+  .steps-container{padding-left:0}
+  .steps-line{left:20px}
+  .step{gap:16px}
+  .step-dot{width:42px;height:42px;min-width:42px;font-size:0.9rem}
+  .step-content{padding:18px 16px}
+  .step-content h3{font-size:1rem}
+  .step-content p{font-size:0.85rem}
+  .tech-grid{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px}
+  .tech-item{padding:20px 12px}
+  .tech-item i{font-size:2rem}
+  .tech-item span{font-size:0.75rem}
+  .testimonials-grid{grid-template-columns:1fr;gap:16px}
+  .testimonial-card{padding:25px 20px}
+  .contact-grid{grid-template-columns:1fr;gap:30px}
+  .contact-item{padding:15px}
+  .contact-item-icon{width:42px;height:42px;font-size:1rem}
+  .cta-box{padding:40px 20px;border-radius:20px}
+  .cta-box h2{font-size:1.5rem}
+  .cta-box p{font-size:0.9rem}
+  footer{padding:40px 20px 20px}
+  .footer-content{flex-direction:column;text-align:center;align-items:center;gap:30px}
+  .footer-brand p{max-width:100%}
+  .social-links{justify-content:center}
+  .back-to-top{bottom:20px;right:20px;width:42px;height:42px;border-radius:12px}
+  .cursor-dot,.cursor-ring{display:none}
+  .btn{padding:12px 24px;font-size:0.85rem}
+  .marquee-item{font-size:0.8rem}
+  .form-group input,.form-group textarea{padding:12px 14px;font-size:0.85rem}
+}
+
+/* Small phones */
+@media(max-width:400px){
+  .hero-text h1{font-size:1.6rem}
+  .hero-subtitle{font-size:0.85rem}
+  .hero-image-container{width:170px;height:170px}
+  .hero-stats{gap:16px}
+  .hero-stats .stat-number{font-size:1.3rem}
+  .stat-label{font-size:0.65rem}
+  .hero-buttons{flex-direction:column;align-items:center;gap:10px}
+  .hero-buttons .btn{width:100%;justify-content:center}
+  .section-title{font-size:1.5rem}
+  .section-desc{font-size:0.85rem}
+  .about-text h3{font-size:1.2rem}
+  .step-dot{width:36px;height:36px;min-width:36px;font-size:0.8rem}
+  .steps-line{left:18px}
+  .tech-grid{grid-template-columns:repeat(3,1fr)}
+  .cta-box h2{font-size:1.3rem}
+  .logo{font-size:1.1rem}
+}
+
+
+/* Orbit animations for mobile (smaller radius) */
+@keyframes orbit1m{from{transform:rotate(0) translateX(120px) rotate(0)}to{transform:rotate(360deg) translateX(120px) rotate(-360deg)}}
+@keyframes orbit2m{from{transform:rotate(120deg) translateX(120px) rotate(-120deg)}to{transform:rotate(480deg) translateX(120px) rotate(-480deg)}}
+@keyframes orbit3m{from{transform:rotate(240deg) translateX(120px) rotate(-240deg)}to{transform:rotate(600deg) translateX(120px) rotate(-600deg)}}
+
+/* ===== EXTRA ANIMATIONS ===== */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 5px rgba(56,189,248,0.2)}50%{box-shadow:0 0 25px rgba(56,189,248,0.4)}}
+@keyframes rotate3d{0%{transform:rotateY(0) rotateX(0)}25%{transform:rotateY(5deg) rotateX(2deg)}50%{transform:rotateY(0) rotateX(0)}75%{transform:rotateY(-5deg) rotateX(-2deg)}100%{transform:rotateY(0) rotateX(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes zoomIn{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+@keyframes zoomOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(0.5)}}
+@keyframes flipX{from{transform:perspective(400px) rotateX(90deg);opacity:0}to{transform:perspective(400px) rotateX(0);opacity:1}}
+@keyframes flipY{from{transform:perspective(400px) rotateY(90deg);opacity:0}to{transform:perspective(400px) rotateY(0);opacity:1}}
+@keyframes bounceIn{0%{transform:scale(0.3);opacity:0}50%{transform:scale(1.05)}70%{transform:scale(0.9)}100%{transform:scale(1);opacity:1}}
+@keyframes swing{20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0)}}
+@keyframes wobble{0%{transform:translateX(0)}15%{transform:translateX(-25px) rotate(-5deg)}30%{transform:translateX(20px) rotate(3deg)}45%{transform:translateX(-15px) rotate(-3deg)}60%{transform:translateX(10px) rotate(2deg)}75%{transform:translateX(-5px) rotate(-1deg)}100%{transform:translateX(0)}}
+@keyframes heartbeat{0%{transform:scale(1)}14%{transform:scale(1.3)}28%{transform:scale(1)}42%{transform:scale(1.3)}70%{transform:scale(1)}}
+@keyframes jello{0%,100%{transform:skewX(0) skewY(0)}11%{transform:skewX(-12.5deg) skewY(-12.5deg)}22%{transform:skewX(6.25deg) skewY(6.25deg)}33%{transform:skewX(-3.125deg) skewY(-3.125deg)}44%{transform:skewX(1.5625deg) skewY(1.5625deg)}}
+@keyframes rubberBand{0%{transform:scaleX(1)}30%{transform:scaleX(1.25) scaleY(0.75)}40%{transform:scaleX(0.75) scaleY(1.25)}50%{transform:scaleX(1.15) scaleY(0.85)}65%{transform:scaleX(0.95) scaleY(1.05)}75%{transform:scaleX(1.05) scaleY(0.95)}100%{transform:scaleX(1)}}
+@keyframes tada{0%,100%{transform:scale(1) rotate(0)}10%,20%{transform:scale(0.9) rotate(-3deg)}30%,50%,70%,90%{transform:scale(1.1) rotate(3deg)}40%,60%,80%{transform:scale(1.1) rotate(-3deg)}}
+@keyframes lightSpeedIn{from{transform:translateX(100%) skewX(-30deg);opacity:0}60%{transform:skewX(20deg);opacity:1}80%{transform:skewX(-5deg)}to{transform:translateX(0);opacity:1}}
+@keyframes hinge{0%{animation-timing-function:ease-in-out}20%,60%{transform:rotate(80deg);animation-timing-function:ease-in-out}40%,80%{transform:rotate(60deg);animation-timing-function:ease-in-out}to{transform:translateY(700px);opacity:0}}
+@keyframes rollIn{from{opacity:0;transform:translateX(-100%) rotate(-120deg)}to{opacity:1;transform:translateX(0) rotate(0)}}
+@keyframes jackInTheBox{from{opacity:0;transform:scale(0.1) rotate(30deg);transform-origin:center bottom}50%{transform:rotate(-10deg)}70%{transform:rotate(3deg)}to{opacity:1;transform:scale(1)}}
+@keyframes headShake{0%{transform:translateX(0)}6.5%{transform:translateX(-6px) rotateY(-9deg)}18.5%{transform:translateX(5px) rotateY(7deg)}31.5%{transform:translateX(-3px) rotateY(-5deg)}43.5%{transform:translateX(2px) rotateY(3deg)}50%{transform:translateX(0)}}
+@keyframes flash{0%,50%,100%{opacity:1}25%,75%{opacity:0}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}
+@keyframes shakeY{0%,100%{transform:translateY(0)}10%,30%,50%,70%,90%{transform:translateY(-10px)}20%,40%,60%,80%{transform:translateY(10px)}}
+@keyframes backInDown{0%{transform:translateY(-1200px) scale(0.7);opacity:0.7}80%{transform:translateY(0) scale(0.7);opacity:0.7}100%{transform:scale(1);opacity:1}}
+@keyframes backInUp{0%{transform:translateY(1200px) scale(0.7);opacity:0.7}80%{transform:translateY(0) scale(0.7);opacity:0.7}100%{transform:scale(1);opacity:1}}
+@keyframes rotateIn{from{transform:rotate(-200deg);opacity:0}to{transform:rotate(0);opacity:1}}
+@keyframes bounceInDown{0%{transform:translateY(-3000px)}60%{transform:translateY(25px)}75%{transform:translateY(-10px)}90%{transform:translateY(5px)}100%{transform:translateY(0)}}
+@keyframes bounceInLeft{0%{transform:translateX(-3000px)}60%{transform:translateX(25px)}75%{transform:translateX(-10px)}90%{transform:translateX(5px)}100%{transform:translateX(0)}}
+@keyframes bounceInRight{0%{transform:translateX(3000px)}60%{transform:translateX(-25px)}75%{transform:translateX(10px)}90%{transform:translateX(-5px)}100%{transform:translateX(0)}}
+@keyframes fadeInTopLeft{from{opacity:0;transform:translate(-100%,-100%)}to{opacity:1;transform:translate(0)}}
+@keyframes fadeInTopRight{from{opacity:0;transform:translate(100%,-100%)}to{opacity:1;transform:translate(0)}}
+@keyframes fadeInBottomLeft{from{opacity:0;transform:translate(-100%,100%)}to{opacity:1;transform:translate(0)}}
+@keyframes fadeInBottomRight{from{opacity:0;transform:translate(100%,100%)}to{opacity:1;transform:translate(0)}}
+@keyframes zoomInDown{from{opacity:0;transform:scale(0.1) translateY(-1000px)}60%{opacity:1;transform:scale(0.475) translateY(60px)}}
+@keyframes zoomInUp{from{opacity:0;transform:scale(0.1) translateY(1000px)}60%{opacity:1;transform:scale(0.475) translateY(-60px)}}
+@keyframes zoomInLeft{from{opacity:0;transform:scale(0.1) translateX(-1000px)}60%{opacity:1;transform:scale(0.475) translateX(10px)}}
+@keyframes zoomInRight{from{opacity:0;transform:scale(0.1) translateX(1000px)}60%{opacity:1;transform:scale(0.475) translateX(-10px)}}
+@keyframes flipInX{from{transform:perspective(400px) rotateX(90deg);opacity:0}40%{transform:perspective(400px) rotateX(-20deg)}60%{transform:perspective(400px) rotateX(10deg);opacity:1}80%{transform:perspective(400px) rotateX(-5deg)}to{transform:perspective(400px)}}
+@keyframes flipInY{from{transform:perspective(400px) rotateY(90deg);opacity:0}40%{transform:perspective(400px) rotateY(-20deg)}60%{transform:perspective(400px) rotateY(10deg);opacity:1}80%{transform:perspective(400px) rotateY(-5deg)}to{transform:perspective(400px)}}
+@keyframes lightSpeedInRight{from{transform:translateX(100%) skewX(-30deg);opacity:0}60%{transform:skewX(20deg);opacity:1}80%{transform:skewX(-5deg)}to{transform:none;opacity:1}}
+@keyframes lightSpeedInLeft{from{transform:translateX(-100%) skewX(30deg);opacity:0}60%{transform:skewX(-20deg);opacity:1}80%{transform:skewX(5deg)}to{transform:none;opacity:1}}
+@keyframes jackInTheBox2{from{opacity:0;transform:scale(0.1) rotate(-30deg);transform-origin:center bottom}50%{transform:rotate(10deg)}70%{transform:rotate(-3deg)}to{opacity:1;transform:scale(1)}}
+
+/* UTILITY ANIMATION CLASSES */
+.anim-float{animation:float 3s ease-in-out infinite}
+.anim-pulse-glow{animation:pulse-glow 2s ease-in-out infinite}
+.anim-shimmer{background:linear-gradient(90deg,transparent,rgba(56,189,248,0.1),transparent);background-size:200%;animation:shimmer 3s infinite}
+.anim-rotate3d{animation:rotate3d 8s ease-in-out infinite}
+.anim-bounceIn{animation:bounceIn 0.8s}
+.anim-swing{animation:swing 1s ease-in-out}
+.anim-wobble{animation:wobble 1s}
+.anim-heartbeat{animation:heartbeat 1.5s ease-in-out infinite}
+.anim-jello{animation:jello 1s}
+.anim-rubberBand{animation:rubberBand 1s}
+.anim-tada{animation:tada 1s}
+.anim-headShake{animation:headShake 1s}
+.anim-flash{animation:flash 1s}
+.anim-rollIn{animation:rollIn 1s}
+.anim-jackInTheBox{animation:jackInTheBox 1s}
+.anim-flipX{animation:flipInX 1s}
+.anim-flipY{animation:flipInY 1s}
+.anim-rotateIn{animation:rotateIn 0.8s}
+.anim-bounceInDown{animation:bounceInDown 1s}
+.anim-bounceInLeft{animation:bounceInLeft 1s}
+.anim-bounceInRight{animation:bounceInRight 1s}
+.anim-zoomInDown{animation:zoomInDown 1s}
+.anim-zoomInUp{animation:zoomInUp 1s}
+.anim-lightSpeedInRight{animation:lightSpeedInRight 1s}
+.anim-lightSpeedInLeft{animation:lightSpeedInLeft 1s}
+.anim-fadeInTopLeft{animation:fadeInTopLeft 1s}
+.anim-fadeInBottomRight{animation:fadeInBottomRight 1s}
+
+/* STAGGER DELAYS */
+.delay-1{animation-delay:0.1s;animation-fill-mode:both}
+.delay-2{animation-delay:0.2s;animation-fill-mode:both}
+.delay-3{animation-delay:0.3s;animation-fill-mode:both}
+.delay-4{animation-delay:0.4s;animation-fill-mode:both}
+.delay-5{animation-delay:0.5s;animation-fill-mode:both}
+.delay-6{animation-delay:0.6s;animation-fill-mode:both}
+.delay-7{animation-delay:0.7s;animation-fill-mode:both}
+.delay-8{animation-delay:0.8s;animation-fill-mode:both}
+.delay-9{animation-delay:0.9s;animation-fill-mode:both}
+.delay-10{animation-delay:1.0s;animation-fill-mode:both}
+</style>
+</head>
+
+<body>
+
+<!-- Preloader -->
+<div id="preloader"><div class="loader"></div></div>
+
+<!-- Custom Cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- Particles Canvas -->
+<canvas id="particles"></canvas>
+
+<!-- Header -->
+<header>
+    <span class="logo">⚡ Contactless Ordering</span>
+    <nav id="nav">
+        <a href="#about">About</a>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#tech">Tech Stack</a>
+        <a href="#testimonials">Reviews</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-gradient hero-gradient-1"></div>
+        <div class="hero-gradient hero-gradient-2"></div>
+        <div class="hero-gradient hero-gradient-3"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-image-wrapper">
+            <div class="hero-image-container">
+                <div class="hero-image-ring"></div>
+                <div class="hero-image-inner">
+                    <div class="hero-image-placeholder"><i class="fas fa-user"></i></div>
+                </div>
+            </div>
+            <div class="orbit-dot"></div>
+            <div class="orbit-dot"></div>
+            <div class="orbit-dot"></div>
+        </div>
+        <div class="hero-text">
+            <div class="hero-badge"><span class="dot"></span> Available for Partnerships</div>
+            <h1><span class="gradient-text">Dhruba Majumder</span></h1>
+            <p class="hero-subtitle typewriter">Solo Founder — Contactless Restaurant Ordering System</p>
+            <p class="hero-tagline">BCA Graduate | Innovator from Assam | Building the future of dining</p>
+            <div class="hero-buttons">
+                <a href="#features" class="btn btn-primary"><i class="fas fa-rocket"></i> Explore Features</a>
+                <a href="#contact" class="btn btn-outline"><i class="fas fa-envelope"></i> Get in Touch</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><div class="stat-number" data-count="500">0</div><div class="stat-label">Orders/Day</div></div>
+                <div class="stat"><div class="stat-number" data-count="50">0</div><div class="stat-label">Restaurants</div></div>
+                <div class="stat"><div class="stat-number" data-count="99">0</div><div class="stat-label">% Uptime</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <div class="mouse"></div>
+        <span>Scroll Down</span>
+    </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-section">
+    <div class="marquee-track">
+        <div class="marquee-item"><i class="fas fa-qrcode"></i> QR Code Ordering</div>
+        <div class="marquee-item"><i class="fas fa-bolt"></i> Real-time Updates</div>
+        <div class="marquee-item"><i class="fas fa-shield-halved"></i> Secure Payments</div>
+        <div class="marquee-item"><i class="fas fa-chart-line"></i> Analytics Dashboard</div>
+        <div class="marquee-item"><i class="fas fa-mobile-screen"></i> Mobile First</div>
+        <div class="marquee-item"><i class="fas fa-clock"></i> 24/7 Support</div>
+        <div class="marquee-item"><i class="fas fa-globe"></i> Cloud Based</div>
+        <div class="marquee-item"><i class="fas fa-users"></i> Multi-tenant</div>
+        <div class="marquee-item"><i class="fas fa-qrcode"></i> QR Code Ordering</div>
+        <div class="marquee-item"><i class="fas fa-bolt"></i> Real-time Updates</div>
+        <div class="marquee-item"><i class="fas fa-shield-halved"></i> Secure Payments</div>
+        <div class="marquee-item"><i class="fas fa-chart-line"></i> Analytics Dashboard</div>
+        <div class="marquee-item"><i class="fas fa-mobile-screen"></i> Mobile First</div>
+        <div class="marquee-item"><i class="fas fa-clock"></i> 24/7 Support</div>
+        <div class="marquee-item"><i class="fas fa-globe"></i> Cloud Based</div>
+        <div class="marquee-item"><i class="fas fa-users"></i> Multi-tenant</div>
+    </div>
+</div>
+
+<!-- About -->
+<section id="about">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-user"></i> About</div>
+        <h2 class="section-title">The <span class="highlight">Vision</span> Behind It</h2>
+        <p class="section-desc">A passionate solo founder on a mission to digitize restaurant ordering across India.</p>
+    </div>
+    <div class="about-grid">
+        <div class="about-visual reveal-left">
+            <div class="about-card-stack">
+                <div class="about-card">
+                    <div class="about-card-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h4>Innovation First</h4>
+                    <p>Rethinking how customers interact with restaurants using modern technology.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon"><i class="fas fa-heart"></i></div>
+                    <h4>Customer Obsessed</h4>
+                    <p>Every feature is built with the end-user experience at its core.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon"><i class="fas fa-code"></i></div>
+                    <h4>Tech Driven</h4>
+                    <p>Modern stack ensuring performance, reliability and scalability.</p>
+                </div>
+            </div>
+        </div>
+        <div class="about-text reveal-right">
+            <h3>Building a <span class="gradient-text">Contactless Future</span> for Restaurants</h3>
+            <p>As a BCA graduate from Assam, I identified a critical gap in the restaurant industry — the ordering process was slow, error-prone, and unhygienic. My startup provides a complete digital contactless ordering system that transforms how restaurants operate.</p>
+            <p>From QR code scanning to real-time order tracking, every aspect is designed for speed, accuracy, and delightful user experience.</p>
+            <div class="about-highlights">
+                <div class="about-highlight"><i class="fas fa-check-circle"></i><span>Zero contact ordering via QR codes</span></div>
+                <div class="about-highlight"><i class="fas fa-check-circle"></i><span>Real-time kitchen-to-table communication</span></div>
+                <div class="about-highlight"><i class="fas fa-check-circle"></i><span>Integrated payment gateway (UPI, Cards)</span></div>
+                <div class="about-highlight"><i class="fas fa-check-circle"></i><span>Smart analytics for restaurant owners</span></div>
+                <div class="about-highlight"><i class="fas fa-check-circle"></i><span>Multi-language support for diverse India</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-star"></i> Features</div>
+        <h2 class="section-title">Powerful <span class="highlight">Features</span></h2>
+        <p class="section-desc">Everything a modern restaurant needs to go contactless and digital.</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card reveal delay-1">
+            <div class="feature-number">01</div>
+            <div class="feature-icon blue"><i class="fas fa-qrcode"></i></div>
+            <h3>QR Code Ordering</h3>
+            <p>Customers scan a table QR code and instantly browse the digital menu on their own phone. No app download needed.</p>
+            <span class="feature-tag">Core Feature</span>
+        </div>
+        <div class="feature-card reveal delay-2">
+            <div class="feature-number">02</div>
+            <div class="feature-icon purple"><i class="fas fa-utensils"></i></div>
+            <h3>Dynamic Digital Menu</h3>
+            <p>Update prices, add seasonal items, mark sold-out dishes — all changes reflect instantly for every customer.</p>
+            <span class="feature-tag">Real-time</span>
+        </div>
+        <div class="feature-card reveal delay-3">
+            <div class="feature-number">03</div>
+            <div class="feature-icon pink"><i class="fas fa-bell-concierge"></i></div>
+            <h3>Live Order Tracking</h3>
+            <p>Customers and kitchen staff see order status in real-time. No more "where's my food?" moments.</p>
+            <span class="feature-tag">Live Updates</span>
+        </div>
+        <div class="feature-card reveal delay-4">
+            <div class="feature-number">04</div>
+            <div class="feature-icon green"><i class="fas fa-chart-pie"></i></div>
+            <h3>Analytics Dashboard</h3>
+            <p>Detailed reports on best-selling items, peak hours, revenue trends, and customer preferences.</p>
+            <span class="feature-tag">Insights</span>
+        </div>
+        <div class="feature-card reveal delay-5">
+            <div class="feature-number">05</div>
+            <div class="feature-icon orange"><i class="fas fa-wallet"></i></div>
+            <h3>Digital Payments</h3>
+            <p>Seamless UPI, credit/debit card, and wallet integration. Split bills among friends with a tap.</p>
+            <span class="feature-tag">Payments</span>
+        </div>
+        <div class="feature-card reveal delay-6">
+            <div class="feature-number">06</div>
+            <div class="feature-icon red"><i class="fas fa-headset"></i></div>
+            <h3>Waiter Call System</h3>
+            <p>Customers can call a waiter, request the bill, or ask for help — all from their phone. No hand waving needed.</p>
+            <span class="feature-tag">Service</span>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section id="how">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-cogs"></i> Process</div>
+        <h2 class="section-title">How It <span class="highlight">Works</span></h2>
+        <p class="section-desc">Four simple steps from scanning to savoring.</p>
+    </div>
+    <div class="steps-container">
+        <div class="steps-line"></div>
+        <div class="step reveal delay-1">
+            <div class="step-dot">1</div>
+            <div class="step-content">
+                <h3>Scan the QR Code</h3>
+                <p>Each table has a unique QR code. Customers scan it using any phone camera — no app required.</p>
+            </div>
+        </div>
+        <div class="step reveal delay-3">
+            <div class="step-dot">2</div>
+            <div class="step-content">
+                <h3>Browse & Customize</h3>
+                <p>View the full menu with photos, descriptions, and prices. Add items, customize spice levels, and more.</p>
+            </div>
+        </div>
+        <div class="step reveal delay-5">
+            <div class="step-dot">3</div>
+            <div class="step-content">
+                <h3>Place & Track Order</h3>
+                <p>Confirm your order and watch it move from kitchen preparation to ready-to-serve in real time.</p>
+            </div>
+        </div>
+        <div class="step reveal delay-7">
+            <div class="step-dot">4</div>
+            <div class="step-content">
+                <h3>Pay Digitally</h3>
+                <p>When done, pay using UPI, card, or wallet. Get a digital receipt instantly on your phone.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tech Stack -->
+<section id="tech">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-microchip"></i> Technology</div>
+        <h2 class="section-title">Built With <span class="highlight">Modern Tech</span></h2>
+        <p class="section-desc">A robust, scalable architecture powering thousands of orders daily.</p>
+    </div>
+    <div class="tech-grid">
+        <div class="tech-item reveal delay-1"><i class="fab fa-html5" style="color:#e34f26"></i><span>HTML5</span></div>
+        <div class="tech-item reveal delay-2"><i class="fab fa-css3-alt" style="color:#1572b6"></i><span>CSS3</span></div>
+        <div class="tech-item reveal delay-3"><i class="fab fa-js" style="color:#f7df1e"></i><span>JavaScript</span></div>
+        <div class="tech-item reveal delay-4"><i class="fab fa-react" style="color:#61dafb"></i><span>React</span></div>
+        <div class="tech-item reveal delay-5"><i class="fab fa-node-js" style="color:#339933"></i><span>Node.js</span></div>
+        <div class="tech-item reveal delay-6"><i class="fas fa-database" style="color:#47a248"></i><span>MongoDB</span></div>
+        <div class="tech-item reveal delay-7"><i class="fas fa-cloud" style="color:#38bdf8"></i><span>AWS Cloud</span></div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section id="testimonials">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-comments"></i> Testimonials</div>
+        <h2 class="section-title">What People <span class="highlight">Say</span></h2>
+        <p class="section-desc">Feedback from restaurant owners who adopted our system.</p>
+    </div>
+    <div class="testimonials-grid">
+        <div class="testimonial-card reveal delay-1">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+            <p>"Our order errors dropped by 90% and customers love the speed. This system changed our restaurant completely."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar">R</div>
+                <div class="testimonial-info"><h4>Rajesh Kumar</h4><span>Owner, Spice Garden — Guwahati</span></div>
+            </div>
+        </div>
+        <div class="testimonial-card reveal delay-3">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+            <p>"The analytics dashboard alone is worth it. I finally understand my business patterns and peak hours."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar">P</div>
+                <div class="testimonial-info"><h4>Priya Sharma</h4><span>Manager, Taste of India — Delhi</span></div>
+            </div>
+        </div>
+        <div class="testimonial-card reveal delay-5">
+            <i class="fas fa-quote-right quote-icon"></i>
+            <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+            <p>"Setup was incredibly easy. Within one day, our entire restaurant was running on the digital system."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar">A</div>
+                <div class="testimonial-info"><h4>Amit Bora</h4><span>Owner, Bamboo Bites — Jorhat</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="cta-box reveal-scale">
+        <h2>Ready to Go <span class="gradient-text">Contactless</span>?</h2>
+        <p>Join 50+ restaurants already using our system to serve customers faster and smarter.</p>
+        <a href="#contact" class="btn btn-primary"><i class="fas fa-rocket"></i> Get Started Free</a>
+    </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+    <div class="section-header reveal">
+        <div class="section-label"><i class="fas fa-paper-plane"></i> Contact</div>
+        <h2 class="section-title">Let's <span class="highlight">Connect</span></h2>
+        <p class="section-desc">Interested in using the system or collaborating? Reach out below.</p>
+    </div>
+    <div class="contact-grid">
+        <div class="contact-info reveal-left">
+            <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
+                <div><h4>Email</h4><p>dhruba@contactlessordering.com</p></div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-phone"></i></div>
+                <div><h4>Phone</h4><p>+91 XXXXX XXXXX</p></div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-item-icon"><i class="fas fa-location-dot"></i></div>
+                <div><h4>Location</h4><p>Assam, India</p></div>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <form class="contact-form reveal-right" onsubmit="handleSubmit(event)">
+            <div class="form-group"><input type="text" placeholder="Your Name" required></div>
+            <div class="form-group"><input type="email" placeholder="Your Email" required></div>
+            <div class="form-group"><input type="text" placeholder="Subject"></div>
+            <div class="form-group"><textarea placeholder="Your Message" required></textarea></div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Send Message</button>
+        </form>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <span class="logo">⚡ Contactless Ordering</span>
+            <p>Revolutionizing restaurant experiences with modern contactless technology. Built with ❤️ in Assam, India.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Quick Links</h4>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#how">How It Works</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-links">
+            <h4>Resources</h4>
+            <a href="#">Documentation</a>
+            <a href="#">API Reference</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 Dhruba Majumder | Contactless Ordering System. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+<script>
+// ===== PRELOADER =====
+window.addEventListener('load',()=>{
+    setTimeout(()=>document.getElementById('preloader').classList.add('hidden'),800);
+});
+
+// ===== CUSTOM CURSOR =====
+const dot=document.querySelector('.cursor-dot'),ring=document.querySelector('.cursor-ring');
+document.addEventListener('mousemove',e=>{
+    dot.style.left=e.clientX-4+'px';dot.style.top=e.clientY-4+'px';
+    ring.style.left=e.clientX-17.5+'px';ring.style.top=e.clientY-17.5+'px';
+});
+document.querySelectorAll('a,button,.feature-card,.tech-item,.contact-item').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ring.style.width='50px';ring.style.height='50px';ring.style.left=parseFloat(ring.style.left)+7.5+'px';ring.style.top=parseFloat(ring.style.top)+7.5+'px';ring.style.borderColor='rgba(56,189,248,0.8)'});
+    el.addEventListener('mouseleave',()=>{ring.style.width='35px';ring.style.height='35px';ring.style.left=parseFloat(ring.style.left)-7.5+'px';ring.style.top=parseFloat(ring.style.top)-7.5+'px';ring.style.borderColor='rgba(56,189,248,0.4)'});
+});
+
+// ===== PARTICLES =====
+const canvas=document.getElementById('particles'),ctx=canvas.getContext('2d');
+let particles=[];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+class Particle{
+    constructor(){this.reset()}
+    reset(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.vx=(Math.random()-0.5)*0.5;this.vy=(Math.random()-0.5)*0.5;this.radius=Math.random()*2+0.5;this.opacity=Math.random()*0.5+0.1}
+    update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>canvas.width)this.vx*=-1;if(this.y<0||this.y>canvas.height)this.vy*=-1}
+    draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);ctx.fillStyle=`rgba(56,189,248,${this.opacity})`;ctx.fill()}
+}
+const particleCount=window.innerWidth<768?30:80;
+for(let i=0;i<particleCount;i++)particles.push(new Particle());
+function animateParticles(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{p.update();p.draw()});
+    for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(56,189,248,${0.08*(1-dist/120)})`;ctx.stroke()}
+    }
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ===== SCROLL REVEAL =====
+const revealEls=document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale');
+const observer=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('active');observer.unobserve(entry.target)}});
+},{threshold:0.15,rootMargin:'0px 0px -50px 0px'});
+revealEls.forEach(el=>observer.observe(el));
+
+// ===== COUNTER ANIMATION =====
+const counters=document.querySelectorAll('.stat-number');
+const counterObserver=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+        if(entry.isIntersecting){
+            const el=entry.target,target=+el.dataset.count;let current=0;
+            const increment=target/60;
+            const timer=setInterval(()=>{current+=increment;if(current>=target){el.textContent=target+(el.closest('.stat').querySelector('.stat-label').textContent.includes('%')?'%':'+');clearInterval(timer)}else{el.textContent=Math.floor(current)}},25);
+            counterObserver.unobserve(el);
+        }
+    });
+},{threshold:0.5});
+counters.forEach(c=>counterObserver.observe(c));
+
+// ===== HAMBURGER =====
+const hamburger=document.getElementById('hamburger'),nav=document.getElementById('nav');
+hamburger.addEventListener('click',()=>{hamburger.classList.toggle('active');nav.classList.toggle('active')});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('active');nav.classList.remove('active')}));
+
+// ===== HEADER SHADOW =====
+window.addEventListener('scroll',()=>{
+    const header=document.querySelector('header');
+    header.style.boxShadow=window.scrollY>50?'0 5px 30px rgba(0,0,0,0.3)':'none';
+});
+
+// ===== BACK TO TOP =====
+const backToTop=document.getElementById('backToTop');
+window.addEventListener('scroll',()=>{backToTop.classList.toggle('visible',window.scrollY>500)});
+backToTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// ===== RIPPLE ON BUTTONS =====
+document.querySelectorAll('.btn').forEach(btn=>{
+    btn.style.position='relative';btn.style.overflow='hidden';
+    btn.addEventListener('click',function(e){
+        const ripple=document.createElement('span');ripple.className='ripple';
+        const rect=this.getBoundingClientRect();
+        ripple.style.left=e.clientX-rect.left+'px';ripple.style.top=e.clientY-rect.top+'px';
+        this.appendChild(ripple);setTimeout(()=>ripple.remove(),600);
+    });
+});
+
+// ===== TILT EFFECT ON CARDS =====
+document.querySelectorAll('.feature-card,.tech-item,.testimonial-card').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+        const rect=card.getBoundingClientRect();
+        const x=(e.clientX-rect.left)/rect.width-0.5;
+        const y=(e.clientY-rect.top)/rect.height-0.5;
+        card.style.transform=`translateY(-8px) perspective(1000px) rotateX(${y*-8}deg) rotateY(${x*8}deg)`;
+    });
+    card.addEventListener('mouseleave',()=>{card.style.transform=''});
+});
+
+// ===== ACTIVE NAV HIGHLIGHT =====
+const sections=document.querySelectorAll('section[id]');
+window.addEventListener('scroll',()=>{
+    const scrollY=window.scrollY+100;
+    sections.forEach(sec=>{
+        const top=sec.offsetTop,height=sec.offsetHeight,id=sec.getAttribute('id');
+        const link=document.querySelector(`nav a[href="#${id}"]`);
+        if(link){if(scrollY>=top&&scrollY<top+height){link.style.color='#38bdf8'}else{link.style.color='#94a3b8'}}
+    });
+});
+
+// ===== MAGNETIC BUTTONS =====
+document.querySelectorAll('.btn-primary').forEach(btn=>{
+    btn.addEventListener('mousemove',e=>{
+        const rect=btn.getBoundingClientRect();
+        const x=e.clientX-rect.left-rect.width/2;
+        const y=e.clientY-rect.top-rect.height/2;
+        btn.style.transform=`translate(${x*0.15}px,${y*0.15}px)`;
+    });
+    btn.addEventListener('mouseleave',()=>{btn.style.transform=''});
+});
+
+// ===== PARALLAX GRADIENTS =====
+window.addEventListener('scroll',()=>{
+    const scroll=window.scrollY;
+    document.querySelectorAll('.hero-gradient').forEach((g,i)=>{
+        g.style.transform=`translate(${Math.sin(scroll*0.002+i)*30}px,${Math.cos(scroll*0.002+i)*30}px)`;
+    });
+});
+
+// ===== FORM SUBMIT =====
+function handleSubmit(e){
+    e.preventDefault();
+    const btn=e.target.querySelector('button');
+    btn.innerHTML='<i class="fas fa-check"></i> Message Sent!';
+    btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
+    setTimeout(()=>{btn.innerHTML='<i class="fas fa-paper-plane"></i> Send Message';btn.style.background='';e.target.reset()},3000);
+}
+
+// ===== SMOOTH NAV SCROLL =====
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+        e.preventDefault();
+        const target=document.querySelector(a.getAttribute('href'));
+        if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+});
+
+// ===== TEXT SCRAMBLE ON HOVER =====
+document.querySelectorAll('.feature-card h3').forEach(el=>{
+    const original=el.textContent;
+    const chars='!@#$%^&*()_+-=[]{}|;:,.<>?';
+    el.addEventListener('mouseenter',()=>{
+        let iterations=0;
+        const interval=setInterval(()=>{
+            el.textContent=original.split('').map((c,i)=>i<iterations?original[i]:chars[Math.floor(Math.random()*chars.length)]).join('');
+            iterations+=1/2;
+            if(iterations>=original.length)clearInterval(interval);
+        },30);
+    });
+});
+</script>
+
+</body>
+</html>

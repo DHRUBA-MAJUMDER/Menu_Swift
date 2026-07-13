@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us-MenuSwift</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    @keyframes progressAnim {
+      0% {width: 0%;}
+      100% {width: 100%;}
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center py-12">
+
+  <div class="max-w-xl w-full bg-white/70 backdrop-blur-lg p-10 rounded-2xl shadow-xl border border-white/40 animate-[fadeInUp_0.6s_ease]">
+
+    <!-- Progress Bar -->
+    <div id="progressBar" class="hidden h-1 bg-blue-600 rounded-full mb-4 overflow-hidden">
+      <div class="h-1 bg-blue-600 animate-[progressAnim_1.5s_linear_forwards]"></div>
+    </div>
+
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-extrabold text-blue-600">Contact Us</h1>
+      <p class="text-gray-600 mt-2">We'd love to hear from you! Fill out the form below.</p>
+    </div>
+
+    <form id="contactForm" class="space-y-4">
+      <input type="text" id="name" placeholder="Your Name" required
+        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition" />
+
+      <input type="number" id="number" placeholder="Mobile Number" required
+        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition" />
+
+      <input type="email" id="email" placeholder="Your Email" required
+        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition" />
+
+      <textarea id="message" placeholder="Your Message" required rows="4"
+        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+
+      <button type="submit"
+        class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg shadow hover:shadow-lg hover:scale-[1.02] transition">
+        Send Message
+      </button>
+    </form>
+
+    <!-- Styled Success Alert -->
+    <div id="successAlert" class="hidden mt-6 rounded-lg border border-green-300 bg-green-50 p-4 text-green-800 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">✅</div>
+        <div>
+          <p class="font-semibold">Message Sent Successfully!</p>
+          <p class="text-sm">We’ve received your message. Our team will contact you shortly.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+    authDomain: "menuswift-fe577.firebaseapp.com",
+    databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+    projectId: "menuswift-fe577",
+    storageBucket: "menuswift-fe577.appspot.com",
+    messagingSenderId: "417323386413",
+    appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const form = document.getElementById('contactForm');
+  const progressBar = document.getElementById('progressBar');
+  const successAlert = document.getElementById('successAlert');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const number = document.getElementById('number').value.trim();
+    const message = document.getElementById('message').value.trim();
+    const timestamp = Date.now();
+
+    if (!name || !email || number.length < 10 || !message) {
+      alert("Please fill all fields correctly.");
+      return;
+    }
+
+    // Show progress bar
+    progressBar.classList.remove('hidden');
+    successAlert.classList.add('hidden');
+
+    db.ref('contactMessages').push({
+      name,
+      email,
+      number,
+      message,
+      timestamp
+    }).then(() => {
+      // Hide progress bar and show success alert
+      progressBar.classList.add('hidden');
+      successAlert.classList.remove('hidden');
+      form.reset();
+    }).catch((error) => {
+      progressBar.classList.add('hidden');
+      alert("Failed to send message. Please try again.");
+      console.error("Error:", error);
+    });
+  });
+</script>
+
+</body>
+</html>

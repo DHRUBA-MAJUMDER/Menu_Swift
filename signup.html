@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Owner Signup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl mb-4">Owner Signup</h1>
+    <form id="signupForm" class="space-y-4">
+      <input type="email" id="email" placeholder="Email" required
+             class="w-full p-2 border rounded" />
+      <input type="password" id="password" placeholder="Password" required
+             class="w-full p-2 border rounded" />
+      <input type="text" id="restaurantId" placeholder="Restaurant ID (unique)" required
+             class="w-full p-2 border rounded" />
+      <input type="text" id="restaurantName" placeholder="Restaurant Name" required
+             class="w-full p-2 border rounded" />
+      <button type="submit" class="w-full bg-green-500 text-white p-2 rounded">
+        Sign Up
+      </button>
+    </form>
+    <div id="message" class="mt-4 text-center"></div>
+  </div>
+
+  <script>
+    // 1) Initialize Firebase
+    const firebaseConfig = { /* your config */ };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.database();
+
+    // 2) Handle form submit
+    document.getElementById('signupForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      const pw    = e.target.password.value;
+      const rid   = e.target.restaurantId.value.trim();
+      const name  = e.target.restaurantName.value.trim();
+      const msg   = document.getElementById('message');
+      msg.textContent = '';
+
+      try {
+        // a) Create auth user
+        const { user } = await auth.createUserWithEmailAndPassword(email, pw);
+
+        // b) Write owner record
+        await db.ref(`owners/${user.uid}`).set({
+          email,
+          restaurantId: rid
+        });
+
+        // c) Initialize restaurant record
+        await db.ref(`restaurants/${rid}`).set({
+          name,
+          menuItems: {},
+          orders: {}
+        });
+
+        msg.textContent = 'Signup successful! Redirecting…';
+        setTimeout(() => location.href = 'login.html', 1500);
+
+      } catch (err) {
+        msg.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

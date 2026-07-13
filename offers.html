@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers & Promotions - MenuSwift</title>
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --primary-glow: rgba(37,99,235,0.12);
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --purple: #7c3aed;
+      --purple-light: #f5f3ff;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --surface-3: #f1f5f9;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: var(--surface-2);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes fadeInUp { 0% { opacity:0; transform:translateY(16px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes scaleIn { 0% { opacity:0; transform:scale(0.96); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.6; } }
+
+    /* Header */
+    .page-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-inner h1 { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+    .header-inner h1 span { color: var(--primary); }
+    .header-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1rem; }
+
+    /* Tabs */
+    .tabs {
+      display: flex; gap: 0.5rem; margin-bottom: 1.25rem;
+      overflow-x: auto; padding-bottom: 4px;
+      -ms-overflow-style: none; scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      padding: 0.6rem 1.1rem; border: 2px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--surface);
+      font-weight: 600; font-size: 0.82rem; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+      white-space: nowrap; color: var(--text-secondary);
+    }
+    .tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .tab-btn.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+    }
+    .tab-content { display: none; animation: fadeInUp 0.35s ease-out; }
+    .tab-content.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 700; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 0.875rem; }
+    .form-label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: var(--text-secondary); margin-bottom: 0.35rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.65rem 0.875rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 0.85rem; font-family: inherit;
+      background: var(--surface-2); color: var(--text);
+      transition: all 0.2s;
+    }
+    .form-input:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: #fff;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+      padding: 0.65rem 1.25rem; border: none; border-radius: var(--radius-sm);
+      font-weight: 700; font-size: 0.82rem; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,0.25); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { transform: translateY(-1px); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.75rem; }
+    .btn-block { width: 100%; }
+
+    /* Items Grid */
+    .items-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem; max-height: 350px; overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+    @media (max-width: 480px) {
+      .items-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    }
+    .item-card {
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.75rem; cursor: pointer; transition: all 0.2s;
+      position: relative;
+    }
+    .item-card:hover { border-color: var(--primary); background: var(--primary-glow); }
+    .item-card.selected {
+      border-color: var(--primary); background: var(--primary-light);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .item-card .item-name { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px; }
+    .item-card .item-price { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+    .item-card .check-icon {
+      position: absolute; top: 6px; right: 6px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: none; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 800;
+    }
+    .item-card.selected .check-icon { display: flex; }
+    .item-card .offer-active-tag {
+      font-size: 0.6rem; font-weight: 700; color: var(--success);
+      background: var(--success-light); padding: 1px 6px;
+      border-radius: 4px; margin-top: 4px; display: inline-block;
+    }
+
+    /* Offer List */
+    .offer-item {
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 1rem; margin-bottom: 0.75rem;
+      background: var(--surface); transition: all 0.2s;
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .offer-item:hover { box-shadow: var(--shadow-md); }
+    .offer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .offer-title-text { font-weight: 700; font-size: 0.95rem; }
+    .offer-type-badge {
+      font-size: 0.65rem; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .badge-discount { background: var(--danger-light); color: var(--danger); }
+    .badge-combo { background: var(--purple-light); color: var(--purple); }
+    .badge-bogo { background: var(--warning-light); color: #b45309; }
+    .badge-happy { background: var(--success-light); color: var(--success); }
+    .status-badge {
+      font-size: 0.7rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .status-active { background: var(--success-light); color: var(--success); }
+    .status-inactive { background: var(--surface-3); color: var(--text-muted); }
+    .status-scheduled { background: var(--warning-light); color: #b45309; }
+    .offer-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .offer-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Geo Section */
+    .geo-status {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem; border-radius: var(--radius-sm);
+      background: var(--surface-2); border: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    .geo-status .status-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .geo-status .status-dot.active { background: var(--success); box-shadow: 0 0 8px rgba(5,150,105,0.4); }
+    .geo-status .status-dot.inactive { background: var(--text-muted); }
+    .geo-info { flex: 1; }
+    .geo-info .geo-label { font-size: 0.82rem; font-weight: 600; }
+    .geo-info .geo-detail { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast {
+      padding: 0.75rem 1.125rem; border-radius: var(--radius-sm); color: #fff;
+      font-weight: 500; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;
+      box-shadow: var(--shadow-lg); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+      max-width: 340px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.info { background: var(--primary); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container { padding: 1rem 0.75rem; }
+      .card { padding: 1rem; }
+      .header-inner h1 { font-size: 1.1rem; }
+      .toast { max-width: calc(100vw - 2rem); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .selected-items-list {
+      display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.5rem;
+    }
+    .selected-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 6px;
+      background: var(--primary-light); color: var(--primary);
+      font-size: 0.7rem; font-weight: 600;
+    }
+    .selected-chip .remove-chip {
+      cursor: pointer; font-weight: 800; font-size: 0.75rem;
+      opacity: 0.7; transition: opacity 0.2s;
+    }
+    .selected-chip .remove-chip:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="header-inner">
+      <div>
+        <h1>🔥 <span>Offers</span> Control</h1>
+        <div class="header-subtitle">Manage discounts, combos & promotions</div>
+      </div>
+    </div>
+  </header>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="container">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('discount')">💸 Discount</button>
+      <button class="tab-btn" onclick="switchTab('combo')">🍱 Combo</button>
+      <button class="tab-btn" onclick="switchTab('bogo')">🎁 Buy 1 Get 1</button>
+      <button class="tab-btn" onclick="switchTab('happy')">⏰ Happy Hour</button>
+      <button class="tab-btn" onclick="switchTab('geo')">📍 Geo-Fence</button>
+      <button class="tab-btn" onclick="switchTab('active')">📋 All Offers</button>
+    </div>
+
+    <!-- ========== DISCOUNT TAB ========== -->
+    <div id="tab-discount" class="tab-content active">
+      <div class="card">
+        <div class="card-title">💸 Create Discount Offer</div>
+        <div class="form-group">
+          <label class="form-label">Offer Title</label>
+          <input id="discTitle" class="form-input" placeholder="e.g. Weekend Special 50% OFF">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Discount %</label>
+            <input id="discPercent" type="number" class="form-input" placeholder="e.g. 50" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Banner Text (optional)</label>
+            <input id="discBanner" class="form-input" placeholder="e.g. 🎉 Flat 50% OFF!">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input id="discStart" type="datetime-local" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input id="discEnd" type="datetime-local" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Items (click to select)</label>
+          <div id="discItemsGrid" class="items-grid"></div>
+          <div id="discSelectedChips" class="selected-items-list"></div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="createDiscount()">🚀 Create Discount Offer</button>
+      </div>
+    </div>
+
+    <!-- ========== COMBO TAB ========== -->
+    <div id="tab-combo" class="tab-content">
+      <div class="card">
+        <div class="card-title">🍱 Create Combo Offer</div>
+        <div class="form-group">
+          <label class="form-label">Combo Name</label>
+          <input id="comboName" class="form-input" placeholder="e.g. Family Feast Combo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Combo Description</label>
+          <input id="comboDesc" class="form-input" placeholder="e.g. 2 Biryani + 2 Drinks + 1 Dessert">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Special Combo Price (₹)</label>
+            <input id="comboPrice" type="number" class="form-input" placeholder="e.g. 499">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Banner Image URL (optional)</label>
+            <input id="comboImage" class="form-input" placeholder="https://...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input id="comboStart" type="datetime-local" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input id="comboEnd" type="datetime-local" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Combo Items</label>
+          <div id="comboItemsGrid" class="items-grid"></div>
+          <div id="comboSelectedChips" class="selected-items-list"></div>
+        </div>
+        <div id="comboTotalInfo" style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;"></div>
+        <button class="btn btn-primary btn-block" onclick="createCombo()">🍱 Create Combo Offer</button>
+      </div>
+    </div>
+
+    <!-- ========== BOGO TAB ========== -->
+    <div id="tab-bogo" class="tab-content">
+      <div class="card">
+        <div class="card-title">🎁 Buy 1 Get 1 Free</div>
+        <div class="form-group">
+          <label class="form-label">Offer Title</label>
+          <input id="bogoTitle" class="form-input" placeholder="e.g. BOGO on Pizzas!">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input id="bogoStart" type="datetime-local" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input id="bogoEnd" type="datetime-local" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select BOGO Items</label>
+          <div id="bogoItemsGrid" class="items-grid"></div>
+          <div id="bogoSelectedChips" class="selected-items-list"></div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="createBogo()">🎁 Create BOGO Offer</button>
+      </div>
+    </div>
+
+    <!-- ========== HAPPY HOUR TAB ========== -->
+    <div id="tab-happy" class="tab-content">
+      <div class="card">
+        <div class="card-title">⏰ Happy Hour</div>
+        <div class="form-group">
+          <label class="form-label">Offer Title</label>
+          <input id="happyTitle" class="form-input" placeholder="e.g. Happy Hour - 30% OFF Drinks">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Discount %</label>
+            <input id="happyPercent" type="number" class="form-input" placeholder="e.g. 30" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Banner Text</label>
+            <input id="happyBanner" class="form-input" placeholder="e.g. ⏰ Happy Hour NOW!">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input id="happyStart" type="datetime-local" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input id="happyEnd" type="datetime-local" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Items</label>
+          <div id="happyItemsGrid" class="items-grid"></div>
+          <div id="happySelectedChips" class="selected-items-list"></div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="createHappy()">⏰ Create Happy Hour</button>
+      </div>
+    </div>
+
+    <!-- ========== GEO-FENCE TAB ========== -->
+    <div id="tab-geo" class="tab-content">
+      <div class="card">
+        <div class="card-title">📍 Geo-Fence Settings</div>
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:1rem;">
+          Set your restaurant's location and allowed radius. Customers outside this range won't be able to access the menu.
+        </p>
+        <div id="geoCurrentStatus"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input id="geoLat" type="number" step="any" class="form-input" placeholder="e.g. 19.0760">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input id="geoLng" type="number" step="any" class="form-input" placeholder="e.g. 72.8777">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Allowed Radius (km)</label>
+            <input id="geoRadius" type="number" step="0.1" class="form-input" placeholder="e.g. 0.5" min="0.05" max="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Skip Location Check?</label>
+            <select id="geoSkip" class="form-input">
+              <option value="false">No - Require location</option>
+              <option value="true">Yes - Allow all users</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveGeoSettings()">💾 Save Settings</button>
+          <button class="btn btn-outline" onclick="detectMyLocation()">📍 Use My Current Location</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== ALL OFFERS TAB ========== -->
+    <div id="tab-active" class="tab-content">
+      <div class="card">
+        <div class="card-title">📋 All Offers & Promotions</div>
+        <div id="allOffersContainer">
+          <p style="color:var(--text-muted);font-size:0.85rem;">Loading offers...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ===== Firebase =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+  authDomain: "menuswift-fe577.firebaseapp.com",
+  projectId: "menuswift-fe577",
+  databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const restaurantId = localStorage.getItem("restaurantId") || "1";
+
+let allItems = {};
+let selections = { disc: [], combo: [], bogo: [], happy: [] };
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    loadGeoSettings(); 
+        console.log("Owner logged in, dashboard and Geo-settings loaded successfully");
+    // Agar login nahi hai, toh login page par bhej do
+    window.location.href = "admin-login.html"; 
+  } else {
+    console.log("Admin logged in on Offers page: ", user.uid);
+  }
+});
+
+// ===== Toast =====
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = '<span>' + ({success:'✅',error:'❌',info:'ℹ️'}[type]||'ℹ️') + '</span><span>' + msg + '</span>';
+  c.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 50);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// ===== Tabs =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  // Highlight correct tab button
+  const tabs = ['discount','combo','bogo','happy','geo','active'];
+  const idx = tabs.indexOf(tab);
+  if (idx >= 0) document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  if (tab === 'active') loadAllOffers();
+  if (tab === 'geo') loadGeoSettings();
+}
+
+// ===== Load Items =====
+function loadItems() {
+  db.ref('restaurants/' + restaurantId + '/menuItems').on('value', snap => {
+    allItems = snap.val() || {};
+    renderItemGrids();
+  });
+}
+
+function renderItemGrids() {
+  const grids = [
+    { el: 'discItemsGrid', key: 'disc', chips: 'discSelectedChips' },
+    { el: 'comboItemsGrid', key: 'combo', chips: 'comboSelectedChips' },
+    { el: 'bogoItemsGrid', key: 'bogo', chips: 'bogoSelectedChips' },
+    { el: 'happyItemsGrid', key: 'happy', chips: 'happySelectedChips' }
+  ];
+  grids.forEach(g => {
+    const container = document.getElementById(g.el);
+    if (!container) return;
+    container.innerHTML = '';
+    Object.entries(allItems).forEach(([id, item]) => {
+      const card = document.createElement('div');
+      card.className = 'item-card' + (selections[g.key].includes(id) ? ' selected' : '');
+      card.onclick = () => toggleSelection(g.key, id, g.chips);
+      const price = item.offerApplied ? item.offerPrice : item.price;
+      card.innerHTML =
+        '<div class="check-icon">✓</div>' +
+        '<div class="item-name">' + (item.name||'Unnamed') + '</div>' +
+        '<div class="item-price">₹' + (price||0) + '</div>' +
+        (item.offerApplied ? '<div class="offer-active-tag">🔥 Offer Active</div>' : '');
+      container.appendChild(card);
+    });
+  });
+}
+
+function toggleSelection(key, id, chipsId) {
+  const idx = selections[key].indexOf(id);
+  if (idx >= 0) selections[key].splice(idx, 1);
+  else selections[key].push(id);
+  renderItemGrids();
+  renderChips(key, chipsId);
+  if (key === 'combo') updateComboTotal();
+}
+
+function renderChips(key, chipsId) {
+  const el = document.getElementById(chipsId);
+  if (!el) return;
+  el.innerHTML = '';
+  selections[key].forEach(id => {
+    const item = allItems[id];
+    if (!item) return;
+    const chip = document.createElement('span');
+    chip.className = 'selected-chip';
+    chip.innerHTML = (item.name||id) + ' <span class="remove-chip" onclick="event.stopPropagation();toggleSelection(\'' + key + '\',\'' + id + '\',\'' + chipsId + '\')">×</span>';
+    el.appendChild(chip);
+  });
+}
+
+function updateComboTotal() {
+  const el = document.getElementById('comboTotalInfo');
+  if (!el) return;
+  if (selections.combo.length === 0) { el.textContent = ''; return; }
+  let total = 0;
+  selections.combo.forEach(id => {
+    const item = allItems[id];
+    if (item) total += parseFloat(item.price || 0);
+  });
+  const comboPrice = document.getElementById('comboPrice').value;
+  el.innerHTML = 'Original total: <b>₹' + total + '</b>' + (comboPrice ? ' → Combo price: <b style="color:var(--success)">₹' + comboPrice + '</b> (Save ₹' + (total - Number(comboPrice)) + ')' : '');
+}
+
+// ===== Create Discount =====
+function createDiscount() {
+  const title = document.getElementById('discTitle').value.trim();
+  const discount = Number(document.getElementById('discPercent').value);
+  const banner = document.getElementById('discBanner').value.trim();
+  const start = new Date(document.getElementById('discStart').value).getTime();
+  const end = new Date(document.getElementById('discEnd').value).getTime();
+  if (!title || !discount || selections.disc.length === 0 || !start || !end) {
+    showToast('Fill all fields & select items', 'error'); return;
+  }
+  const offerData = {
+    type: 'discount', title, discount, bannerText: banner || title,
+    startTime: start, endTime: end, items: selections.disc, createdAt: Date.now()
+  };
+  db.ref('restaurants/' + restaurantId + '/offers').push().set(offerData).then(() => {
+    showToast('Discount offer created!', 'success');
+    document.getElementById('discTitle').value = '';
+    document.getElementById('discPercent').value = '';
+    document.getElementById('discBanner').value = '';
+    document.getElementById('discStart').value = '';
+    document.getElementById('discEnd').value = '';
+    selections.disc = [];
+    renderItemGrids();
+    document.getElementById('discSelectedChips').innerHTML = '';
+  });
+}
+
+// ===== Create Combo =====
+function createCombo() {
+  const name = document.getElementById('comboName').value.trim();
+  const desc = document.getElementById('comboDesc').value.trim();
+  const price = Number(document.getElementById('comboPrice').value);
+  const image = document.getElementById('comboImage').value.trim();
+  const start = new Date(document.getElementById('comboStart').value).getTime();
+  const end = new Date(document.getElementById('comboEnd').value).getTime();
+  if (!name || !price || selections.combo.length < 2 || !start || !end) {
+    showToast('Fill all fields & select at least 2 items', 'error'); return;
+  }
+  let originalTotal = 0;
+  const itemNames = [];
+  selections.combo.forEach(id => {
+    const item = allItems[id];
+    if (item) { originalTotal += parseFloat(item.price||0); itemNames.push(item.name); }
+  });
+  const offerData = {
+    type: 'combo', title: name, description: desc, comboPrice: price,
+    originalTotal, bannerText: '🍱 ' + name + ' - Just ₹' + price + '!',
+    imageUrl: image || '', items: selections.combo, itemNames,
+    startTime: start, endTime: end, createdAt: Date.now()
+  };
+  db.ref('restaurants/' + restaurantId + '/offers').push().set(offerData).then(() => {
+    showToast('Combo offer created!', 'success');
+    document.getElementById('comboName').value = '';
+    document.getElementById('comboDesc').value = '';
+    document.getElementById('comboPrice').value = '';
+    document.getElementById('comboImage').value = '';
+    document.getElementById('comboStart').value = '';
+    document.getElementById('comboEnd').value = '';
+    document.getElementById('comboTotalInfo').innerHTML = '';
+    selections.combo = [];
+    renderItemGrids();
+    document.getElementById('comboSelectedChips').innerHTML = '';
+  });
+}
+
+// ===== Create BOGO =====
+function createBogo() {
+  const title = document.getElementById('bogoTitle').value.trim();
+  const start = new Date(document.getElementById('bogoStart').value).getTime();
+  const end = new Date(document.getElementById('bogoEnd').value).getTime();
+  if (!title || selections.bogo.length === 0 || !start || !end) {
+    showToast('Fill all fields & select items', 'error'); return;
+  }
+  const itemNames = selections.bogo.map(id => allItems[id]?.name || id);
+  const offerData = {
+    type: 'bogo', title, bannerText: '🎁 ' + title,
+    description: 'Buy 1 Get 1 Free on: ' + itemNames.join(', '),
+    items: selections.bogo, itemNames,
+    startTime: start, endTime: end, createdAt: Date.now()
+  };
+  db.ref('restaurants/' + restaurantId + '/offers').push().set(offerData).then(() => {
+    showToast('BOGO offer created!', 'success');
+    document.getElementById('bogoTitle').value = '';
+    document.getElementById('bogoStart').value = '';
+    document.getElementById('bogoEnd').value = '';
+    selections.bogo = [];
+    renderItemGrids();
+    document.getElementById('bogoSelectedChips').innerHTML = '';
+  });
+}
+
+// ===== Create Happy Hour =====
+function createHappy() {
+  const title = document.getElementById('happyTitle').value.trim();
+  const discount = Number(document.getElementById('happyPercent').value);
+  const banner = document.getElementById('happyBanner').value.trim();
+  const start = new Date(document.getElementById('happyStart').value).getTime();
+  const end = new Date(document.getElementById('happyEnd').value).getTime();
+  if (!title || !discount || selections.happy.length === 0 || !start || !end) {
+    showToast('Fill all fields & select items', 'error'); return;
+  }
+  const offerData = {
+    type: 'happy_hour', title, discount,
+    bannerText: banner || '⏰ ' + title,
+    items: selections.happy,
+    startTime: start, endTime: end, createdAt: Date.now()
+  };
+  db.ref('restaurants/' + restaurantId + '/offers').push().set(offerData).then(() => {
+    showToast('Happy Hour created!', 'success');
+    document.getElementById('happyTitle').value = '';
+    document.getElementById('happyPercent').value = '';
+    document.getElementById('happyBanner').value = '';
+    document.getElementById('happyStart').value = '';
+    document.getElementById('happyEnd').value = '';
+    selections.happy = [];
+    renderItemGrids();
+    document.getElementById('happySelectedChips').innerHTML = '';
+  });
+}
+
+// ===== Auto Apply/Remove Engine =====
+function runOfferEngine() {
+  db.ref('restaurants/' + restaurantId + '/offers').once('value').then(snap => {
+    const now = Date.now();
+    snap.forEach(child => {
+      const offer = child.val();
+      const isActive = now >= offer.startTime && now <= offer.endTime;
+      if (offer.type === 'discount' || offer.type === 'happy_hour') {
+        if (isActive && offer.items) {
+          offer.items.forEach(itemId => {
+            const item = allItems[itemId];
+            if (!item) return;
+            const newPrice = Math.round(item.price - (item.price * offer.discount / 100));
+            db.ref('restaurants/' + restaurantId + '/menuItems/' + itemId).update({
+              offerPrice: newPrice, offerApplied: true, offerDiscount: offer.discount, offerType: offer.type
+            });
+          });
+        } else if (!isActive && offer.items) {
+          offer.items.forEach(itemId => {
+            db.ref('restaurants/' + restaurantId + '/menuItems/' + itemId).update({
+              offerApplied: false, offerPrice: null, offerDiscount: null, offerType: null
+            });
+          });
+        }
+      }
+    });
+  });
+}
+
+// ===== Load All Offers =====
+function loadAllOffers() {
+  const container = document.getElementById('allOffersContainer');
+  db.ref('restaurants/' + restaurantId + '/offers').once('value').then(snap => {
+    container.innerHTML = '';
+    if (!snap.exists()) {
+      container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No offers yet. Create one!</p>';
+      return;
+    }
+    const now = Date.now();
+    const offers = [];
+    snap.forEach(child => offers.push({ id: child.key, ...child.val() }));
+    offers.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+
+    offers.forEach(offer => {
+      const isActive = now >= offer.startTime && now <= offer.endTime;
+      const isUpcoming = now < offer.startTime;
+      const typeLabels = { discount:'Discount', combo:'Combo', bogo:'BOGO', happy_hour:'Happy Hour' };
+      const badgeClasses = { discount:'badge-discount', combo:'badge-combo', bogo:'badge-bogo', happy_hour:'badge-happy' };
+
+      let detailHTML = '';
+      if (offer.type === 'discount' || offer.type === 'happy_hour') {
+        detailHTML = '<b>' + offer.discount + '% OFF</b> on ' + (offer.items?.length||0) + ' item(s)';
+      } else if (offer.type === 'combo') {
+        detailHTML = 'Combo Price: <b>₹' + offer.comboPrice + '</b> (was ₹' + (offer.originalTotal||'--') + ') • ' + (offer.itemNames?.join(', ')||'');
+      } else if (offer.type === 'bogo') {
+        detailHTML = 'Buy 1 Get 1 Free • ' + (offer.itemNames?.join(', ')||'');
+      }
+
+      const div = document.createElement('div');
+      div.className = 'offer-item';
+      div.innerHTML =
+        '<div class="offer-header">' +
+          '<div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">' +
+            '<span class="offer-title-text">' + offer.title + '</span>' +
+            '<span class="offer-type-badge ' + (badgeClasses[offer.type]||'badge-discount') + '">' + (typeLabels[offer.type]||offer.type) + '</span>' +
+          '</div>' +
+          '<span class="status-badge ' + (isActive ? 'status-active' : (isUpcoming ? 'status-scheduled' : 'status-inactive')) + '">' +
+            (isActive ? '🟢 Active' : (isUpcoming ? '🟡 Scheduled' : '⚫ Expired')) +
+          '</span>' +
+        '</div>' +
+        '<div class="offer-meta">' + detailHTML + '</div>' +
+        '<div class="offer-meta">📅 ' + new Date(offer.startTime).toLocaleString() + ' → ' + new Date(offer.endTime).toLocaleString() + '</div>' +
+        '<div class="offer-actions">' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteOffer(\'' + offer.id + '\')">🗑 Delete</button>' +
+        '</div>';
+      container.appendChild(div);
+    });
+  });
+}
+
+function deleteOffer(id) {
+  if (!confirm('Delete this offer?')) return;
+  // First remove offer effects from items
+  db.ref('restaurants/' + restaurantId + '/offers/' + id).once('value').then(snap => {
+    const offer = snap.val();
+    if (offer && offer.items && (offer.type === 'discount' || offer.type === 'happy_hour')) {
+      offer.items.forEach(itemId => {
+        db.ref('restaurants/' + restaurantId + '/menuItems/' + itemId).update({
+          offerApplied: false, offerPrice: null, offerDiscount: null, offerType: null
+        });
+      });
+    }
+    return db.ref('restaurants/' + restaurantId + '/offers/' + id).remove();
+  }).then(() => {
+    showToast('Offer deleted', 'success');
+    loadAllOffers();
+  });
+}
+
+// ===== Geo-Fence =====
+function loadGeoSettings() {
+  db.ref('restaurants/' + restaurantId).once('value').then(snap => {
+    const data = snap.val() || {};
+    document.getElementById('geoLat').value = data.latitude || '';
+    document.getElementById('geoLng').value = data.longitude || '';
+    document.getElementById('geoRadius').value = data.allowedRadius || '';
+    document.getElementById('geoSkip').value = data.skipLocationVerification ? 'true' : 'false';
+
+    const statusEl = document.getElementById('geoCurrentStatus');
+    if (data.latitude && data.longitude) {
+      statusEl.innerHTML =
+        '<div class="geo-status">' +
+          '<div class="status-dot active"></div>' +
+          '<div class="geo-info">' +
+            '<div class="geo-label">Geo-fence Active</div>' +
+            '<div class="geo-detail">Lat: ' + data.latitude + ', Lng: ' + data.longitude + ' • Radius: ' + (data.allowedRadius||1) + ' km' +
+            (data.skipLocationVerification ? ' • <b>Location check disabled</b>' : '') + '</div>' +
+          '</div>' +
+        '</div>';
+    } else {
+      statusEl.innerHTML =
+        '<div class="geo-status">' +
+          '<div class="status-dot inactive"></div>' +
+          '<div class="geo-info">' +
+            '<div class="geo-label">Not Configured</div>' +
+            '<div class="geo-detail">Set your restaurant location to enable geo-fencing</div>' +
+          '</div>' +
+        '</div>';
+    }
+  });
+}
+
+function saveGeoSettings() {
+  const lat = document.getElementById('geoLat').value;
+  const lng = document.getElementById('geoLng').value;
+  const radius = document.getElementById('geoRadius').value;
+  const skip = document.getElementById('geoSkip').value === 'true';
+  if (!lat || !lng) { showToast('Enter latitude and longitude', 'error'); return; }
+  db.ref('restaurants/' + restaurantId).update({
+    latitude: lat, longitude: lng,
+    allowedRadius: Number(radius) || 1,
+    skipLocationVerification: skip
+  }).then(() => {
+    showToast('Geo-fence settings saved!', 'success');
+    loadGeoSettings();
+  });
+}
+
+function detectMyLocation() {
+  if (!navigator.geolocation) { 
+    showToast('Geolocation not supported by this browser', 'error'); 
+    return; 
+  }
+  
+  showToast('Detecting location...', 'info');
+  
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      document.getElementById('geoLat').value = pos.coords.latitude.toFixed(6);
+      document.getElementById('geoLng').value = pos.coords.longitude.toFixed(6);
+      showToast('Location detected!', 'success');
+    }, 
+    (err) => {
+      // ✅ Error details check karne ke liye:
+      console.error("Geo Error Code:", err.code);
+      console.error("Geo Error Message:", err.message);
+      showToast('Could not detect location: ' + err.message, 'error');
+    }, 
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  loadItems();
+  // Run offer engine every 30 seconds
+  runOfferEngine();
+  setInterval(runOfferEngine, 30000);
+  // Listen for combo price changes
+  const cp = document.getElementById('comboPrice');
+  if (cp) cp.addEventListener('input', updateComboTotal);
+});
+</script>
+</body>
+</html>

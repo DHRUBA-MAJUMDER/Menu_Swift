@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Gateway</title>
+     <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .qr-code {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        #qrCanvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .upi-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .upi-id {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .copy-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            background: #d4edda;
+            color: #155724;
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #c3e6cb;
+        }
+
+        .success-message h2 {
+            margin-bottom: 20px;
+            color: #155724;
+            font-size: 1.8rem;
+        }
+
+        .success-message p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #c3e6cb;
+            border-top: 3px solid #155724;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .admin-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #dc3545;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .admin-link:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .upi-section {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .admin-link {
+                position: static;
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Payment Page -->
+    <div class="container" id="paymentPage">
+        <h1>💳 Make Payment</h1>
+        
+        <!-- QR Code Section -->
+        <div class="qr-section">
+            <div class="qr-code">
+                <canvas id="qrCanvas" width="200" height="200"></canvas>
+            </div>
+            <br>
+            <button class="download-btn" onclick="downloadQR()">📱 Download QR Code</button>
+        </div>
+
+        <!-- UPI ID Section -->
+        <div class="upi-section">
+            <div>
+                <strong>UPI ID:</strong><br>
+                <span class="upi-id">paytmqr16rldimnbx@paytm</span>
+            </div>
+            <button class="copy-btn" onclick="copyUPI()">📋 Copy</button>
+        </div>
+
+        <!-- Payment Form -->
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="customerNumber">📱 Customer Phone Number</label>
+                <input type="tel" id="customerNumber" placeholder="Enter your phone number" required pattern="[0-9]{10}">
+            </div>
+
+            <div class="form-group">
+                <label for="transactionId">🔖 Transaction ID</label>
+                <input type="text" id="transactionId" placeholder="Enter transaction ID from payment app" required>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Submit Payment Details</button>
+        </form>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <h2>✅ Payment Submitted Successfully!</h2>
+            <p>Your payment details have been received. Our team will verify your transaction within 30 minutes.</p>
+            <div style="margin: 20px 0;">
+                <div class="loading"></div>
+                <span>Verifying your payment...</span>
+            </div>
+            <p><strong>Transaction ID:</strong> <span id="displayTransactionId"></span></p>
+            <button class="back-btn" onclick="goBack()">Make Another Payment</button>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced QR Code generation function
+        function generateQRCode() {
+            const canvas = document.getElementById('qrCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 200, 200);
+            
+            // Set white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Generate QR pattern
+            drawEnhancedQRPattern(ctx);
+        }
+
+        function drawEnhancedQRPattern(ctx) {
+            const size = 200;
+            const modules = 25; // 25x25 grid
+            const moduleSize = size / modules;
+            
+            ctx.fillStyle = '#000000';
+            
+            // Create a more realistic QR pattern
+            const pattern = generateQRMatrix(modules);
+            
+            for (let row = 0; row < modules; row++) {
+                for (let col = 0; col < modules; col++) {
+                    if (pattern[row][col]) {
+                        ctx.fillRect(
+                            col * moduleSize, 
+                            row * moduleSize, 
+                            moduleSize - 0.5, 
+                            moduleSize - 0.5
+                        );
+                    }
+                }
+            }
+            
+            // Add finder patterns (corner squares)
+            drawFinderPattern(ctx, 0, 0, moduleSize);
+            drawFinderPattern(ctx, 18 * moduleSize, 0, moduleSize);
+            drawFinderPattern(ctx, 0, 18 * moduleSize, moduleSize);
+            
+            // Add timing patterns
+            drawTimingPatterns(ctx, moduleSize, modules);
+        }
+        
+        function generateQRMatrix(size) {
+            const matrix = Array(size).fill().map(() => Array(size).fill(false));
+            
+            // Add some random pattern that looks like QR data
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    // Skip finder pattern areas
+                    if ((i < 9 && j < 9) || (i < 9 && j > size - 9) || (i > size - 9 && j < 9)) {
+                        continue;
+                    }
+                    
+                    // Create a pseudo-random pattern based on position
+                    const hash = (i * 31 + j * 17) % 100;
+                    matrix[i][j] = hash < 45; // ~45% fill rate
+                }
+            }
+            
+            return matrix;
+        }
+        
+        function drawFinderPattern(ctx, x, y, moduleSize) {
+            // Outer 7x7 square
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x, y, 7 * moduleSize, 7 * moduleSize);
+            
+            // Inner 5x5 white square
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x + moduleSize, y + moduleSize, 5 * moduleSize, 5 * moduleSize);
+            
+            // Center 3x3 black square
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + 2 * moduleSize, y + 2 * moduleSize, 3 * moduleSize, 3 * moduleSize);
+        }
+        
+        function drawTimingPatterns(ctx, moduleSize, modules) {
+            ctx.fillStyle = '#000000';
+            
+            // Horizontal timing pattern
+            for (let i = 8; i < modules - 8; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(i * moduleSize, 6 * moduleSize, moduleSize, moduleSize);
+                }
+            }
+            
+            // Vertical timing pattern
+            for (let i = 8; i < modules - 8; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(6 * moduleSize, i * moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = 'payment-qr-code.png';
+            link.href = canvas.toDataURL();
+            link.click();
+            showNotification('QR Code downloaded successfully!', 'success');
+        }
+
+        function copyUPI() {
+            const upiId = 'paytmqr16rldimnbx@paytm';
+            navigator.clipboard.writeText(upiId).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#007bff';
+                }, 2000);
+                showNotification('UPI ID copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = upiId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('UPI ID copied to clipboard!', 'success');
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Handle form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const customerNumber = document.getElementById('customerNumber').value.trim();
+            const transactionId = document.getElementById('transactionId').value.trim();
+            
+            // Validate phone number
+            if (!/^[0-9]{10}$/.test(customerNumber)) {
+                showNotification('Please enter a valid 10-digit phone number', 'error');
+                return;
+            }
+            
+            if (customerNumber && transactionId) {
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+                
+                // Save payment data
+                const payment = {
+                    id: Date.now(),
+                    customerNumber: customerNumber,
+                    transactionId: transactionId,
+                    status: 'pending',
+                    timestamp: new Date().toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    })
+                };
+                
+                setTimeout(() => {
+                    savePayment(payment);
+                    
+                    // Show success message immediately
+                    document.getElementById('displayTransactionId').textContent = transactionId;
+                    showSuccessMessage();
+                    
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Payment Details';
+                }, 800);
+            }
+        });
+        
+        function showSuccessMessage() {
+            document.getElementById('paymentForm').style.display = 'none';
+            document.querySelector('.qr-section').style.display = 'none';
+            document.querySelector('.upi-section').style.display = 'none';
+            document.querySelector('h1').textContent = '✅ Payment Submitted!';
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        function goBack() {
+            document.querySelector('h1').textContent = '💳 Make Payment';
+            document.querySelector('.qr-section').style.display = 'block';
+            document.querySelector('.upi-section').style.display = 'block';
+            document.getElementById('paymentForm').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('paymentForm').reset();
+        }
+
+        // Local Storage Functions
+        function savePayment(payment) {
+            let payments = JSON.parse(localStorage.getItem('payments')) || [];
+            payments.unshift(payment); // Add to beginning of array
+            localStorage.setItem('payments', JSON.stringify(payments));
+        }
+
+        // Initialize page
+        window.addEventListener('load', function() {
+            generateQRCode();
+        });
+
+        // Add some validation styling
+        document.getElementById('customerNumber').addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (!/^[0-9]*$/.test(value)) {
+                e.target.value = value.replace(/[^0-9]/g, '');
+            }
+            if (value.length > 10) {
+                e.target.value = value.slice(0, 10);
+            }
+        });
+    </script>
+</body>
+</html>

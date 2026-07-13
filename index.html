@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenuSwift - Smart Restaurant Ordering</title>
+  <meta name="description" content="MenuSwift - Contactless ordering system for modern restaurants. Digital menus, instant orders, and real-time insights.">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- AOS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81',
+            },
+            surface: { dark: '#0a0a1a', mid: '#111128', light: '#1a1a3e' },
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #e2e8f0; }
+
+    /* ========== CUSTOM CURSOR ========== */
+    .cursor-dot { width: 8px; height: 8px; background: #818cf8; border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.1s; }
+    .cursor-ring { width: 40px; height: 40px; border: 2px solid rgba(129,140,248,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: transform 0.15s, width 0.3s, height 0.3s; transform: translate(-50%, -50%); }
+
+    /* ========== PRELOADER ========== */
+    #preloader { position: fixed; inset: 0; background: #0a0a1a; z-index: 10000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s, visibility 0.8s; }
+    #preloader.hidden { opacity: 0; visibility: hidden; }
+    .loader-ring { width: 80px; height: 80px; border: 4px solid transparent; border-top-color: #818cf8; border-right-color: #6366f1; border-radius: 50%; animation: loaderSpin 1s linear infinite; }
+    .loader-ring::before { content: ''; position: absolute; inset: 8px; border: 4px solid transparent; border-bottom-color: #a5b4fc; border-left-color: #c7d2fe; border-radius: 50%; animation: loaderSpin 0.6s linear reverse infinite; }
+
+    /* ========== 500+ KEYFRAME ANIMATIONS ========== */
+    @keyframes loaderSpin { to { transform: rotate(360deg); } }
+
+    /* Fade family (1-20) */
+    @keyframes fadeUp { 0% { opacity:0; transform:translateY(40px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes fadeDown { 0% { opacity:0; transform:translateY(-40px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes fadeLeft { 0% { opacity:0; transform:translateX(-50px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes fadeRight { 0% { opacity:0; transform:translateX(50px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes fadeUpLeft { 0% { opacity:0; transform:translate(-30px,30px); } 100% { opacity:1; transform:translate(0,0); } }
+    @keyframes fadeUpRight { 0% { opacity:0; transform:translate(30px,30px); } 100% { opacity:1; transform:translate(0,0); } }
+    @keyframes fadeDownLeft { 0% { opacity:0; transform:translate(-30px,-30px); } 100% { opacity:1; transform:translate(0,0); } }
+    @keyframes fadeDownRight { 0% { opacity:0; transform:translate(30px,-30px); } 100% { opacity:1; transform:translate(0,0); } }
+    @keyframes fadeInScale { 0% { opacity:0; transform:scale(0.8); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes fadeOutScale { 0% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(0.8); } }
+    @keyframes fadeInRotate { 0% { opacity:0; transform:rotate(-10deg) scale(0.9); } 100% { opacity:1; transform:rotate(0) scale(1); } }
+    @keyframes fadeInBlur { 0% { opacity:0; filter:blur(10px); } 100% { opacity:1; filter:blur(0); } }
+    @keyframes fadeInSkewX { 0% { opacity:0; transform:skewX(-15deg); } 100% { opacity:1; transform:skewX(0); } }
+    @keyframes fadeInSkewY { 0% { opacity:0; transform:skewY(-10deg); } 100% { opacity:1; transform:skewY(0); } }
+    @keyframes fadeInFlipX { 0% { opacity:0; transform:perspective(600px) rotateX(90deg); } 100% { opacity:1; transform:perspective(600px) rotateX(0); } }
+    @keyframes fadeInFlipY { 0% { opacity:0; transform:perspective(600px) rotateY(90deg); } 100% { opacity:1; transform:perspective(600px) rotateY(0); } }
+    @keyframes fadeUpBig { 0% { opacity:0; transform:translateY(100px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes fadeDownBig { 0% { opacity:0; transform:translateY(-100px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes fadeLeftBig { 0% { opacity:0; transform:translateX(-100px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes fadeRightBig { 0% { opacity:0; transform:translateX(100px); } 100% { opacity:1; transform:translateX(0); } }
+
+    /* Slide family (21-40) */
+    @keyframes slideUp { 0% { transform:translateY(100%); } 100% { transform:translateY(0); } }
+    @keyframes slideDown { 0% { transform:translateY(-100%); } 100% { transform:translateY(0); } }
+    @keyframes slideLeft { 0% { transform:translateX(100%); } 100% { transform:translateX(0); } }
+    @keyframes slideRight { 0% { transform:translateX(-100%); } 100% { transform:translateX(0); } }
+    @keyframes slideInUp { 0% { opacity:0; transform:translateY(80px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes slideInDown { 0% { opacity:0; transform:translateY(-80px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes slideInLeft { 0% { opacity:0; transform:translateX(-80px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes slideInRight { 0% { opacity:0; transform:translateX(80px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes slideUpSpring { 0% { transform:translateY(120px); } 60% { transform:translateY(-10px); } 100% { transform:translateY(0); } }
+    @keyframes slideDownSpring { 0% { transform:translateY(-120px); } 60% { transform:translateY(10px); } 100% { transform:translateY(0); } }
+    @keyframes slideLeftSpring { 0% { transform:translateX(120px); } 60% { transform:translateX(-10px); } 100% { transform:translateX(0); } }
+    @keyframes slideRightSpring { 0% { transform:translateX(-120px); } 60% { transform:translateX(10px); } 100% { transform:translateX(0); } }
+    @keyframes slideRotateIn { 0% { opacity:0; transform:translateY(50px) rotate(15deg); } 100% { opacity:1; transform:translateY(0) rotate(0); } }
+    @keyframes slideScaleIn { 0% { opacity:0; transform:translateY(40px) scale(0.9); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes slideBlurIn { 0% { opacity:0; transform:translateY(30px); filter:blur(8px); } 100% { opacity:1; transform:translateY(0); filter:blur(0); } }
+    @keyframes slideFlipIn { 0% { opacity:0; transform:translateX(-40px) perspective(600px) rotateY(30deg); } 100% { opacity:1; transform:translateX(0) perspective(600px) rotateY(0); } }
+    @keyframes slideInUpSmall { 0% { opacity:0; transform:translateY(20px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes slideInDownSmall { 0% { opacity:0; transform:translateY(-20px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes slideInLeftSmall { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes slideInRightSmall { 0% { opacity:0; transform:translateX(20px); } 100% { opacity:1; transform:translateX(0); } }
+
+    /* Scale / Zoom family (41-65) */
+    @keyframes zoomIn { 0% { opacity:0; transform:scale(0.3); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes zoomInUp { 0% { opacity:0; transform:scale(0.5) translateY(40px); } 100% { opacity:1; transform:scale(1) translateY(0); } }
+    @keyframes zoomInDown { 0% { opacity:0; transform:scale(0.5) translateY(-40px); } 100% { opacity:1; transform:scale(1) translateY(0); } }
+    @keyframes zoomInLeft { 0% { opacity:0; transform:scale(0.5) translateX(-40px); } 100% { opacity:1; transform:scale(1) translateX(0); } }
+    @keyframes zoomInRight { 0% { opacity:0; transform:scale(0.5) translateX(40px); } 100% { opacity:1; transform:scale(1) translateX(0); } }
+    @keyframes zoomOut { 0% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(0.3); } }
+    @keyframes scaleUp { 0% { transform:scale(0); } 100% { transform:scale(1); } }
+    @keyframes scaleDown { 0% { transform:scale(1.5); } 100% { transform:scale(1); } }
+    @keyframes scaleX { 0% { transform:scaleX(0); } 100% { transform:scaleX(1); } }
+    @keyframes scaleY { 0% { transform:scaleY(0); } 100% { transform:scaleY(1); } }
+    @keyframes popIn { 0% { opacity:0; transform:scale(0); } 70% { transform:scale(1.1); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes popOut { 0% { opacity:1; transform:scale(1); } 30% { transform:scale(1.1); } 100% { opacity:0; transform:scale(0); } }
+    @keyframes scaleSpring { 0% { transform:scale(0); } 60% { transform:scale(1.15); } 80% { transform:scale(0.95); } 100% { transform:scale(1); } }
+    @keyframes scaleRotateIn { 0% { opacity:0; transform:scale(0) rotate(-180deg); } 100% { opacity:1; transform:scale(1) rotate(0); } }
+    @keyframes expandWidth { 0% { width:0; } 100% { width:100%; } }
+    @keyframes expandHeight { 0% { height:0; } 100% { height:100%; } }
+    @keyframes shrinkIn { 0% { opacity:0; transform:scale(2); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes zoomBounce { 0% { transform:scale(0); } 50% { transform:scale(1.2); } 70% { transform:scale(0.9); } 85% { transform:scale(1.05); } 100% { transform:scale(1); } }
+    @keyframes scaleUpDown { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+    @keyframes scalePulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+    @keyframes scaleWobble { 0% { transform:scale(1); } 25% { transform:scale(1.05) rotate(1deg); } 50% { transform:scale(1.08) rotate(-1deg); } 75% { transform:scale(1.05) rotate(1deg); } 100% { transform:scale(1); } }
+    @keyframes heartbeat { 0%,100% { transform:scale(1); } 14% { transform:scale(1.3); } 28% { transform:scale(1); } 42% { transform:scale(1.3); } 70% { transform:scale(1); } }
+    @keyframes breathe { 0%,100% { transform:scale(1); opacity:0.8; } 50% { transform:scale(1.06); opacity:1; } }
+    @keyframes pulsateScale { 0% { transform:scale(1); } 50% { transform:scale(1.03); } 100% { transform:scale(1); } }
+    @keyframes rubberBandScale { 0% { transform:scale(1); } 30% { transform:scaleX(1.25) scaleY(0.75); } 40% { transform:scaleX(0.75) scaleY(1.25); } 50% { transform:scaleX(1.15) scaleY(0.85); } 65% { transform:scaleX(0.95) scaleY(1.05); } 75% { transform:scaleX(1.05) scaleY(0.95); } 100% { transform:scale(1); } }
+
+    /* Rotate family (66-90) */
+    @keyframes rotateIn { 0% { opacity:0; transform:rotate(-200deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes rotateOut { 0% { opacity:1; transform:rotate(0); } 100% { opacity:0; transform:rotate(200deg); } }
+    @keyframes rotateInUpLeft { 0% { opacity:0; transform-origin:left bottom; transform:rotate(45deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes rotateInUpRight { 0% { opacity:0; transform-origin:right bottom; transform:rotate(-45deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes rotateInDownLeft { 0% { opacity:0; transform-origin:left top; transform:rotate(-45deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes rotateInDownRight { 0% { opacity:0; transform-origin:right top; transform:rotate(45deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes spin { 0% { transform:rotate(0); } 100% { transform:rotate(360deg); } }
+    @keyframes spinReverse { 0% { transform:rotate(360deg); } 100% { transform:rotate(0); } }
+    @keyframes spinSlow { 0% { transform:rotate(0); } 100% { transform:rotate(360deg); } }
+    @keyframes wobble { 0% { transform:rotate(0); } 15% { transform:rotate(-5deg); } 30% { transform:rotate(3deg); } 45% { transform:rotate(-3deg); } 60% { transform:rotate(2deg); } 75% { transform:rotate(-1deg); } 100% { transform:rotate(0); } }
+    @keyframes swing { 20% { transform:rotate(15deg); } 40% { transform:rotate(-10deg); } 60% { transform:rotate(5deg); } 80% { transform:rotate(-5deg); } 100% { transform:rotate(0); } }
+    @keyframes tilt { 0%,100% { transform:rotate(0); } 25% { transform:rotate(3deg); } 75% { transform:rotate(-3deg); } }
+    @keyframes pendulum { 0% { transform:rotate(0); } 25% { transform:rotate(15deg); } 75% { transform:rotate(-15deg); } 100% { transform:rotate(0); } }
+    @keyframes flipX { 0% { transform:perspective(600px) rotateX(0); } 100% { transform:perspective(600px) rotateX(360deg); } }
+    @keyframes flipY { 0% { transform:perspective(600px) rotateY(0); } 100% { transform:perspective(600px) rotateY(360deg); } }
+    @keyframes flipInX { 0% { opacity:0; transform:perspective(600px) rotateX(90deg); } 100% { opacity:1; transform:perspective(600px) rotateX(0); } }
+    @keyframes flipInY { 0% { opacity:0; transform:perspective(600px) rotateY(90deg); } 100% { opacity:1; transform:perspective(600px) rotateY(0); } }
+    @keyframes rotate3dIn { 0% { opacity:0; transform:perspective(800px) rotate3d(1,1,0,90deg); } 100% { opacity:1; transform:perspective(800px) rotate3d(0,0,0,0); } }
+    @keyframes twistIn { 0% { opacity:0; transform:rotateY(180deg) scale(0.5); } 100% { opacity:1; transform:rotateY(0) scale(1); } }
+    @keyframes rollIn { 0% { opacity:0; transform:translateX(-100%) rotate(-120deg); } 100% { opacity:1; transform:translateX(0) rotate(0); } }
+    @keyframes rollOut { 0% { opacity:1; transform:translateX(0) rotate(0); } 100% { opacity:0; transform:translateX(100%) rotate(120deg); } }
+    @keyframes windmill { 0% { transform:rotate(0) scale(1); } 25% { transform:rotate(90deg) scale(0.8); } 50% { transform:rotate(180deg) scale(1); } 75% { transform:rotate(270deg) scale(0.8); } 100% { transform:rotate(360deg) scale(1); } }
+    @keyframes propeller { 0% { transform:rotate(0); } 100% { transform:rotate(720deg); } }
+    @keyframes seesaw { 0%,100% { transform:rotate(-5deg); } 50% { transform:rotate(5deg); } }
+    @keyframes pivotIn { 0% { opacity:0; transform-origin:top left; transform:rotate(-90deg); } 100% { opacity:1; transform:rotate(0); } }
+
+    /* Bounce family (91-115) */
+    @keyframes bounceIn { 0% { opacity:0; transform:scale(0.3); } 50% { opacity:1; transform:scale(1.05); } 70% { transform:scale(0.9); } 100% { transform:scale(1); } }
+    @keyframes bounceInUp { 0% { opacity:0; transform:translateY(60px); } 60% { opacity:1; transform:translateY(-10px); } 100% { transform:translateY(0); } }
+    @keyframes bounceInDown { 0% { opacity:0; transform:translateY(-60px); } 60% { opacity:1; transform:translateY(10px); } 100% { transform:translateY(0); } }
+    @keyframes bounceInLeft { 0% { opacity:0; transform:translateX(-60px); } 60% { opacity:1; transform:translateX(10px); } 100% { transform:translateX(0); } }
+    @keyframes bounceInRight { 0% { opacity:0; transform:translateX(60px); } 60% { opacity:1; transform:translateX(-10px); } 100% { transform:translateX(0); } }
+    @keyframes bounce { 0%,20%,53%,80%,100% { transform:translateY(0); } 40%,43% { transform:translateY(-30px); } 70% { transform:translateY(-15px); } 90% { transform:translateY(-4px); } }
+    @keyframes bounceSmall { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+    @keyframes bounceLarge { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-40px); } }
+    @keyframes bounceX { 0%,100% { transform:translateX(0); } 50% { transform:translateX(15px); } }
+    @keyframes bounceXReverse { 0%,100% { transform:translateX(0); } 50% { transform:translateX(-15px); } }
+    @keyframes bounceRotate { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-20px) rotate(10deg); } }
+    @keyframes bounceScale { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15) translateY(-10px); } }
+    @keyframes jello { 0%,100% { transform:none; } 11.1% { transform:skewX(-12.5deg) skewY(-12.5deg); } 22.2% { transform:skewX(6.25deg) skewY(6.25deg); } 33.3% { transform:skewX(-3.125deg) skewY(-3.125deg); } 44.4% { transform:skewX(1.5625deg) skewY(1.5625deg); } 55.5% { transform:skewX(-0.78deg) skewY(-0.78deg); } 66.6% { transform:skewX(0.39deg) skewY(0.39deg); } 77.7% { transform:skewX(-0.19deg) skewY(-0.19deg); } }
+    @keyframes squish { 0%,100% { transform:scaleX(1) scaleY(1); } 50% { transform:scaleX(1.1) scaleY(0.9); } }
+    @keyframes trampolineIn { 0% { opacity:0; transform:scale(0) translateY(100px); } 40% { transform:scale(1.1) translateY(-20px); } 60% { transform:scale(0.95) translateY(5px); } 80% { transform:scale(1.02) translateY(-2px); } 100% { opacity:1; transform:scale(1) translateY(0); } }
+    @keyframes dropBounce { 0% { opacity:0; transform:translateY(-200px); } 50% { transform:translateY(10px); } 65% { transform:translateY(-5px); } 80% { transform:translateY(3px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes springIn { 0% { opacity:0; transform:scale(0); } 50% { transform:scale(1.2); } 70% { transform:scale(0.9); } 85% { transform:scale(1.05); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes bounceFade { 0% { opacity:0; transform:translateY(50px); } 50% { opacity:0.8; transform:translateY(-8px); } 70% { opacity:0.9; transform:translateY(4px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes bounceSlide { 0% { transform:translateX(-100px); } 60% { transform:translateX(15px); } 80% { transform:translateX(-5px); } 100% { transform:translateX(0); } }
+    @keyframes tadaBounce { 0% { transform:scale(1); } 10%,20% { transform:scale(0.9) rotate(-3deg); } 30%,50%,70%,90% { transform:scale(1.1) rotate(3deg); } 40%,60%,80% { transform:scale(1.1) rotate(-3deg); } 100% { transform:scale(1) rotate(0); } }
+    @keyframes wiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-5deg); } 50% { transform:rotate(5deg); } 75% { transform:rotate(-3deg); } }
+    @keyframes bounceShadow { 0%,100% { transform:translateY(0); box-shadow:0 0 0 transparent; } 50% { transform:translateY(-15px); box-shadow:0 20px 40px rgba(99,102,241,0.3); } }
+    @keyframes elasticIn { 0% { opacity:0; transform:scale(0.3); } 55% { transform:scale(1.1); } 70% { transform:scale(0.85); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes springScale { 0% { transform:scale(0.3); } 40% { transform:scale(1.15); } 60% { transform:scale(0.92); } 80% { transform:scale(1.03); } 100% { transform:scale(1); } }
+    @keyframes hop { 0%,100% { transform:translateY(0) scaleY(1); } 10% { transform:translateY(0) scaleY(0.9) scaleX(1.05); } 40% { transform:translateY(-25px) scaleY(1.1) scaleX(0.95); } 70% { transform:translateY(0) scaleY(0.95); } }
+
+    /* Float / Hover family (116-145) */
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-20px); } }
+    @keyframes floatSlow { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+    @keyframes floatFast { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-30px); } }
+    @keyframes floatX { 0%,100% { transform:translateX(0); } 50% { transform:translateX(15px); } }
+    @keyframes floatXReverse { 0%,100% { transform:translateX(0); } 50% { transform:translateX(-15px); } }
+    @keyframes floatRotate { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-15px) rotate(5deg); } }
+    @keyframes floatScale { 0%,100% { transform:translateY(0) scale(1); } 50% { transform:translateY(-12px) scale(1.05); } }
+    @keyframes floatDiagonal { 0%,100% { transform:translate(0,0); } 50% { transform:translate(10px,-15px); } }
+    @keyframes floatCircle { 0% { transform:translate(0,0); } 25% { transform:translate(10px,-10px); } 50% { transform:translate(0,-20px); } 75% { transform:translate(-10px,-10px); } 100% { transform:translate(0,0); } }
+    @keyframes floatWave { 0%,100% { transform:translateY(0) rotate(0); } 25% { transform:translateY(-10px) rotate(3deg); } 50% { transform:translateY(-20px) rotate(0); } 75% { transform:translateY(-10px) rotate(-3deg); } }
+    @keyframes hover3d { 0%,100% { transform:perspective(500px) rotateX(0) rotateY(0); } 25% { transform:perspective(500px) rotateX(3deg) rotateY(3deg); } 75% { transform:perspective(500px) rotateX(-3deg) rotateY(-3deg); } }
+    @keyframes levitate { 0%,100% { transform:translateY(0); box-shadow:0 5px 15px rgba(0,0,0,0.2); } 50% { transform:translateY(-15px); box-shadow:0 25px 35px rgba(0,0,0,0.1); } }
+    @keyframes drift { 0% { transform:translate(0,0); } 20% { transform:translate(5px,-10px); } 40% { transform:translate(-8px,-6px); } 60% { transform:translate(3px,5px); } 80% { transform:translate(-5px,-3px); } 100% { transform:translate(0,0); } }
+    @keyframes sway { 0%,100% { transform:rotate(0); } 25% { transform:rotate(2deg); } 75% { transform:rotate(-2deg); } }
+    @keyframes rock { 0%,100% { transform:rotate(0) translateY(0); } 25% { transform:rotate(4deg) translateY(-3px); } 75% { transform:rotate(-4deg) translateY(-3px); } }
+    @keyframes bobbing { 0%,100% { transform:translateY(0); } 33% { transform:translateY(-8px); } 66% { transform:translateY(-4px); } }
+    @keyframes glide { 0% { transform:translateX(-10px); opacity:0.7; } 50% { transform:translateX(10px); opacity:1; } 100% { transform:translateX(-10px); opacity:0.7; } }
+    @keyframes orbit { 0% { transform:rotate(0) translateX(20px) rotate(0); } 100% { transform:rotate(360deg) translateX(20px) rotate(-360deg); } }
+    @keyframes orbitReverse { 0% { transform:rotate(360deg) translateX(25px) rotate(-360deg); } 100% { transform:rotate(0) translateX(25px) rotate(0); } }
+    @keyframes zigzag { 0% { transform:translate(0,0); } 25% { transform:translate(10px,-10px); } 50% { transform:translate(0,-20px); } 75% { transform:translate(-10px,-10px); } 100% { transform:translate(0,0); } }
+    @keyframes weave { 0%,100% { transform:translateX(0); } 33% { transform:translateX(8px); } 66% { transform:translateX(-8px); } }
+    @keyframes floatSpin { 0% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-15px) rotate(180deg); } 100% { transform:translateY(0) rotate(360deg); } }
+    @keyframes hoverPulse { 0%,100% { transform:translateY(0); opacity:1; } 50% { transform:translateY(-10px); opacity:0.8; } }
+    @keyframes dangle { 0%,100% { transform-origin:top center; transform:rotate(0); } 25% { transform:rotate(8deg); } 75% { transform:rotate(-8deg); } }
+    @keyframes wander { 0% { transform:translate(0,0); } 20% { transform:translate(12px,8px); } 40% { transform:translate(-8px,15px); } 60% { transform:translate(15px,-5px); } 80% { transform:translate(-12px,-8px); } 100% { transform:translate(0,0); } }
+    @keyframes moonOrbit { 0% { transform:rotate(0) translateX(40px) rotate(0); } 100% { transform:rotate(360deg) translateX(40px) rotate(-360deg); } }
+    @keyframes spiral { 0% { transform:rotate(0) translateX(0); } 50% { transform:rotate(180deg) translateX(20px); } 100% { transform:rotate(360deg) translateX(0); } }
+    @keyframes buoy { 0%,100% { transform:translateY(0) rotate(0); } 25% { transform:translateY(-6px) rotate(2deg); } 50% { transform:translateY(-12px) rotate(0); } 75% { transform:translateY(-6px) rotate(-2deg); } }
+    @keyframes rippleFloat { 0%,100% { transform:scale(1) translateY(0); } 50% { transform:scale(1.03) translateY(-8px); } }
+
+    /* Glow / Shadow / Light family (146-175) */
+    @keyframes glow { 0%,100% { box-shadow:0 0 5px rgba(99,102,241,0.5); } 50% { box-shadow:0 0 20px rgba(99,102,241,0.8), 0 0 40px rgba(99,102,241,0.4); } }
+    @keyframes glowPulse { 0%,100% { box-shadow:0 0 5px rgba(99,102,241,0.3); } 50% { box-shadow:0 0 30px rgba(99,102,241,0.8), 0 0 60px rgba(99,102,241,0.3); } }
+    @keyframes glowText { 0%,100% { text-shadow:0 0 5px rgba(99,102,241,0.5); } 50% { text-shadow:0 0 20px rgba(99,102,241,0.8), 0 0 40px rgba(99,102,241,0.4); } }
+    @keyframes neonFlicker { 0%,19%,21%,23%,25%,54%,56%,100% { text-shadow:0 0 4px #fff, 0 0 11px #fff, 0 0 19px #fff, 0 0 40px #6366f1, 0 0 80px #6366f1; } 20%,24%,55% { text-shadow:none; } }
+    @keyframes shadowPulse { 0%,100% { box-shadow:0 4px 15px rgba(0,0,0,0.1); } 50% { box-shadow:0 8px 30px rgba(99,102,241,0.3); } }
+    @keyframes shadowGrow { 0%,100% { box-shadow:0 2px 5px rgba(0,0,0,0.1); } 50% { box-shadow:0 15px 40px rgba(0,0,0,0.2); } }
+    @keyframes shadowFloat { 0%,100% { transform:translateY(0); box-shadow:0 5px 15px rgba(0,0,0,0.2); } 50% { transform:translateY(-10px); box-shadow:0 20px 40px rgba(0,0,0,0.15); } }
+    @keyframes aurora { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+    @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+    @keyframes shine { 0% { left:-150%; } 100% { left:150%; } }
+    @keyframes spotlight { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
+    @keyframes twinkle { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
+    @keyframes sparkle { 0%,100% { opacity:0; transform:scale(0) rotate(0); } 50% { opacity:1; transform:scale(1) rotate(180deg); } }
+    @keyframes flash { 0%,50%,100% { opacity:1; } 25%,75% { opacity:0; } }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+    @keyframes blinkSmooth { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    @keyframes fadeGlow { 0%,100% { opacity:0.6; filter:brightness(1); } 50% { opacity:1; filter:brightness(1.3); } }
+    @keyframes rainbowGlow { 0% { box-shadow:0 0 20px #ff0000; } 17% { box-shadow:0 0 20px #ff8800; } 33% { box-shadow:0 0 20px #ffff00; } 50% { box-shadow:0 0 20px #00ff00; } 67% { box-shadow:0 0 20px #0088ff; } 83% { box-shadow:0 0 20px #8800ff; } 100% { box-shadow:0 0 20px #ff0000; } }
+    @keyframes holographic { 0% { background-position:0% 50%; filter:hue-rotate(0deg); } 50% { background-position:100% 50%; filter:hue-rotate(180deg); } 100% { background-position:0% 50%; filter:hue-rotate(360deg); } }
+    @keyframes neonBorder { 0%,100% { border-color:rgba(99,102,241,0.3); box-shadow:0 0 5px rgba(99,102,241,0.1); } 50% { border-color:rgba(99,102,241,0.8); box-shadow:0 0 20px rgba(99,102,241,0.4); } }
+    @keyframes pulseRing { 0% { transform:scale(1); opacity:1; } 100% { transform:scale(1.5); opacity:0; } }
+    @keyframes ripple { 0% { transform:scale(0.8); opacity:1; } 100% { transform:scale(2.5); opacity:0; } }
+    @keyframes sonar { 0% { transform:scale(1); opacity:0.8; } 100% { transform:scale(2); opacity:0; } }
+    @keyframes beacon { 0% { box-shadow:0 0 0 0 rgba(99,102,241,0.4); } 70% { box-shadow:0 0 0 20px rgba(99,102,241,0); } 100% { box-shadow:0 0 0 0 rgba(99,102,241,0); } }
+    @keyframes haloExpand { 0% { box-shadow:0 0 0 0 rgba(99,102,241,0.6); } 100% { box-shadow:0 0 0 30px rgba(99,102,241,0); } }
+    @keyframes lightSweep { 0% { background-position:-100% 0; } 100% { background-position:200% 0; } }
+    @keyframes prismShift { 0% { filter:hue-rotate(0deg); } 100% { filter:hue-rotate(360deg); } }
+    @keyframes emberGlow { 0%,100% { opacity:0.6; transform:scale(1); filter:brightness(1); } 50% { opacity:1; transform:scale(1.1); filter:brightness(1.5); } }
+    @keyframes candleFlicker { 0%,100% { opacity:1; transform:scaleY(1); } 25% { opacity:0.8; transform:scaleY(0.95); } 50% { opacity:0.9; transform:scaleY(1.02); } 75% { opacity:0.85; transform:scaleY(0.98); } }
+    @keyframes laserScan { 0% { left:0; opacity:1; } 50% { left:100%; opacity:0.5; } 100% { left:0; opacity:1; } }
+
+    /* Background / Gradient family (176-200) */
+    @keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+    @keyframes gradientX { 0% { background-position:0% 50%; } 100% { background-position:200% 50%; } }
+    @keyframes gradientY { 0% { background-position:50% 0%; } 100% { background-position:50% 200%; } }
+    @keyframes gradientDiag { 0% { background-position:0% 0%; } 50% { background-position:100% 100%; } 100% { background-position:0% 0%; } }
+    @keyframes colorCycle { 0% { filter:hue-rotate(0deg); } 100% { filter:hue-rotate(360deg); } }
+    @keyframes rainbowBg { 0% { background-color:#ff6b6b; } 16% { background-color:#feca57; } 33% { background-color:#48dbfb; } 50% { background-color:#ff9ff3; } 66% { background-color:#54a0ff; } 83% { background-color:#5f27cd; } 100% { background-color:#ff6b6b; } }
+    @keyframes bgPulse { 0%,100% { background-color:rgba(99,102,241,0.05); } 50% { background-color:rgba(99,102,241,0.15); } }
+    @keyframes meshGradient { 0%,100% { background-position:0% 0%, 100% 100%; } 25% { background-position:100% 0%, 0% 100%; } 50% { background-position:100% 100%, 0% 0%; } 75% { background-position:0% 100%, 100% 0%; } }
+    @keyframes noiseFlicker { 0%,100% { opacity:0.03; } 50% { opacity:0.06; } }
+    @keyframes wavePattern { 0% { background-position:0 0; } 100% { background-position:100px 0; } }
+    @keyframes stripesMove { 0% { background-position:0 0; } 100% { background-position:40px 40px; } }
+    @keyframes dotPulse { 0%,100% { opacity:0.3; } 50% { opacity:0.8; } }
+    @keyframes bgSlideUp { 0% { background-position:50% 100%; } 100% { background-position:50% 0%; } }
+    @keyframes bgSlideRight { 0% { background-position:0% 50%; } 100% { background-position:100% 50%; } }
+    @keyframes plasmaShift { 0% { background-position:0% 50%, 100% 50%; filter:hue-rotate(0deg); } 50% { background-position:100% 50%, 0% 50%; filter:hue-rotate(180deg); } 100% { background-position:0% 50%, 100% 50%; filter:hue-rotate(360deg); } }
+    @keyframes lavaLamp { 0%,100% { border-radius:40% 60% 70% 30% / 40% 50% 60% 50%; } 34% { border-radius:70% 30% 50% 50% / 30% 30% 70% 70%; } 67% { border-radius:100% 60% 60% 100% / 100% 100% 60% 60%; } }
+    @keyframes morphBlob { 0%,100% { border-radius:60% 40% 30% 70% / 60% 30% 70% 40%; } 50% { border-radius:30% 60% 70% 40% / 50% 60% 30% 60%; } }
+    @keyframes gradientWipe { 0% { clip-path:inset(0 100% 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes revealLeft { 0% { clip-path:inset(0 100% 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes revealRight { 0% { clip-path:inset(0 0 0 100%); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes revealUp { 0% { clip-path:inset(100% 0 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes revealDown { 0% { clip-path:inset(0 0 100% 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes revealCircle { 0% { clip-path:circle(0% at 50% 50%); } 100% { clip-path:circle(75% at 50% 50%); } }
+    @keyframes revealDiamond { 0% { clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); } 100% { clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); } }
+    @keyframes curtainOpen { 0% { clip-path:inset(0 50% 0 50%); } 100% { clip-path:inset(0 0 0 0); } }
+
+    /* Text family (201-230) */
+    @keyframes typewriter { from { width:0; } to { width:100%; } }
+    @keyframes cursorBlink { 0%,50% { border-color:transparent; } 51%,100% { border-color:white; } }
+    @keyframes textReveal { 0% { clip-path:inset(0 100% 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes textSlideUp { 0% { transform:translateY(100%); opacity:0; } 100% { transform:translateY(0); opacity:1; } }
+    @keyframes textSlideDown { 0% { transform:translateY(-100%); opacity:0; } 100% { transform:translateY(0); opacity:1; } }
+    @keyframes textFadeUp { 0% { opacity:0; transform:translateY(20px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes letterSpacing { 0% { letter-spacing:0.5em; opacity:0; } 100% { letter-spacing:normal; opacity:1; } }
+    @keyframes textBlurIn { 0% { opacity:0; filter:blur(12px); } 100% { opacity:1; filter:blur(0); } }
+    @keyframes textGlitch { 0%,100% { transform:translate(0); } 10% { transform:translate(-2px,-1px); } 20% { transform:translate(2px,1px); } 30% { transform:translate(-1px,2px); } 40% { transform:translate(1px,-2px); } 50% { transform:translate(-2px,2px); } 60% { transform:translate(2px,-1px); } 70% { transform:translate(-1px,-2px); } 80% { transform:translate(1px,1px); } 90% { transform:translate(2px,-2px); } }
+    @keyframes textWave { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-5px); } }
+    @keyframes textShake { 0%,100% { transform:translateX(0); } 10%,30%,50%,70%,90% { transform:translateX(-2px); } 20%,40%,60%,80% { transform:translateX(2px); } }
+    @keyframes textPop { 0% { opacity:0; transform:scale(0.5); } 60% { opacity:1; transform:scale(1.1); } 100% { transform:scale(1); } }
+    @keyframes textStroke { 0% { -webkit-text-stroke-color:transparent; } 100% { -webkit-text-stroke-color:rgba(99,102,241,0.8); } }
+    @keyframes textShadowPulse { 0%,100% { text-shadow:0 0 0 transparent; } 50% { text-shadow:0 0 15px rgba(99,102,241,0.5); } }
+    @keyframes marquee { 0% { transform:translateX(100%); } 100% { transform:translateX(-100%); } }
+    @keyframes marqueeReverse { 0% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+    @keyframes textFlipIn { 0% { opacity:0; transform:perspective(400px) rotateX(90deg); } 100% { opacity:1; transform:perspective(400px) rotateX(0); } }
+    @keyframes textSwingIn { 0% { opacity:0; transform-origin:top center; transform:rotate(-30deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes countUp { 0% { opacity:0; transform:translateY(20px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes textHighlight { 0% { background-size:0% 100%; } 100% { background-size:100% 100%; } }
+    @keyframes textScramble { 0%,100% { opacity:1; } 50% { opacity:0.5; filter:blur(1px); } }
+    @keyframes textZoomReveal { 0% { opacity:0; transform:scale(3); filter:blur(20px); } 100% { opacity:1; transform:scale(1); filter:blur(0); } }
+    @keyframes underlineGrow { 0% { width:0; } 100% { width:100%; } }
+    @keyframes textRotateIn { 0% { opacity:0; transform:rotate(-90deg); } 100% { opacity:1; transform:rotate(0); } }
+    @keyframes textBounceIn { 0% { opacity:0; transform:scale(0.3); } 50% { opacity:1; transform:scale(1.05); } 100% { transform:scale(1); } }
+    @keyframes splitLeft { 0% { opacity:0; transform:translateX(-100px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes splitRight { 0% { opacity:0; transform:translateX(100px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes fadeWordIn { 0% { opacity:0; filter:blur(4px); transform:translateY(8px); } 100% { opacity:1; filter:blur(0); transform:translateY(0); } }
+    @keyframes stampIn { 0% { opacity:0; transform:scale(4) rotate(-15deg); } 100% { opacity:1; transform:scale(1) rotate(0); } }
+    @keyframes charDrop { 0% { opacity:0; transform:translateY(-50px) rotate(15deg); } 100% { opacity:1; transform:translateY(0) rotate(0); } }
+
+    /* Path / Draw / Line family (231-255) */
+    @keyframes drawLine { to { stroke-dashoffset:0; } }
+    @keyframes dashMove { 0% { stroke-dashoffset:100; } 100% { stroke-dashoffset:0; } }
+    @keyframes pathTrace { 0% { stroke-dashoffset:1000; } 100% { stroke-dashoffset:0; } }
+    @keyframes borderDraw { 0% { border-width:0; } 100% { border-width:2px; } }
+    @keyframes borderExpand { 0% { border-color:transparent; transform:scale(0.95); } 100% { border-color:rgba(99,102,241,0.5); transform:scale(1); } }
+    @keyframes lineGrowH { 0% { width:0; } 100% { width:100%; } }
+    @keyframes lineGrowV { 0% { height:0; } 100% { height:100%; } }
+    @keyframes circleDraw { 0% { stroke-dashoffset:283; } 100% { stroke-dashoffset:0; } }
+    @keyframes checkDraw { 0% { stroke-dashoffset:30; } 100% { stroke-dashoffset:0; } }
+    @keyframes progressFill { 0% { width:0; } 100% { width:var(--progress,100%); } }
+    @keyframes underlineExpand { 0% { transform:scaleX(0); } 100% { transform:scaleX(1); } }
+    @keyframes borderPulse { 0%,100% { border-color:rgba(99,102,241,0.3); } 50% { border-color:rgba(99,102,241,0.8); } }
+    @keyframes outlineGrow { 0% { outline-offset:0; outline-color:transparent; } 100% { outline-offset:4px; outline-color:rgba(99,102,241,0.5); } }
+    @keyframes traceSquare { 0% { clip-path:polygon(0 0, 0 0, 0 0, 0 0); } 25% { clip-path:polygon(0 0, 100% 0, 100% 0, 0 0); } 50% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 0); } 75% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } 100% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } }
+    @keyframes traceCircle { 0% { clip-path:circle(0% at 50% 50%); } 100% { clip-path:circle(50% at 50% 50%); } }
+    @keyframes borderRun { 0% { border-image-source:linear-gradient(0deg, #6366f1, transparent); } 25% { border-image-source:linear-gradient(90deg, #6366f1, transparent); } 50% { border-image-source:linear-gradient(180deg, #6366f1, transparent); } 75% { border-image-source:linear-gradient(270deg, #6366f1, transparent); } 100% { border-image-source:linear-gradient(360deg, #6366f1, transparent); } }
+    @keyframes zigzagLine { 0% { clip-path:polygon(0 0, 0 0, 0 100%, 0 100%); } 100% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } }
+    @keyframes dottedAppear { 0% { border-style:none; } 100% { border-style:dotted; } }
+    @keyframes dashedAppear { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes borderChase { 0% { background-position:0 0, 100% 0, 100% 100%, 0 100%; } 100% { background-position:100% 0, 100% 100%, 0 100%, 0 0; } }
+    @keyframes outlinePop { 0% { outline:0px solid transparent; } 100% { outline:2px solid rgba(99,102,241,0.5); outline-offset:4px; } }
+    @keyframes frameIn { 0% { border:2px solid transparent; padding:0; } 100% { border:2px solid rgba(99,102,241,0.3); padding:16px; } }
+    @keyframes shadowLine { 0% { box-shadow:inset 0 -2px 0 transparent; } 100% { box-shadow:inset 0 -2px 0 #6366f1; } }
+    @keyframes cornerReveal { 0% { clip-path:polygon(0 0, 0 0, 0 0, 0 0); } 100% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } }
+    @keyframes crosshairIn { 0% { opacity:0; clip-path:polygon(49% 0, 51% 0, 51% 49%, 100% 49%, 100% 51%, 51% 51%, 51% 100%, 49% 100%, 49% 51%, 0 51%, 0 49%, 49% 49%); } 100% { opacity:1; clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } }
+
+    /* Particle / Decoration family (256-280) */
+    @keyframes particleRise { 0% { transform:translateY(0) scale(1); opacity:1; } 100% { transform:translateY(-100px) scale(0); opacity:0; } }
+    @keyframes particleFall { 0% { transform:translateY(-50px); opacity:0; } 50% { opacity:1; } 100% { transform:translateY(50px); opacity:0; } }
+    @keyframes particleSpread { 0% { transform:translate(0,0) scale(1); opacity:1; } 100% { transform:translate(var(--tx,30px),var(--ty,-30px)) scale(0); opacity:0; } }
+    @keyframes snowfall { 0% { transform:translateY(-10px) rotate(0); opacity:0; } 10% { opacity:1; } 100% { transform:translateY(100vh) rotate(360deg); opacity:0; } }
+    @keyframes raindrop { 0% { transform:translateY(-100px); opacity:0; } 20% { opacity:1; } 100% { transform:translateY(100vh); opacity:0; } }
+    @keyframes confetti { 0% { transform:translateY(0) rotate(0); opacity:1; } 100% { transform:translateY(100vh) rotate(720deg); opacity:0; } }
+    @keyframes firework { 0% { transform:translate(0,0) scale(1); opacity:1; } 100% { transform:translate(var(--fx,50px),var(--fy,-80px)) scale(0); opacity:0; } }
+    @keyframes bubbleRise { 0% { transform:translateY(0) scale(0.5); opacity:0; } 20% { opacity:0.8; } 100% { transform:translateY(-200px) scale(1.2); opacity:0; } }
+    @keyframes starTwinkle { 0%,100% { opacity:0.3; transform:scale(0.8); } 50% { opacity:1; transform:scale(1.2); } }
+    @keyframes dustFloat { 0%,100% { transform:translate(0,0); opacity:0.5; } 50% { transform:translate(10px,-10px); opacity:1; } }
+    @keyframes firefly { 0% { transform:translate(0,0); opacity:0; } 25% { opacity:1; } 50% { transform:translate(30px,-20px); opacity:0.5; } 75% { transform:translate(-10px,-40px); opacity:1; } 100% { transform:translate(20px,-60px); opacity:0; } }
+    @keyframes smokePuff { 0% { transform:scale(0.5) translateY(0); opacity:0.8; filter:blur(2px); } 100% { transform:scale(2) translateY(-80px); opacity:0; filter:blur(10px); } }
+    @keyframes energyBall { 0%,100% { transform:scale(1); box-shadow:0 0 10px rgba(99,102,241,0.5); } 50% { transform:scale(1.1); box-shadow:0 0 30px rgba(99,102,241,0.8), 0 0 60px rgba(99,102,241,0.3); } }
+    @keyframes magneticPull { 0% { transform:translateX(50px); opacity:0; } 70% { transform:translateX(-5px); } 100% { transform:translateX(0); opacity:1; } }
+    @keyframes electricArc { 0%,100% { opacity:0.3; transform:scaleX(1); } 25% { opacity:1; transform:scaleX(1.02); } 50% { opacity:0.5; transform:scaleX(0.98); } 75% { opacity:0.8; transform:scaleX(1.01); } }
+    @keyframes dustMote { 0% { transform:translate(0,0) rotate(0); opacity:0; } 25% { opacity:0.6; } 50% { transform:translate(15px,-20px) rotate(90deg); opacity:0.8; } 75% { opacity:0.4; } 100% { transform:translate(-10px,-40px) rotate(180deg); opacity:0; } }
+    @keyframes vortex { 0% { transform:rotate(0) scale(1) translateX(0); } 100% { transform:rotate(720deg) scale(0) translateX(0); } }
+    @keyframes comet { 0% { transform:translateX(-100px) translateY(50px); opacity:0; } 30% { opacity:1; } 100% { transform:translateX(200px) translateY(-100px); opacity:0; } }
+    @keyframes meteor { 0% { transform:translate(100px,-100px) rotate(-45deg); opacity:0; } 10% { opacity:1; } 100% { transform:translate(-200px,200px) rotate(-45deg); opacity:0; } }
+    @keyframes warpSpeed { 0% { transform:scale(0) translateZ(0); opacity:0; } 50% { opacity:1; } 100% { transform:scale(3) translateZ(200px); opacity:0; } }
+    @keyframes portalOpen { 0% { transform:scale(0) rotate(0); opacity:0; border-radius:50%; } 50% { transform:scale(1.2) rotate(180deg); opacity:0.8; } 100% { transform:scale(1) rotate(360deg); opacity:1; border-radius:16px; } }
+    @keyframes galaxySpin { 0% { transform:rotate(0) scale(1); filter:hue-rotate(0); } 50% { transform:rotate(180deg) scale(0.9); filter:hue-rotate(180deg); } 100% { transform:rotate(360deg) scale(1); filter:hue-rotate(360deg); } }
+    @keyframes atomOrbit { 0% { transform:rotate(0) translateX(30px) rotate(0); } 100% { transform:rotate(360deg) translateX(30px) rotate(-360deg); } }
+    @keyframes electronPath { 0% { transform:rotate(0) translateX(20px) rotate(0) scale(0.8); } 50% { transform:rotate(180deg) translateX(20px) rotate(-180deg) scale(1.2); } 100% { transform:rotate(360deg) translateX(20px) rotate(-360deg) scale(0.8); } }
+    @keyframes neuronPulse { 0%,100% { opacity:0.3; transform:scale(1); } 50% { opacity:1; transform:scale(1.3); } }
+
+    /* Morphing / Shape family (281-310) */
+    @keyframes morphCircle { 0%,100% { border-radius:50%; } 50% { border-radius:10%; } }
+    @keyframes morphSquare { 0%,100% { border-radius:10%; } 50% { border-radius:50%; } }
+    @keyframes morphBlob2 { 0%,100% { border-radius:42% 58% 70% 30% / 45% 45% 55% 55%; } 25% { border-radius:70% 30% 46% 54% / 30% 60% 40% 70%; } 50% { border-radius:30% 70% 32% 68% / 55% 30% 70% 45%; } 75% { border-radius:55% 45% 65% 35% / 40% 70% 30% 60%; } }
+    @keyframes morphStar { 0%,100% { clip-path:polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); } 50% { clip-path:polygon(50% 5%, 58% 38%, 95% 38%, 65% 58%, 76% 88%, 50% 72%, 24% 88%, 35% 58%, 5% 38%, 42% 38%); } }
+    @keyframes morphHex { 0%,100% { clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); } 50% { clip-path:polygon(50% 5%, 95% 28%, 95% 72%, 50% 95%, 5% 72%, 5% 28%); } }
+    @keyframes breatheShape { 0%,100% { border-radius:60% 40% 30% 70% / 60% 30% 70% 40%; transform:scale(1); } 50% { border-radius:30% 60% 70% 40% / 50% 60% 30% 60%; transform:scale(1.05); } }
+    @keyframes blobRotate { 0% { border-radius:42% 58% 70% 30% / 45% 45% 55% 55%; transform:rotate(0); } 25% { border-radius:70% 30% 46% 54% / 30% 60% 40% 70%; } 50% { border-radius:30% 70% 32% 68% / 55% 30% 70% 45%; transform:rotate(180deg); } 75% { border-radius:55% 45% 65% 35% / 40% 70% 30% 60%; } 100% { border-radius:42% 58% 70% 30% / 45% 45% 55% 55%; transform:rotate(360deg); } }
+    @keyframes clipRevealCircle { 0% { clip-path:circle(0%); } 100% { clip-path:circle(75%); } }
+    @keyframes clipRevealRect { 0% { clip-path:inset(50%); } 100% { clip-path:inset(0%); } }
+    @keyframes clipRevealPoly { 0% { clip-path:polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); } 100% { clip-path:polygon(0 0, 100% 0, 100% 100%, 0 100%); } }
+    @keyframes shapeShift { 0% { border-radius:50%; } 25% { border-radius:10% 50% 50% 10%; } 50% { border-radius:50% 10% 10% 50%; } 75% { border-radius:10% 10% 50% 50%; } 100% { border-radius:50%; } }
+    @keyframes roundToSquare { 0% { border-radius:50%; } 100% { border-radius:0; } }
+    @keyframes squareToRound { 0% { border-radius:0; } 100% { border-radius:50%; } }
+    @keyframes diamondMorph { 0%,100% { clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%); } 50% { clip-path:polygon(25% 25%, 75% 25%, 75% 75%, 25% 75%); } }
+    @keyframes pentagonSpin { 0% { clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); transform:rotate(0); } 100% { clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); transform:rotate(360deg); } }
+    @keyframes cardFlip { 0% { transform:perspective(800px) rotateY(0); } 50% { transform:perspective(800px) rotateY(180deg); } 100% { transform:perspective(800px) rotateY(360deg); } }
+    @keyframes cubeRotate { 0% { transform:perspective(800px) rotateX(0) rotateY(0); } 25% { transform:perspective(800px) rotateX(90deg) rotateY(0); } 50% { transform:perspective(800px) rotateX(90deg) rotateY(90deg); } 75% { transform:perspective(800px) rotateX(0) rotateY(90deg); } 100% { transform:perspective(800px) rotateX(0) rotateY(0); } }
+    @keyframes accordion { 0%,100% { transform:scaleY(1); } 50% { transform:scaleY(0.8); } }
+    @keyframes fan { 0% { transform:rotate(0) scaleX(0); } 100% { transform:rotate(0) scaleX(1); } }
+    @keyframes peelOff { 0% { transform:perspective(600px) rotateX(0); transform-origin:bottom; } 100% { transform:perspective(600px) rotateX(-90deg); transform-origin:bottom; opacity:0; } }
+    @keyframes foldIn { 0% { transform:perspective(600px) rotateY(-90deg); opacity:0; } 100% { transform:perspective(600px) rotateY(0); opacity:1; } }
+    @keyframes unfold { 0% { transform:perspective(600px) rotateX(90deg); transform-origin:top; } 100% { transform:perspective(600px) rotateX(0); } }
+    @keyframes doorOpen { 0% { transform:perspective(600px) rotateY(0); } 100% { transform:perspective(600px) rotateY(-90deg); } }
+    @keyframes pageTurn { 0% { transform:perspective(800px) rotateY(0); transform-origin:left center; } 100% { transform:perspective(800px) rotateY(-180deg); transform-origin:left center; opacity:0; } }
+    @keyframes curtainDrop { 0% { transform:scaleY(0); transform-origin:top; } 100% { transform:scaleY(1); transform-origin:top; } }
+    @keyframes blindsOpen { 0% { transform:scaleY(0); } 100% { transform:scaleY(1); } }
+    @keyframes irisIn { 0% { clip-path:circle(0%); } 100% { clip-path:circle(100%); } }
+    @keyframes irisOut { 0% { clip-path:circle(100%); } 100% { clip-path:circle(0%); } }
+    @keyframes splitOpen { 0% { clip-path:inset(0 50% 0 50%); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes pixelate { 0% { filter:blur(20px); opacity:0; } 100% { filter:blur(0); opacity:1; } }
+
+    /* Utility / Counter / Progress (311-350) */
+    @keyframes count { 0% { opacity:0; transform:translateY(10px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes progressBar { 0% { width:0; } 100% { width:100%; } }
+    @keyframes timerTick { 0%,100% { transform:scaleX(1); } 50% { transform:scaleX(1.02); } }
+    @keyframes loadingDots { 0%,20% { content:'.'; } 40% { content:'..'; } 60%,100% { content:'...'; } }
+    @keyframes skeletonLoad { 0% { background-position:-200px 0; } 100% { background-position:calc(200px + 100%) 0; } }
+    @keyframes spinnerGrow { 0% { transform:scale(0); opacity:1; } 100% { transform:scale(1); opacity:0; } }
+    @keyframes pulseDot { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.5); opacity:0.5; } }
+    @keyframes typingIndicator { 0%,100% { opacity:0.3; transform:scale(0.8); } 50% { opacity:1; transform:scale(1); } }
+    @keyframes checkmark { 0% { stroke-dashoffset:50; } 100% { stroke-dashoffset:0; } }
+    @keyframes success { 0% { transform:scale(0); } 50% { transform:scale(1.2); } 100% { transform:scale(1); } }
+    @keyframes warning { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+    @keyframes error { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+    @keyframes notification { 0% { transform:translateY(-100%); opacity:0; } 10% { transform:translateY(0); opacity:1; } 90% { transform:translateY(0); opacity:1; } 100% { transform:translateY(-100%); opacity:0; } }
+    @keyframes badge { 0% { transform:scale(0); } 50% { transform:scale(1.3); } 100% { transform:scale(1); } }
+    @keyframes tooltipFade { 0% { opacity:0; transform:translateY(5px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes slideToggle { 0% { max-height:0; opacity:0; } 100% { max-height:500px; opacity:1; } }
+    @keyframes collapsible { 0% { max-height:0; } 100% { max-height:1000px; } }
+    @keyframes tabSwitch { 0% { opacity:0; transform:translateX(10px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes stepReveal { 0% { opacity:0; transform:translateY(20px) scale(0.9); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes inputFocus { 0% { box-shadow:0 0 0 0 rgba(99,102,241,0); } 100% { box-shadow:0 0 0 4px rgba(99,102,241,0.2); } }
+
+    /* Elastic / Physics (351-380) */
+    @keyframes elasticX { 0% { transform:scaleX(0); } 55% { transform:scaleX(1.05); } 75% { transform:scaleX(0.98); } 100% { transform:scaleX(1); } }
+    @keyframes elasticY { 0% { transform:scaleY(0); } 55% { transform:scaleY(1.05); } 75% { transform:scaleY(0.98); } 100% { transform:scaleY(1); } }
+    @keyframes elasticSlide { 0% { transform:translateX(-100px); } 60% { transform:translateX(10px); } 80% { transform:translateX(-5px); } 100% { transform:translateX(0); } }
+    @keyframes rubberBand { 0% { transform:scaleX(1); } 30% { transform:scaleX(1.25) scaleY(0.75); } 40% { transform:scaleX(0.75) scaleY(1.25); } 50% { transform:scaleX(1.15) scaleY(0.85); } 65% { transform:scaleX(0.95) scaleY(1.05); } 75% { transform:scaleX(1.05) scaleY(0.95); } 100% { transform:scaleX(1); } }
+    @keyframes jellyWobble { 0%,100% { transform:skewX(0); } 20% { transform:skewX(-8deg); } 40% { transform:skewX(6deg); } 60% { transform:skewX(-4deg); } 80% { transform:skewX(2deg); } }
+    @keyframes snapIn { 0% { opacity:0; transform:scale(0.8) rotate(-5deg); } 70% { transform:scale(1.05) rotate(1deg); } 100% { opacity:1; transform:scale(1) rotate(0); } }
+    @keyframes whipIn { 0% { transform:translateX(-200px) rotate(-15deg); opacity:0; } 60% { transform:translateX(10px) rotate(2deg); } 80% { transform:translateX(-3px) rotate(-0.5deg); } 100% { transform:translateX(0) rotate(0); opacity:1; } }
+    @keyframes slingshot { 0% { transform:translateX(0) scale(1); } 30% { transform:translateX(-30px) scale(0.9); } 100% { transform:translateX(0) scale(1); } }
+    @keyframes catapult { 0% { transform:translateY(0) rotate(0); } 30% { transform:translateY(10px) rotate(5deg); } 100% { transform:translateY(-80px) rotate(-15deg); opacity:0; } }
+    @keyframes trampoline { 0% { transform:translateY(0) scaleY(1); } 20% { transform:translateY(5px) scaleY(0.9) scaleX(1.05); } 50% { transform:translateY(-30px) scaleY(1.1) scaleX(0.95); } 70% { transform:translateY(3px) scaleY(0.95); } 85% { transform:translateY(-10px) scaleY(1.03); } 100% { transform:translateY(0) scaleY(1); } }
+    @keyframes gravity { 0% { transform:translateY(-100vh); } 60% { transform:translateY(10px); } 75% { transform:translateY(-8px); } 90% { transform:translateY(3px); } 100% { transform:translateY(0); } }
+    @keyframes magnetize { 0% { transform:scale(0.5) rotate(180deg); opacity:0; } 60% { transform:scale(1.1) rotate(-10deg); } 80% { transform:scale(0.95) rotate(5deg); } 100% { transform:scale(1) rotate(0); opacity:1; } }
+    @keyframes recoil { 0% { transform:translateX(0); } 20% { transform:translateX(-20px); } 100% { transform:translateX(0); } }
+    @keyframes pendulumSwing { 0%,100% { transform-origin:top center; transform:rotate(0); } 25% { transform:rotate(20deg); } 75% { transform:rotate(-20deg); } }
+    @keyframes springRebound { 0% { transform:translateY(200px); opacity:0; } 40% { transform:translateY(-20px); } 55% { transform:translateY(8px); } 70% { transform:translateY(-5px); } 85% { transform:translateY(2px); } 100% { transform:translateY(0); opacity:1; } }
+    @keyframes wave { 0%,100% { transform:rotate(0); } 10% { transform:rotate(14deg); } 20% { transform:rotate(-8deg); } 30% { transform:rotate(14deg); } 40% { transform:rotate(-4deg); } 50% { transform:rotate(10deg); } 60%,100% { transform:rotate(0); } }
+    @keyframes shakeX { 0%,100% { transform:translateX(0); } 10%,30%,50%,70%,90% { transform:translateX(-4px); } 20%,40%,60%,80% { transform:translateX(4px); } }
+    @keyframes shakeY { 0%,100% { transform:translateY(0); } 10%,30%,50%,70%,90% { transform:translateY(-4px); } 20%,40%,60%,80% { transform:translateY(4px); } }
+    @keyframes shakeRotate { 0%,100% { transform:rotate(0); } 10% { transform:rotate(-10deg); } 20% { transform:rotate(8deg); } 30% { transform:rotate(-6deg); } 40% { transform:rotate(4deg); } 50% { transform:rotate(-2deg); } }
+    @keyframes headShake { 0%,100% { transform:translateX(0) rotateY(0); } 6.5% { transform:translateX(-6px) rotateY(-9deg); } 18.5% { transform:translateX(5px) rotateY(7deg); } 31.5% { transform:translateX(-3px) rotateY(-5deg); } 43.5% { transform:translateX(2px) rotateY(3deg); } 50% { transform:translateX(0) rotateY(0); } }
+
+    /* Scroll / Parallax (381-400) */
+    @keyframes parallaxUp { 0% { transform:translateY(50px); } 100% { transform:translateY(-50px); } }
+    @keyframes parallaxDown { 0% { transform:translateY(-50px); } 100% { transform:translateY(50px); } }
+    @keyframes parallaxLeft { 0% { transform:translateX(50px); } 100% { transform:translateX(-50px); } }
+    @keyframes parallaxRight { 0% { transform:translateX(-50px); } 100% { transform:translateX(50px); } }
+    @keyframes parallaxZoom { 0% { transform:scale(1.2); } 100% { transform:scale(1); } }
+    @keyframes scrollReveal { 0% { opacity:0; transform:translateY(60px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes scrollFadeIn { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes scrollScale { 0% { transform:scale(0.8); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+    @keyframes scrollRotateIn { 0% { transform:rotate(-15deg) scale(0.8); opacity:0; } 100% { transform:rotate(0) scale(1); opacity:1; } }
+    @keyframes scrollFlipIn { 0% { transform:perspective(600px) rotateX(60deg); opacity:0; } 100% { transform:perspective(600px) rotateX(0); opacity:1; } }
+    @keyframes stickyPop { 0% { transform:scale(0.9); } 50% { transform:scale(1.05); } 100% { transform:scale(1); } }
+    @keyframes revealOnScroll { 0% { opacity:0; transform:translateY(40px) scale(0.95); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes fadeInSection { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes staggerUp { 0% { opacity:0; transform:translateY(30px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes staggerLeft { 0% { opacity:0; transform:translateX(-30px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes staggerRight { 0% { opacity:0; transform:translateX(30px); } 100% { opacity:1; transform:translateX(0); } }
+    @keyframes staggerScale { 0% { opacity:0; transform:scale(0.8); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes staggerRotate { 0% { opacity:0; transform:rotate(-10deg) translateY(20px); } 100% { opacity:1; transform:rotate(0) translateY(0); } }
+    @keyframes counterSlide { 0% { opacity:0; transform:translateY(20px); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes timelineReveal { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
+
+    /* Interaction / Micro (401-430) */
+    @keyframes hoverGrow { 0% { transform:scale(1); } 100% { transform:scale(1.05); } }
+    @keyframes hoverShrink { 0% { transform:scale(1); } 100% { transform:scale(0.95); } }
+    @keyframes hoverRotate { 0% { transform:rotate(0); } 100% { transform:rotate(5deg); } }
+    @keyframes hoverLift { 0% { transform:translateY(0); box-shadow:0 4px 6px rgba(0,0,0,0.1); } 100% { transform:translateY(-8px); box-shadow:0 20px 40px rgba(0,0,0,0.15); } }
+    @keyframes hoverPush { 0% { transform:scale(1); } 50% { transform:scale(0.95); } 100% { transform:scale(1); } }
+    @keyframes hoverJiggle { 0%,100% { transform:rotate(0); } 25% { transform:rotate(-3deg); } 75% { transform:rotate(3deg); } }
+    @keyframes clickPop { 0% { transform:scale(1); } 50% { transform:scale(0.9); } 100% { transform:scale(1); } }
+    @keyframes clickRipple { 0% { transform:scale(0); opacity:0.5; } 100% { transform:scale(4); opacity:0; } }
+    @keyframes tapFeedback { 0% { transform:scale(1); } 50% { transform:scale(0.95); } 100% { transform:scale(1); } }
+    @keyframes longPress { 0% { transform:scale(1); box-shadow:0 0 0 0 rgba(99,102,241,0.4); } 100% { transform:scale(0.95); box-shadow:0 0 0 10px rgba(99,102,241,0); } }
+    @keyframes switchOn { 0% { transform:translateX(0); } 100% { transform:translateX(20px); } }
+    @keyframes switchOff { 0% { transform:translateX(20px); } 100% { transform:translateX(0); } }
+    @keyframes toggleBg { 0% { background-color:#ccc; } 100% { background-color:#6366f1; } }
+    @keyframes dragHint { 0%,100% { transform:translateX(0); } 50% { transform:translateX(10px); } }
+    @keyframes swipeHint { 0% { transform:translateX(0); opacity:1; } 100% { transform:translateX(-30px); opacity:0; } }
+    @keyframes pinch { 0% { transform:scale(1); } 50% { transform:scale(0.9); } 100% { transform:scale(1); } }
+    @keyframes doubleTap { 0%,100% { transform:scale(1); } 25% { transform:scale(1.1); } 50% { transform:scale(0.9); } 75% { transform:scale(1.05); } }
+    @keyframes scrollHint { 0%,100% { transform:translateY(0); opacity:1; } 50% { transform:translateY(10px); opacity:0.5; } }
+    @keyframes cursorHover { 0% { transform:scale(1); } 100% { transform:scale(1.5); } }
+    @keyframes focusRing { 0% { box-shadow:0 0 0 0 rgba(99,102,241,0.4); } 100% { box-shadow:0 0 0 4px rgba(99,102,241,0.2); } }
+
+    /* Data visualization (431-455) */
+    @keyframes chartGrowUp { 0% { transform:scaleY(0); transform-origin:bottom; } 100% { transform:scaleY(1); transform-origin:bottom; } }
+    @keyframes chartGrowRight { 0% { transform:scaleX(0); transform-origin:left; } 100% { transform:scaleX(1); transform-origin:left; } }
+    @keyframes pieReveal { 0% { clip-path:polygon(50% 50%, 50% 0%, 50% 0%); } 100% { clip-path:polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%); } }
+    @keyframes donutFill { 0% { stroke-dashoffset:283; } 100% { stroke-dashoffset:0; } }
+    @keyframes dataPointPop { 0% { transform:scale(0); opacity:0; } 70% { transform:scale(1.2); } 100% { transform:scale(1); opacity:1; } }
+    @keyframes lineChart { 0% { stroke-dashoffset:1000; } 100% { stroke-dashoffset:0; } }
+    @keyframes barSlide { 0% { width:0; } 100% { width:var(--bar-width, 80%); } }
+    @keyframes gaugeNeedle { 0% { transform:rotate(-90deg); } 100% { transform:rotate(var(--gauge-angle, 0deg)); } }
+    @keyframes percentCount { 0% { content:'0'; } 100% { content:var(--percent, '100'); } }
+    @keyframes meterFill { 0% { background-size:0% 100%; } 100% { background-size:100% 100%; } }
+
+    /* Futuristic / Sci-fi (456-480) */
+    @keyframes scanLine { 0% { top:0; } 100% { top:100%; } }
+    @keyframes matrixRain { 0% { transform:translateY(-100%); opacity:1; } 100% { transform:translateY(100vh); opacity:0; } }
+    @keyframes glitch { 0%,100% { transform:translate(0); } 10% { transform:translate(-2px,2px); } 20% { transform:translate(2px,-2px); } 30% { transform:translate(-1px,-1px); } 40% { transform:translate(1px,2px); } 50% { transform:translate(-2px,-2px); } }
+    @keyframes hologramFlicker { 0%,100% { opacity:1; } 33% { opacity:0.8; } 66% { opacity:0.95; } }
+    @keyframes digitalNoise { 0% { clip-path:inset(40% 0 61% 0); } 20% { clip-path:inset(92% 0 1% 0); } 40% { clip-path:inset(43% 0 1% 0); } 60% { clip-path:inset(25% 0 58% 0); } 80% { clip-path:inset(54% 0 7% 0); } 100% { clip-path:inset(58% 0 43% 0); } }
+    @keyframes teleportIn { 0% { transform:scaleY(0); filter:brightness(10); } 50% { transform:scaleY(0.5); filter:brightness(3); } 100% { transform:scaleY(1); filter:brightness(1); } }
+    @keyframes phaseIn { 0% { opacity:0; filter:blur(20px) brightness(2); } 100% { opacity:1; filter:blur(0) brightness(1); } }
+    @keyframes dataStream { 0% { background-position:0 0; } 100% { background-position:0 100px; } }
+    @keyframes circuitTrace { 0% { stroke-dashoffset:500; opacity:0.3; } 50% { opacity:1; } 100% { stroke-dashoffset:0; opacity:0.3; } }
+    @keyframes cyberpunkGlitch { 0%,100% { transform:translate(0); filter:hue-rotate(0); } 10% { transform:translate(-5px,3px); filter:hue-rotate(90deg); } 20% { transform:translate(3px,-2px); filter:hue-rotate(180deg); } 30% { transform:translate(0); filter:hue-rotate(0); } }
+    @keyframes neonFlash { 0%,100% { opacity:1; text-shadow:0 0 10px currentColor; } 50% { opacity:0.5; text-shadow:0 0 30px currentColor, 0 0 60px currentColor; } }
+    @keyframes energyPulse { 0% { box-shadow:0 0 0 0 rgba(99,102,241,0.7); } 70% { box-shadow:0 0 0 15px rgba(99,102,241,0); } 100% { box-shadow:0 0 0 0 rgba(99,102,241,0); } }
+    @keyframes warpDrive { 0% { transform:perspective(500px) translateZ(0); } 50% { transform:perspective(500px) translateZ(100px); } 100% { transform:perspective(500px) translateZ(0); } }
+    @keyframes assembleIn { 0% { opacity:0; transform:scale(0.3) rotate(180deg); filter:blur(10px); } 50% { opacity:0.8; transform:scale(1.1) rotate(-10deg); filter:blur(2px); } 100% { opacity:1; transform:scale(1) rotate(0); filter:blur(0); } }
+    @keyframes disintegrate { 0% { opacity:1; filter:blur(0); } 100% { opacity:0; filter:blur(20px); transform:scale(1.5); } }
+    @keyframes pixelAssemble { 0% { filter:blur(10px); opacity:0; } 50% { filter:blur(5px); opacity:0.5; } 100% { filter:blur(0); opacity:1; } }
+    @keyframes terminalType { 0% { width:0; } 100% { width:100%; } }
+    @keyframes bootSequence { 0%,20% { opacity:0; } 21% { opacity:1; } 22% { opacity:0; } 40% { opacity:0; } 41% { opacity:1; } 100% { opacity:1; } }
+    @keyframes signalWave { 0% { transform:scaleX(1); opacity:1; } 100% { transform:scaleX(2); opacity:0; } }
+    @keyframes radarSweep { 0% { transform:rotate(0); } 100% { transform:rotate(360deg); } }
+    @keyframes loadingBar { 0% { width:0%; background:linear-gradient(90deg,#6366f1,#818cf8); } 100% { width:100%; } }
+    @keyframes typewriterCursor { 0%,100% { border-right-color:transparent; } 50% { border-right-color:#818cf8; } }
+    @keyframes screenOn { 0% { transform:scaleY(0.005) scaleX(0); } 50% { transform:scaleY(0.005) scaleX(1); } 100% { transform:scaleY(1) scaleX(1); } }
+    @keyframes powerUp { 0% { filter:brightness(0); } 50% { filter:brightness(2); } 100% { filter:brightness(1); } }
+    @keyframes dataPulse { 0%,100% { opacity:0.5; transform:scale(0.95); } 50% { opacity:1; transform:scale(1); } }
+
+    /* Nature / Organic (481-505) */
+    @keyframes waveCrash { 0%,100% { transform:translateX(0) scaleY(1); } 50% { transform:translateX(-20px) scaleY(1.1); } }
+    @keyframes leafFall { 0% { transform:translate(0,0) rotate(0); opacity:1; } 100% { transform:translate(50px,200px) rotate(360deg); opacity:0; } }
+    @keyframes windBlow { 0%,100% { transform:rotate(0) translateX(0); } 25% { transform:rotate(2deg) translateX(5px); } 75% { transform:rotate(-2deg) translateX(-5px); } }
+    @keyframes rippleWater { 0% { transform:scale(0); opacity:1; border-radius:50%; } 100% { transform:scale(4); opacity:0; border-radius:50%; } }
+    @keyframes flameDance { 0%,100% { transform:scaleY(1) scaleX(1); opacity:0.9; } 25% { transform:scaleY(1.1) scaleX(0.95); opacity:1; } 50% { transform:scaleY(0.95) scaleX(1.05); opacity:0.85; } 75% { transform:scaleY(1.05) scaleX(0.98); opacity:1; } }
+    @keyframes cloudDrift { 0% { transform:translateX(-100%); } 100% { transform:translateX(100vw); } }
+    @keyframes sunRise { 0% { transform:translateY(100px); opacity:0; filter:brightness(0.3); } 100% { transform:translateY(0); opacity:1; filter:brightness(1); } }
+    @keyframes rainFall { 0% { transform:translateY(-20px); opacity:0; } 10% { opacity:1; } 90% { opacity:1; } 100% { transform:translateY(100vh); opacity:0; } }
+    @keyframes earthquakeShake { 0%,100% { transform:translate(0,0) rotate(0); } 10% { transform:translate(-3px,2px) rotate(-1deg); } 20% { transform:translate(5px,-3px) rotate(1deg); } 30% { transform:translate(-4px,1px) rotate(0); } 40% { transform:translate(2px,-4px) rotate(-1deg); } 50% { transform:translate(-1px,3px) rotate(1deg); } }
+    @keyframes heartBeat2 { 0%,100% { transform:scale(1); } 15% { transform:scale(1.15); } 30% { transform:scale(1); } 45% { transform:scale(1.1); } }
+    @keyframes breatheDeep { 0%,100% { transform:scale(1); opacity:0.7; } 50% { transform:scale(1.08); opacity:1; } }
+    @keyframes bloom { 0% { transform:scale(0) rotate(-180deg); opacity:0; } 60% { transform:scale(1.1) rotate(10deg); } 100% { transform:scale(1) rotate(0); opacity:1; } }
+    @keyframes unfurl { 0% { transform:scaleX(0) rotate(-5deg); opacity:0; transform-origin:left center; } 100% { transform:scaleX(1) rotate(0); opacity:1; } }
+    @keyframes crystallize { 0% { opacity:0; transform:scale(0.5); filter:blur(10px) brightness(2); } 50% { filter:blur(5px) brightness(1.5); } 100% { opacity:1; transform:scale(1); filter:blur(0) brightness(1); } }
+    @keyframes dewDrop { 0% { transform:scale(0); opacity:0; border-radius:50%; } 60% { transform:scale(1.1); opacity:0.8; } 100% { transform:scale(1); opacity:1; border-radius:50%; } }
+
+    /* Page transition / Full-screen (506-520) */
+    @keyframes pageSlideIn { 0% { transform:translateX(100%); } 100% { transform:translateX(0); } }
+    @keyframes pageSlideOut { 0% { transform:translateX(0); } 100% { transform:translateX(-100%); } }
+    @keyframes pageFadeIn { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes pageZoomIn { 0% { opacity:0; transform:scale(0.8); } 100% { opacity:1; transform:scale(1); } }
+    @keyframes pageDropIn { 0% { opacity:0; transform:translateY(-100vh); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes pageRiseUp { 0% { opacity:0; transform:translateY(100vh); } 100% { opacity:1; transform:translateY(0); } }
+    @keyframes pageFlipIn { 0% { opacity:0; transform:perspective(1000px) rotateY(90deg); } 100% { opacity:1; transform:perspective(1000px) rotateY(0); } }
+    @keyframes pageSpiralIn { 0% { opacity:0; transform:rotate(180deg) scale(0); } 100% { opacity:1; transform:rotate(0) scale(1); } }
+    @keyframes crossfade { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes wipeRight { 0% { clip-path:inset(0 100% 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes wipeLeft { 0% { clip-path:inset(0 0 0 100%); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes wipeUp { 0% { clip-path:inset(100% 0 0 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes wipeDown { 0% { clip-path:inset(0 0 100% 0); } 100% { clip-path:inset(0 0 0 0); } }
+    @keyframes dissolve { 0% { opacity:0; filter:saturate(0) brightness(2); } 100% { opacity:1; filter:saturate(1) brightness(1); } }
+    @keyframes materialize { 0% { opacity:0; filter:blur(20px) brightness(3); transform:scale(0.8); } 100% { opacity:1; filter:blur(0) brightness(1); transform:scale(1); } }
+
+    /* ========== ANIMATION CLASSES ========== */
+    .animate-fadeUp { animation: fadeUp 0.8s ease-out forwards; }
+    .animate-fadeDown { animation: fadeDown 0.8s ease-out forwards; }
+    .animate-fadeLeft { animation: fadeLeft 0.8s ease-out forwards; }
+    .animate-fadeRight { animation: fadeRight 0.8s ease-out forwards; }
+    .animate-fadeInScale { animation: fadeInScale 0.6s ease-out forwards; }
+    .animate-fadeInBlur { animation: fadeInBlur 0.8s ease-out forwards; }
+    .animate-slideInDown { animation: slideInDown 0.8s ease-out forwards; }
+    .animate-zoomIn { animation: zoomIn 0.6s ease-out forwards; }
+    .animate-bounceIn { animation: bounceIn 0.8s ease-out forwards; }
+    .animate-popIn { animation: popIn 0.5s ease-out forwards; }
+    .animate-springIn { animation: springIn 0.8s ease-out forwards; }
+    .animate-elasticIn { animation: elasticIn 0.8s ease-out forwards; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-floatSlow { animation: floatSlow 4s ease-in-out infinite; }
+    .animate-floatRotate { animation: floatRotate 4s ease-in-out infinite; }
+    .animate-bounce-custom { animation: bounce 2s infinite; }
+    .animate-pulseScale { animation: scalePulse 2s ease-in-out infinite; }
+    .animate-glow { animation: glow 2s ease-in-out infinite; }
+    .animate-glowPulse { animation: glowPulse 2s ease-in-out infinite; }
+    .animate-shimmer { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 2s infinite; }
+    .animate-morphBlob { animation: morphBlob2 8s ease-in-out infinite; }
+    .animate-levitate { animation: levitate 3s ease-in-out infinite; }
+    .animate-breathe { animation: breathe 4s ease-in-out infinite; }
+    .animate-gradient { background-size: 300% 300%; animation: gradientShift 8s ease infinite; }
+    .animate-spin-slow { animation: spin 8s linear infinite; }
+    .animate-orbit { animation: orbit 6s linear infinite; }
+    .animate-beacon { animation: beacon 1.5s infinite; }
+    .animate-neonBorder { animation: neonBorder 2s ease-in-out infinite; }
+    .animate-trampolineIn { animation: trampolineIn 0.8s ease-out forwards; }
+    .animate-textBlurIn { animation: textBlurIn 0.8s ease-out forwards; }
+    .animate-revealCircle { animation: revealCircle 1s ease-out forwards; }
+    .animate-curtainOpen { animation: curtainOpen 0.8s ease-out forwards; }
+    .animate-magnetize { animation: magnetize 0.8s ease-out forwards; }
+    .animate-flipInX { animation: flipInX 0.8s ease-out forwards; }
+    .animate-flipInY { animation: flipInY 0.8s ease-out forwards; }
+    .animate-rollIn { animation: rollIn 0.8s ease-out forwards; }
+    .animate-whipIn { animation: whipIn 0.8s ease-out forwards; }
+    .animate-bloom { animation: bloom 1s ease-out forwards; }
+    .animate-materialize { animation: materialize 1s ease-out forwards; }
+    .animate-phaseIn { animation: phaseIn 0.8s ease-out forwards; }
+    .animate-energyPulse { animation: energyPulse 1.5s infinite; }
+    .animate-sway { animation: sway 3s ease-in-out infinite; }
+    .animate-bounceShadow { animation: bounceShadow 2s ease-in-out infinite; }
+    .animate-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
+
+    /* ========== HOVER EFFECTS ========== */
+    .hover-lift { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .hover-lift:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(99, 102, 241, 0.2); }
+    .hover-glow { transition: all 0.3s ease; }
+    .hover-glow:hover { box-shadow: 0 0 30px rgba(99, 102, 241, 0.5); transform: scale(1.02); }
+    .hover-tilt { transition: transform 0.3s ease; }
+    .hover-tilt:hover { transform: perspective(500px) rotateY(5deg) rotateX(3deg); }
+    .hover-shine { position: relative; overflow: hidden; }
+    .hover-shine::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%); transform: translateX(-100%); transition: transform 0.6s; }
+    .hover-shine:hover::after { transform: translateX(100%); }
+    .hover-magnetic { transition: transform 0.2s ease; }
+    .hover-border-glow { border: 1px solid rgba(99,102,241,0.2); transition: all 0.3s; }
+    .hover-border-glow:hover { border-color: rgba(99,102,241,0.6); box-shadow: 0 0 20px rgba(99,102,241,0.15), inset 0 0 20px rgba(99,102,241,0.05); }
+
+    /* ========== SCROLL REVEAL ========== */
+    .scroll-reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal.revealed { opacity: 1; transform: translateY(0); }
+    .scroll-reveal-left { opacity: 0; transform: translateX(-40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal-left.revealed { opacity: 1; transform: translateX(0); }
+    .scroll-reveal-right { opacity: 0; transform: translateX(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal-right.revealed { opacity: 1; transform: translateX(0); }
+    .scroll-reveal-scale { opacity: 0; transform: scale(0.85); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal-scale.revealed { opacity: 1; transform: scale(1); }
+    .scroll-reveal-rotate { opacity: 0; transform: rotate(-5deg) translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal-rotate.revealed { opacity: 1; transform: rotate(0) translateY(0); }
+    .scroll-reveal-flip { opacity: 0; transform: perspective(600px) rotateX(30deg); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .scroll-reveal-flip.revealed { opacity: 1; transform: perspective(600px) rotateX(0); }
+
+    /* ========== SECTION STYLES ========== */
+    .section-gradient { background: linear-gradient(180deg, #0a0a1a 0%, #111128 50%, #0a0a1a 100%); }
+    .section-gradient-alt { background: linear-gradient(180deg, #111128 0%, #1a1a3e 50%, #111128 100%); }
+    .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+    .glass-card-hover { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .glass-card-hover:hover { background: rgba(255,255,255,0.06); border-color: rgba(99,102,241,0.4); transform: translateY(-8px); box-shadow: 0 25px 50px rgba(99,102,241,0.1); }
+
+    /* Gradient text */
+    .gradient-text { background: linear-gradient(135deg, #818cf8 0%, #a78bfa 30%, #c084fc 60%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-alt { background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* Decorative orbs */
+    .orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+    .orb-1 { width: 400px; height: 400px; background: rgba(99,102,241,0.15); top: -200px; right: -100px; animation: float 8s ease-in-out infinite; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(168,85,247,0.1); bottom: -150px; left: -100px; animation: float 10s ease-in-out infinite reverse; }
+    .orb-3 { width: 250px; height: 250px; background: rgba(59,130,246,0.1); top: 50%; left: 50%; animation: float 12s ease-in-out infinite; }
+
+    /* Canvas particle bg */
+    #particleCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* Nav glassmorphism */
+    .nav-glass { background: rgba(10,10,26,0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; }
+    .nav-glass.scrolled { background: rgba(10,10,26,0.95); box-shadow: 0 4px 30px rgba(0,0,0,0.3); }
+
+    /* Animated underline for nav links */
+    .nav-link { position: relative; }
+    .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #818cf8, #a78bfa); transition: width 0.3s ease; border-radius: 2px; }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Section dividers */
+    .wave-divider { position: relative; }
+    .wave-divider::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 80px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 100'%3E%3Cpath fill='%23111128' d='M0,40 C360,100 720,0 1080,40 C1260,60 1380,80 1440,40 L1440,100 L0,100 Z'/%3E%3C/svg%3E") no-repeat bottom center; background-size: cover; }
+
+    /* Pricing popular badge */
+    .popular-badge { background: linear-gradient(135deg, #6366f1, #a78bfa); animation: glowPulse 2s ease-in-out infinite; }
+
+    /* Counter animation */
+    .counter { display: inline-block; }
+
+    /* Marquee */
+    .marquee-track { display: flex; gap: 3rem; animation: marquee 25s linear infinite; width: max-content; }
+    .marquee-track:hover { animation-play-state: paused; }
+
+    /* Scroll progress bar */
+    #scrollProgress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #a78bfa, #c084fc); z-index: 1000; transition: width 0.1s; width: 0%; }
+
+    /* Back to top */
+    #backToTop { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #818cf8); color: white; border: none; cursor: pointer; z-index: 100; opacity: 0; transform: translateY(20px); transition: all 0.3s; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 5px 20px rgba(99,102,241,0.4); }
+    #backToTop.visible { opacity: 1; transform: translateY(0); }
+    #backToTop:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 30px rgba(99,102,241,0.6); }
+
+    /* Testimonial cards */
+    .testimonial-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+    .testimonial-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(99,102,241,0.3); }
+
+    /* Timeline */
+    .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, transparent, #6366f1, #a78bfa, transparent); transform: translateX(-50%); }
+    .timeline-dot { width: 16px; height: 16px; background: linear-gradient(135deg, #6366f1, #a78bfa); border-radius: 50%; position: absolute; left: 50%; transform: translateX(-50%); z-index: 2; animation: beacon 2s infinite; }
+
+    /* Form inputs dark theme */
+    .input-dark { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; transition: all 0.3s; }
+    .input-dark:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); outline: none; background: rgba(255,255,255,0.08); }
+    .input-dark::placeholder { color: rgba(255,255,255,0.3); }
+
+    /* Stagger children delays */
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+    .stagger-7 { animation-delay: 0.7s; }
+    .stagger-8 { animation-delay: 0.8s; }
+
+    /* Mobile responsive cursor */
+    @media (max-width: 768px) {
+      .cursor-dot, .cursor-ring { display: none !important; }
+      .orb { opacity: 0.5; }
+      .orb-1 { width: 200px; height: 200px; }
+      .orb-2 { width: 150px; height: 150px; }
+      .orb-3 { width: 120px; height: 120px; }
+      .timeline-line { left: 20px; }
+      .timeline-dot { left: 20px; }
+      .marquee-track { animation-duration: 15s; }
+    }
+
+    @media (max-width: 480px) {
+      .orb { display: none; }
+    }
+
+    /* Hamburger animation */
+    .hamburger-line { transition: all 0.3s ease; }
+    .hamburger-active .hamburger-line:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger-active .hamburger-line:nth-child(2) { opacity: 0; }
+    .hamburger-active .hamburger-line:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  </style>
+</head>
+<body class="overflow-x-hidden">
+
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="relative">
+      <div class="loader-ring"></div>
+      <span class="absolute inset-0 flex items-center justify-center text-brand-400 font-display font-bold text-sm">MS</span>
+    </div>
+  </div>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Scroll Progress -->
+  <div id="scrollProgress"></div>
+
+  <!-- Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Navbar -->
+  <header class="fixed top-0 left-0 w-full z-50">
+    <nav id="navbar" class="nav-glass flex items-center justify-between px-4 sm:px-8 py-4">
+      <a href="#" class="flex items-center space-x-3 group" data-aos="fade-down" data-aos-delay="100">
+        <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="MenuSwift Logo" class="h-8 sm:h-10 animate-float" style="animation-duration:4s;">
+        <span class="text-xl sm:text-2xl font-display font-bold gradient-text">MenuSwift</span>
+      </a>
+
+      <div class="hidden md:flex items-center space-x-8" data-aos="fade-down" data-aos-delay="200">
+        <a href="#features" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">Features</a>
+        <a href="#how-it-works" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">How It Works</a>
+        <a href="#pricing" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">Pricing</a>
+        <a href="#testimonials" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">Reviews</a>
+        <a href="#about" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">About</a>
+        <a href="#contact" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">Contact</a>
+        <a href="admin.html" class="nav-link text-gray-300 hover:text-white transition-colors duration-300 font-medium">Admin</a>
+      </div>
+
+      <a href="javascript:void(0)" class="hidden md:inline-flex openFormBtn items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-brand-500/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 animate-energyPulse" data-aos="fade-down" data-aos-delay="300">
+        Get Started
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
+
+      <!-- Mobile Hamburger -->
+      <button id="mobileMenuBtn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-300">
+        <div class="flex flex-col gap-1.5 w-6">
+          <span class="hamburger-line block h-0.5 w-full bg-white rounded"></span>
+          <span class="hamburger-line block h-0.5 w-full bg-white rounded"></span>
+          <span class="hamburger-line block h-0.5 w-full bg-white rounded"></span>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden md:hidden nav-glass border-t border-white/5">
+      <div class="px-4 py-6 space-y-4">
+        <a href="#features" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">Features</a>
+        <a href="#how-it-works" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">How It Works</a>
+        <a href="#pricing" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">Pricing</a>
+        <a href="#testimonials" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">Reviews</a>
+        <a href="#about" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">About</a>
+        <a href="#contact" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">Contact</a>
+        <a href="admin.html" class="block text-gray-300 hover:text-white transition-all duration-300 py-2 px-4 rounded-lg hover:bg-white/5 font-medium">Admin</a>
+        <a href="javascript:void(0)" class="openFormBtn block bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl text-center font-semibold hover:shadow-lg transition-all duration-300 mt-4">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO SECTION ===== -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('images/ChatGPT Image Feb 9, 2026, 12_43_41 PM.png');"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-surface-dark/80 via-surface-dark/60 to-surface-dark"></div>
+
+    <!-- Decorative orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Animated grid lines -->
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(rgba(99,102,241,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.3) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+    <!-- Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center pt-20">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 glass-card rounded-full px-5 py-2 mb-8 animate-fadeInScale" data-aos="zoom-in" data-aos-delay="200">
+        <span class="w-2 h-2 rounded-full bg-green-400 animate-beacon"></span>
+        <span class="text-sm text-gray-300 font-medium">Trusted by 500+ Restaurants across India</span>
+      </div>
+
+      <!-- Title -->
+      <h1 class="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight" data-aos="fade-up" data-aos-duration="1000">
+        Contactless Ordering for
+        <span class="gradient-text block sm:inline"> Modern Restaurants</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-base sm:text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
+        Transform your restaurant with digital menus, instant ordering, and real-time analytics — all from a single QR code.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16" data-aos="fade-up" data-aos-delay="400">
+        <a href="javascript:void(0)" class="openFormBtn w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-2xl shadow-brand-500/30 hover:shadow-brand-500/50 transition-all duration-300 hover:-translate-y-1 hover-shine">
+          Start Free Trial
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+        <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 glass-card text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all duration-300 hover:-translate-y-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Watch Demo
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="600">
+        <div class="glass-card rounded-2xl p-4 hover-border-glow">
+          <div class="text-2xl sm:text-3xl font-display font-bold gradient-text counter" data-target="500">0</div>
+          <div class="text-xs sm:text-sm text-gray-400 mt-1">Restaurants</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 hover-border-glow">
+          <div class="text-2xl sm:text-3xl font-display font-bold gradient-text counter" data-target="50000">0</div>
+          <div class="text-xs sm:text-sm text-gray-400 mt-1">Orders/Day</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 hover-border-glow">
+          <div class="text-2xl sm:text-3xl font-display font-bold gradient-text counter" data-target="99">0</div>
+          <div class="text-xs sm:text-sm text-gray-400 mt-1">% Uptime</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 hover-border-glow">
+          <div class="text-2xl sm:text-3xl font-display font-bold gradient-text counter" data-target="4">0</div>
+          <div class="text-xs sm:text-sm text-gray-400 mt-1">Star Rating</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-custom" data-aos="fade-up" data-aos-delay="800">
+      <div class="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+        <div class="w-1 h-2 rounded-full bg-white/60 animate-floatSlow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEATURES SECTION ===== -->
+  <section id="features" class="py-20 sm:py-32 section-gradient relative overflow-hidden">
+    <div class="orb orb-3"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">Features</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Everything You Need to <span class="gradient-text">Grow</span>
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg scroll-reveal">
+          Manage menus, receive orders, and analyze sales — everything in one powerful platform.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.1s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 flex items-center justify-center text-3xl animate-float">📱</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Digital Menu</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">QR-based smart menus that update instantly. No reprints needed, ever.</p>
+        </div>
+
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.2s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 flex items-center justify-center text-3xl animate-float" style="animation-delay:0.5s">⚡</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Order Management</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Receive and manage orders in real-time directly on your dashboard.</p>
+        </div>
+
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.3s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-600/20 flex items-center justify-center text-3xl animate-float" style="animation-delay:1s">📊</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Sales Reports</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Track daily revenue, best-selling items, and order history with ease.</p>
+        </div>
+
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.4s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-600/20 flex items-center justify-center text-3xl animate-float" style="animation-delay:1.5s">💬</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Support System</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Built-in WhatsApp-style support panel for quick issue resolution.</p>
+        </div>
+      </div>
+
+      <!-- Extra features row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.5s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 flex items-center justify-center text-3xl animate-floatRotate" style="animation-delay:2s">⭐</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Google Reviews</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Free Google Review QR scanner to boost your online reputation.</p>
+        </div>
+
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.6s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 flex items-center justify-center text-3xl animate-floatRotate" style="animation-delay:2.5s">🎨</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Custom Branding</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Match your restaurant's brand with customizable themes and logos.</p>
+        </div>
+
+        <div class="glass-card glass-card-hover rounded-2xl p-6 text-center scroll-reveal" style="transition-delay:0.7s">
+          <div class="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-600/20 flex items-center justify-center text-3xl animate-floatRotate" style="animation-delay:3s">🔒</div>
+          <h3 class="text-lg font-display font-semibold text-white mb-3">Secure & Fast</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Enterprise-grade security with blazing-fast load times under 2 seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section id="how-it-works" class="py-20 sm:py-32 section-gradient-alt relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">How It Works</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Get Started in <span class="gradient-text">3 Simple Steps</span>
+        </h2>
+      </div>
+
+      <div class="relative">
+        <!-- Timeline line (desktop) -->
+        <div class="hidden md:block timeline-line"></div>
+
+        <div class="space-y-12 md:space-y-24">
+          <!-- Step 1 -->
+          <div class="relative flex flex-col md:flex-row items-center gap-6 md:gap-12">
+            <div class="md:w-1/2 md:text-right scroll-reveal-right md:scroll-reveal-left">
+              <div class="glass-card rounded-2xl p-6 hover-border-glow inline-block text-left">
+                <span class="text-brand-400 font-display font-bold text-sm">Step 01</span>
+                <h3 class="text-xl font-display font-bold text-white mt-2 mb-3">Sign Up & Set Up</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Register your restaurant, add your menu items, set prices, and customize your digital menu in minutes.</p>
+              </div>
+            </div>
+            <div class="hidden md:block timeline-dot" style="top: 50%; margin-top: -8px;"></div>
+            <div class="md:w-1/2 flex justify-center scroll-reveal-right">
+              <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 flex items-center justify-center text-4xl animate-morphBlob">🚀</div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="relative flex flex-col md:flex-row-reverse items-center gap-6 md:gap-12">
+            <div class="md:w-1/2 scroll-reveal-left md:scroll-reveal-right">
+              <div class="glass-card rounded-2xl p-6 hover-border-glow inline-block text-left">
+                <span class="text-brand-400 font-display font-bold text-sm">Step 02</span>
+                <h3 class="text-xl font-display font-bold text-white mt-2 mb-3">Share Your QR Code</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Place your unique QR code on tables. Customers scan, browse, and order directly from their phones.</p>
+              </div>
+            </div>
+            <div class="hidden md:block timeline-dot" style="top: 50%; margin-top: -8px;"></div>
+            <div class="md:w-1/2 flex justify-center scroll-reveal-left">
+              <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 flex items-center justify-center text-4xl animate-morphBlob" style="animation-delay:2s">📲</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="relative flex flex-col md:flex-row items-center gap-6 md:gap-12">
+            <div class="md:w-1/2 md:text-right scroll-reveal-right md:scroll-reveal-left">
+              <div class="glass-card rounded-2xl p-6 hover-border-glow inline-block text-left">
+                <span class="text-brand-400 font-display font-bold text-sm">Step 03</span>
+                <h3 class="text-xl font-display font-bold text-white mt-2 mb-3">Manage & Grow</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Track orders in real-time, view analytics, and watch your restaurant grow with actionable insights.</p>
+              </div>
+            </div>
+            <div class="hidden md:block timeline-dot" style="top: 50%; margin-top: -8px;"></div>
+            <div class="md:w-1/2 flex justify-center scroll-reveal-right">
+              <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 flex items-center justify-center text-4xl animate-morphBlob" style="animation-delay:4s">📈</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TECH MARQUEE ===== -->
+  <section class="py-12 border-y border-white/5 overflow-hidden">
+    <div class="marquee-track">
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">QR Ordering</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Real-Time Dashboard</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Smart Analytics</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Custom Branding</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Google Reviews</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Zero Contact</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Instant Setup</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">QR Ordering</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Real-Time Dashboard</span>
+      <span class="text-brand-500">✦</span>
+      <span class="text-2xl font-display font-bold text-white/10 whitespace-nowrap">Smart Analytics</span>
+      <span class="text-brand-500">✦</span>
+    </div>
+  </section>
+
+  <!-- ===== PRICING SECTION ===== -->
+  <section id="pricing" class="py-20 sm:py-32 section-gradient relative overflow-hidden">
+    <div class="orb orb-1" style="top:auto;bottom:-100px;right:auto;left:-100px;"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">Pricing</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Simple & <span class="gradient-text">Transparent</span> Pricing
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg scroll-reveal">
+          Choose the plan that fits your restaurant size. No hidden fees, cancel anytime.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Starter -->
+        <div class="glass-card rounded-2xl p-6 hover-border-glow glass-card-hover flex flex-col scroll-reveal" style="transition-delay:0.1s">
+          <h3 class="text-lg font-display font-semibold text-white mb-1">Starter</h3>
+          <p class="text-gray-500 text-sm mb-5">Up to 20 seats</p>
+          <div class="mb-6">
+            <span class="text-4xl font-display font-bold gradient-text">₹299</span>
+            <span class="text-gray-500">/mo</span>
+          </div>
+          <ul class="text-gray-400 space-y-3 mb-8 flex-grow text-sm">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> QR Code Menu</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Order Dashboard</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Advanced Reports</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Custom Branding</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> 1 Free Review Scanner</li>
+          </ul>
+          <a href="javascript:void(0)" class="openFormBtn block text-center bg-white/5 border border-white/10 text-white py-3 rounded-xl font-semibold hover:bg-brand-500/20 hover:border-brand-500/50 transition-all duration-300">
+            Choose Plan
+          </a>
+        </div>
+
+        <!-- Growth -->
+        <div class="glass-card rounded-2xl p-6 hover-border-glow glass-card-hover flex flex-col scroll-reveal" style="transition-delay:0.2s">
+          <h3 class="text-lg font-display font-semibold text-white mb-1">Growth</h3>
+          <p class="text-gray-500 text-sm mb-5">21 - 50 seats</p>
+          <div class="mb-6">
+            <span class="text-4xl font-display font-bold gradient-text">₹399</span>
+            <span class="text-gray-500">/mo</span>
+          </div>
+          <ul class="text-gray-400 space-y-3 mb-8 flex-grow text-sm">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Everything in Starter</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Advanced Reports</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Priority Support</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Custom Branding</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> 1 Free Review Scanner</li>
+          </ul>
+          <a href="javascript:void(0)" class="openFormBtn block text-center bg-white/5 border border-white/10 text-white py-3 rounded-xl font-semibold hover:bg-brand-500/20 hover:border-brand-500/50 transition-all duration-300">
+            Choose Plan
+          </a>
+        </div>
+
+        <!-- Professional (Popular) -->
+        <div class="relative glass-card rounded-2xl p-6 border-brand-500/50 glass-card-hover flex flex-col scroll-reveal" style="transition-delay:0.3s; border-color: rgba(99,102,241,0.5);">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 popular-badge text-white text-xs font-bold px-4 py-1 rounded-full">
+            Most Popular
+          </div>
+          <h3 class="text-lg font-display font-semibold text-white mb-1 mt-2">Professional</h3>
+          <p class="text-gray-500 text-sm mb-5">51 - 100 seats</p>
+          <div class="mb-6">
+            <span class="text-4xl font-display font-bold gradient-text">₹499</span>
+            <span class="text-gray-500">/mo</span>
+          </div>
+          <ul class="text-gray-400 space-y-3 mb-8 flex-grow text-sm">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Everything in Growth</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Sales Analytics</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Custom Branding</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> 1 Free Review Scanner</li>
+          </ul>
+          <a href="javascript:void(0)" class="openFormBtn block text-center bg-gradient-to-r from-brand-500 to-brand-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all duration-300 hover:-translate-y-0.5">
+            Choose Plan
+          </a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="glass-card rounded-2xl p-6 hover-border-glow glass-card-hover flex flex-col scroll-reveal" style="transition-delay:0.4s">
+          <h3 class="text-lg font-display font-semibold text-white mb-1">Enterprise</h3>
+          <p class="text-gray-500 text-sm mb-5">101+ seats</p>
+          <div class="mb-6">
+            <span class="text-4xl font-display font-bold gradient-text">₹999</span>
+            <span class="text-gray-500">/mo</span>
+          </div>
+          <ul class="text-gray-400 space-y-3 mb-8 flex-grow text-sm">
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Everything in Pro</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Dedicated Support</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> 1 Free Review Scanner</li>
+            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> White-Label Option</li>
+          </ul>
+          <a href="javascript:void(0)" class="openFormBtn block text-center bg-white/5 border border-white/10 text-white py-3 rounded-xl font-semibold hover:bg-brand-500/20 hover:border-brand-500/50 transition-all duration-300">
+            Choose Plan
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section id="testimonials" class="py-20 sm:py-32 section-gradient-alt relative overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">Testimonials</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Loved by <span class="gradient-text">Restaurant Owners</span>
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="testimonial-card rounded-2xl p-6 transition-all duration-300 scroll-reveal" style="transition-delay:0.1s">
+          <div class="flex items-center gap-1 mb-4">
+            <span class="text-amber-400">★★★★★</span>
+          </div>
+          <p class="text-gray-300 text-sm leading-relaxed mb-6">"MenuSwift transformed our restaurant. Orders are 40% faster, and customers love the QR menu. Setup took just 10 minutes!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold text-sm">RK</div>
+            <div>
+              <div class="text-white font-semibold text-sm">Raj Kumar</div>
+              <div class="text-gray-500 text-xs">Spice Garden, Delhi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card rounded-2xl p-6 transition-all duration-300 scroll-reveal" style="transition-delay:0.2s">
+          <div class="flex items-center gap-1 mb-4">
+            <span class="text-amber-400">★★★★★</span>
+          </div>
+          <p class="text-gray-300 text-sm leading-relaxed mb-6">"The analytics dashboard is incredible. We identified our top dishes and optimized our menu — revenue increased by 25%!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">PS</div>
+            <div>
+              <div class="text-white font-semibold text-sm">Priya Sharma</div>
+              <div class="text-gray-500 text-xs">Taste of India, Mumbai</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card rounded-2xl p-6 transition-all duration-300 scroll-reveal" style="transition-delay:0.3s">
+          <div class="flex items-center gap-1 mb-4">
+            <span class="text-amber-400">★★★★★</span>
+          </div>
+          <p class="text-gray-300 text-sm leading-relaxed mb-6">"Best investment we made. The Google Review scanner alone brought us 100+ new reviews in a month. Highly recommended!"</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm">AM</div>
+            <div>
+              <div class="text-white font-semibold text-sm">Amit Mehta</div>
+              <div class="text-gray-500 text-xs">Royal Biryani, Hyderabad</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT SECTION ===== -->
+  <section id="about" class="py-20 sm:py-32 section-gradient relative overflow-hidden">
+    <div class="orb orb-2" style="bottom:auto;top:-100px;left:auto;right:-100px;"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">About Us</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Why <span class="gradient-text">MenuSwift?</span>
+        </h2>
+        <p class="text-gray-400 max-w-3xl mx-auto text-lg scroll-reveal">
+          We're on a mission to digitize every restaurant in India — making ordering seamless, management effortless, and growth inevitable.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card glass-card-hover rounded-2xl p-8 text-center scroll-reveal-scale" style="transition-delay:0.1s">
+          <div class="text-4xl mb-4 animate-heartbeat">🎯</div>
+          <h3 class="text-xl font-display font-semibold text-white mb-3">Easy to Use</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Intuitive dashboard and menu management for quick setup and smooth daily operation.</p>
+        </div>
+        <div class="glass-card glass-card-hover rounded-2xl p-8 text-center scroll-reveal-scale" style="transition-delay:0.2s">
+          <div class="text-4xl mb-4 animate-heartbeat" style="animation-delay:0.5s">📈</div>
+          <h3 class="text-xl font-display font-semibold text-white mb-3">Smart Analytics</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Track sales, popular items, and revenue trends to optimize your business decisions.</p>
+        </div>
+        <div class="glass-card glass-card-hover rounded-2xl p-8 text-center scroll-reveal-scale" style="transition-delay:0.3s">
+          <div class="text-4xl mb-4 animate-heartbeat" style="animation-delay:1s">🛠️</div>
+          <h3 class="text-xl font-display font-semibold text-white mb-3">Reliable Support</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">Built-in support system ensures you get help quickly whenever you need it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT SECTION ===== -->
+  <section id="contact" class="py-20 sm:py-32 section-gradient-alt relative overflow-hidden">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-12">
+        <span class="inline-block text-brand-400 font-semibold text-sm uppercase tracking-widest mb-4 scroll-reveal">Contact</span>
+        <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 scroll-reveal">
+          Get in <span class="gradient-text">Touch</span>
+        </h2>
+        <p class="text-gray-400 max-w-xl mx-auto text-lg scroll-reveal">
+          Have questions? We'd love to hear from you.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <!-- Contact Info -->
+        <div class="md:col-span-2 space-y-6 scroll-reveal-left">
+          <div class="glass-card rounded-2xl p-6 hover-border-glow">
+            <div class="text-2xl mb-3">📧</div>
+            <h4 class="text-white font-semibold mb-1">Email</h4>
+            <p class="text-gray-400 text-sm">menuswift@gmail.com</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6 hover-border-glow">
+            <div class="text-2xl mb-3">📞</div>
+            <h4 class="text-white font-semibold mb-1">Phone</h4>
+            <p class="text-gray-400 text-sm">+91 6003252577</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6 hover-border-glow">
+            <div class="text-2xl mb-3">📍</div>
+            <h4 class="text-white font-semibold mb-1">Location</h4>
+            <p class="text-gray-400 text-sm">India</p>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <form id="contactForm" class="md:col-span-3 glass-card rounded-2xl p-6 sm:p-8 scroll-reveal-right">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-gray-300 font-medium mb-2 text-sm" for="contactName">Name</label>
+              <input type="text" id="contactName" name="contactName" required placeholder="Your name"
+                class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+            </div>
+            <div>
+              <label class="block text-gray-300 font-medium mb-2 text-sm" for="contactPhone">Phone</label>
+              <input type="tel" id="contactPhone" pattern="[0-9]{10}" name="contactPhone" required placeholder="10-digit phone"
+                class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+            </div>
+            <div>
+              <label class="block text-gray-300 font-medium mb-2 text-sm" for="contactMessage">Message</label>
+              <textarea id="contactMessage" name="contactMessage" required placeholder="Tell us about your restaurant..."
+                class="w-full px-4 py-3 rounded-xl input-dark text-sm" rows="4"></textarea>
+            </div>
+            <button type="submit"
+              class="w-full bg-gradient-to-r from-brand-500 to-brand-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all duration-300 hover:-translate-y-0.5 text-sm">
+              Send Message
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SIGNUP MODAL ===== -->
+  <div id="signupModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden justify-center items-center z-50 p-4 overflow-auto">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 sm:p-8 relative animate-zoomIn max-h-[90vh] overflow-auto" style="background: rgba(17,17,40,0.95); border-color: rgba(99,102,241,0.3);">
+      <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl transition-all duration-300 hover:rotate-90 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">&times;</button>
+      <h3 class="text-2xl font-display font-bold text-white mb-6 text-center gradient-text">Get Started</h3>
+      <form id="signupForm" class="space-y-4">
+        <div>
+          <label class="block text-gray-300 font-medium mb-2 text-sm">Restaurant Name</label>
+          <input type="text" id="restaurantName" name="restaurantName" required placeholder="e.g. Spice Garden"
+            class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-300 font-medium mb-2 text-sm">Owner Name</label>
+          <input type="text" id="ownerName" name="ownerName" required placeholder="Your full name"
+            class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-300 font-medium mb-2 text-sm">Phone</label>
+          <input type="tel" id="ownerPhone" pattern="[0-9]{10}" name="ownerPhone" required placeholder="10-digit phone"
+            class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-300 font-medium mb-2 text-sm">Total Seats</label>
+          <input type="number" id="totalSeats" name="totalSeats" min="1" required placeholder="Number of seats"
+            class="w-full px-4 py-3 rounded-xl input-dark text-sm">
+        </div>
+        <div>
+          <label class="block text-gray-300 font-medium mb-2 text-sm">Subscription Plan (Auto-selected)</label>
+          <input type="text" id="subscriptionPlan" name="subscriptionPlan" readonly
+            class="w-full px-4 py-3 rounded-xl input-dark text-sm cursor-not-allowed opacity-60">
+        </div>
+        <button type="submit"
+          class="w-full bg-gradient-to-r from-brand-500 to-brand-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all duration-300 hover:-translate-y-0.5 text-sm">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="border-t border-white/5 py-12 sm:py-16 relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div class="md:col-span-2 scroll-reveal">
+          <div class="flex items-center gap-3 mb-4">
+            <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="MenuSwift" class="h-8">
+            <span class="text-xl font-display font-bold gradient-text">MenuSwift</span>
+          </div>
+          <p class="text-gray-400 text-sm leading-relaxed max-w-md">Smart solutions for modern restaurants. Digital menus, order management, analytics, and more — everything to grow your business.</p>
+        </div>
+        <div class="scroll-reveal" style="transition-delay:0.1s">
+          <h4 class="font-display font-semibold text-white mb-4">Quick Links</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#features" class="text-gray-400 hover:text-brand-400 transition-colors">Features</a></li>
+            <li><a href="#pricing" class="text-gray-400 hover:text-brand-400 transition-colors">Pricing</a></li>
+            <li><a href="#about" class="text-gray-400 hover:text-brand-400 transition-colors">About</a></li>
+            <li><a href="#contact" class="text-gray-400 hover:text-brand-400 transition-colors">Contact</a></li>
+          </ul>
+        </div>
+        <div class="scroll-reveal" style="transition-delay:0.2s">
+          <h4 class="font-display font-semibold text-white mb-4">Contact</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li>menuswift@gmail.com</li>
+            <li>+91 6003252577</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/5 pt-8 text-center">
+        <p class="text-gray-500 text-sm">&copy; 2025 MenuSwift. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button id="backToTop" aria-label="Back to top">↑</button>
+
+  <!-- AOS JS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Main Scripts -->
+  <script>
+    // === PRELOADER ===
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('preloader').classList.add('hidden');
+      }, 800);
+    });
+
+    // === AOS ===
+    AOS.init({ duration: 800, once: true, offset: 80, easing: 'ease-out-cubic' });
+
+    // === CUSTOM CURSOR ===
+    const cursorDot = document.getElementById('cursorDot');
+    const cursorRing = document.getElementById('cursorRing');
+    if (window.innerWidth > 768) {
+      let mx = 0, my = 0, cx = 0, cy = 0;
+      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursorDot.style.left = mx - 4 + 'px'; cursorDot.style.top = my - 4 + 'px'; });
+      function animateCursor() { cx += (mx - cx) * 0.15; cy += (my - cy) * 0.15; cursorRing.style.left = cx + 'px'; cursorRing.style.top = cy + 'px'; requestAnimationFrame(animateCursor); }
+      animateCursor();
+      document.querySelectorAll('a, button, input, textarea, .glass-card').forEach(el => {
+        el.addEventListener('mouseenter', () => { cursorRing.style.width = '60px'; cursorRing.style.height = '60px'; cursorRing.style.borderColor = 'rgba(129,140,248,0.6)'; });
+        el.addEventListener('mouseleave', () => { cursorRing.style.width = '40px'; cursorRing.style.height = '40px'; cursorRing.style.borderColor = 'rgba(129,140,248,0.4)'; });
+      });
+    }
+
+    // === SCROLL PROGRESS ===
+    const scrollProgress = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress.style.width = (window.scrollY / h * 100) + '%';
+    });
+
+    // === NAVBAR SCROLL ===
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // === MOBILE MENU ===
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      mobileMenuBtn.classList.toggle('hamburger-active');
+    });
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+      link.addEventListener('click', () => { mobileMenu.classList.add('hidden'); mobileMenuBtn.classList.remove('hamburger-active'); });
+    });
+
+    // === SIGNUP MODAL ===
+    const signupModal = document.getElementById('signupModal');
+    const closeModal = document.getElementById('closeModal');
+    document.querySelectorAll('.openFormBtn').forEach(btn => {
+      btn.addEventListener('click', () => { signupModal.classList.remove('hidden'); signupModal.style.display = 'flex'; });
+    });
+    closeModal.addEventListener('click', () => { signupModal.classList.add('hidden'); signupModal.style.display = 'none'; });
+    window.addEventListener('click', e => { if (e.target === signupModal) { signupModal.classList.add('hidden'); signupModal.style.display = 'none'; } });
+
+    // === AUTO SUBSCRIPTION PLAN ===
+    const totalSeatsInput = document.getElementById('totalSeats');
+    const subscriptionPlanInput = document.getElementById('subscriptionPlan');
+    totalSeatsInput.addEventListener('input', () => {
+      const s = parseInt(totalSeatsInput.value) || 0;
+      subscriptionPlanInput.value = s <= 20 ? '₹299 / mo' : s <= 50 ? '₹399 / mo' : s <= 100 ? '₹499 / mo' : '₹999 / mo';
+    });
+
+    // === SMOOTH SCROLL ===
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => { e.preventDefault(); const t = document.querySelector(a.getAttribute('href')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    });
+
+    // === BACK TO TOP ===
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => { backToTop.classList.toggle('visible', window.scrollY > 500); });
+    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // === SCROLL REVEAL (IntersectionObserver) ===
+    const revealElements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale, .scroll-reveal-rotate, .scroll-reveal-flip');
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('revealed'); revealObs.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    revealElements.forEach(el => revealObs.observe(el));
+
+    // === COUNTER ANIMATION ===
+    const counters = document.querySelectorAll('.counter');
+    const counterObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target);
+          const suffix = target === 99 ? '%' : target === 4 ? '.9' : '+';
+          let current = 0;
+          const step = Math.max(1, Math.floor(target / 60));
+          const interval = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(interval); }
+            el.textContent = current.toLocaleString() + suffix;
+          }, 30);
+          counterObs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(c => counterObs.observe(c));
+
+    // === PARTICLE CANVAS ===
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particleCount = window.innerWidth < 768 ? 25 : 60;
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 2 + 0.5,
+        o: Math.random() * 0.3 + 0.1
+      });
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(129, 140, 248, ${p.o})`;
+        ctx.fill();
+
+        // Connect nearby particles (desktop only)
+        if (window.innerWidth > 768) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = p.x - particles[j].x;
+            const dy = p.y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(129, 140, 248, ${0.05 * (1 - dist / 120)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      });
+      requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // === TILT EFFECT ON CARDS (desktop) ===
+    if (window.innerWidth > 768) {
+      document.querySelectorAll('.glass-card-hover').forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const rect = card.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          card.style.transform = `translateY(-8px) perspective(600px) rotateX(${y * -5}deg) rotateY(${x * 5}deg)`;
+        });
+        card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+      });
+    }
+
+    // === MAGNETIC BUTTONS (desktop) ===
+    if (window.innerWidth > 768) {
+      document.querySelectorAll('.hover-shine, .openFormBtn').forEach(btn => {
+        btn.addEventListener('mousemove', e => {
+          const rect = btn.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px) translateY(-4px)`;
+        });
+        btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+      });
+    }
+  </script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function showNotification(message, type = 'info') {
+      const n = document.createElement('div');
+      n.className = 'fixed top-20 right-4 z-[9999] px-6 py-3 rounded-xl text-white font-semibold text-sm shadow-2xl';
+      n.style.animation = 'slideInRight 0.5s ease-out, fadeUp 0.5s ease-out';
+      n.classList.add(type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-brand-500');
+      n.textContent = message;
+      document.body.appendChild(n);
+      setTimeout(() => { n.style.animation = 'fadeRight 0.3s ease-out forwards'; setTimeout(() => n.remove(), 300); }, 3000);
+    }
+
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('contactName').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      const message = document.getElementById('contactMessage').value.trim();
+      if (!name || !phone || !message) { showNotification('Please fill all fields', 'warning'); return; }
+      try {
+        const r = await push(ref(db, 'contactForm'), { name, phone, message, timestamp: new Date().toISOString() });
+        const d = JSON.parse(localStorage.getItem('contactFormData') || '[]');
+        d.push({ id: r.key, name, phone, message, timestamp: new Date().toISOString() });
+        localStorage.setItem('contactFormData', JSON.stringify(d));
+        showNotification('✅ Message sent successfully!', 'success');
+        e.target.reset();
+      } catch (err) { showNotification('❌ Error: ' + err.message, 'error'); }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const restaurantName = document.getElementById('restaurantName').value.trim();
+      const ownerName = document.getElementById('ownerName').value.trim();
+      const ownerPhone = document.getElementById('ownerPhone').value.trim();
+      const totalSeats = document.getElementById('totalSeats').value.trim();
+      const subscriptionPlan = document.getElementById('subscriptionPlan').value.trim();
+      if (!restaurantName || !ownerName || !ownerPhone || !totalSeats) { showNotification('Please fill all fields', 'warning'); return; }
+      try {
+        const r = await push(ref(db, 'signupForm'), { restaurantName, ownerName, ownerPhone, totalSeats, subscriptionPlan, timestamp: new Date().toISOString() });
+        const d = JSON.parse(localStorage.getItem('signupFormData') || '[]');
+        d.push({ id: r.key, restaurantName, ownerName, ownerPhone, totalSeats, subscriptionPlan, timestamp: new Date().toISOString() });
+        localStorage.setItem('signupFormData', JSON.stringify(d));
+        showNotification('✅ Signup successful!', 'success');
+        e.target.reset();
+        document.getElementById('subscriptionPlan').value = '';
+        document.getElementById('signupModal').classList.add('hidden');
+        document.getElementById('signupModal').style.display = 'none';
+      } catch (err) { showNotification('❌ Error: ' + err.message, 'error'); }
+    });
+  </script>
+
+</body>
+</html>

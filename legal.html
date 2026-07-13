@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Company Info & Legal Pages - MenuSwift</title>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeInUp {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .fade-card {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 min-h-screen flex items-center justify-center">
+
+  <div class="max-w-3xl w-full px-6 py-16">
+    <h1 class="text-4xl font-extrabold text-center mb-12 text-blue-600 tracking-tight">
+      Company Info 
+    </h1>
+
+    <div class="grid sm:grid-cols-2 gap-6">
+
+      <a href="/contact-us.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center">
+        <div class="text-3xl mb-2">📞</div>
+        <h2 class="text-lg font-semibold text-gray-800">Contact Us</h2>
+      </a>
+
+      <a href="/service.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center"
+         style="animation-delay:0.1s">
+        <div class="text-3xl mb-2">🛠️</div>
+        <h2 class="text-lg font-semibold text-gray-800">Services</h2>
+      </a>
+
+      <a href="/terms&condition.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center"
+         style="animation-delay:0.2s">
+        <div class="text-3xl mb-2">📜</div>
+        <h2 class="text-lg font-semibold text-gray-800">Terms & Conditions</h2>
+      </a>
+
+      <a href="/refund.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center"
+         style="animation-delay:0.3s">
+        <div class="text-3xl mb-2">💸</div>
+        <h2 class="text-lg font-semibold text-gray-800">Refund & Cancellation</h2>
+      </a>
+
+      <a href="/privacy.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center"
+         style="animation-delay:0.4s">
+        <div class="text-3xl mb-2">🔒</div>
+        <h2 class="text-lg font-semibold text-gray-800">Privacy Policy</h2>
+      </a>
+
+      <a href="/about.html"
+         class="fade-card opacity-0 bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-white/30 text-center"
+         style="animation-delay:0.5s">
+        <div class="text-3xl mb-2">👥</div>
+        <h2 class="text-lg font-semibold text-gray-800">About Us</h2>
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    // Trigger animation on load
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".fade-card").forEach((card, i) => {
+        setTimeout(() => card.classList.remove("opacity-0"), i * 100);
+      });
+    });
+  </script>
+
+</body>
+</html>

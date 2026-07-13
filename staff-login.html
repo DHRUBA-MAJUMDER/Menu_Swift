@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Login - Kitchen Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .floating-animation {
+      animation: floating 6s ease-in-out infinite;
+    }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .slide-in-left {
+      animation: slideInLeft 0.8s ease-out;
+    }
+    
+    .slide-in-right {
+      animation: slideInRight 0.8s ease-out;
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+    }
+    
+    .input-field {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      outline: none;
+    }
+    
+    .error-message {
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen overflow-hidden">
+  <!-- Background Elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-20 left-10 w-20 h-20 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 floating-animation"></div>
+    <div class="absolute top-40 right-20 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 floating-animation" style="animation-delay: -3s;"></div>
+    <div class="absolute bottom-20 left-20 w-24 h-24 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 floating-animation" style="animation-delay: -1.5s;"></div>
+  </div>
+  
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md">
+      <!-- Header -->
+      <div class="text-center mb-8 slide-in-left">
+        <div class="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-2xl floating-animation">
+          👨‍🍳
+        </div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-2">
+          Kitchen Staff Portal
+        </h1>
+        <p class="text-blue-200 text-sm">Access your kitchen management system</p>
+      </div>
+      
+      <!-- Login Form -->
+      <div class="glass-effect rounded-3xl p-8 shadow-2xl slide-in-right">
+        <form id="staffLoginForm" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-blue-200 mb-2">Staff Email</label>
+            <input 
+              type="email" 
+              id="staffUsername" 
+              class="input-field w-full px-4 py-4 rounded-xl text-white placeholder-gray-400 focus:outline-none transition-all"
+              placeholder="Enter your email address"
+              required
+              autocomplete="email"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-blue-200 mb-2">Password</label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="staffPassword" 
+                class="input-field w-full px-4 py-4 rounded-xl text-white placeholder-gray-400 focus:outline-none transition-all pr-12"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+              >
+              <button type="button" id="togglePassword" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div id="errorMessage" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+          </div>
+          
+          <button 
+            type="submit" 
+            id="loginBtn"
+            class="btn-primary w-full py-4 rounded-xl font-semibold text-lg hover:scale-105 transition-all duration-300"
+          >
+            <span id="loginBtnText">🔐 Access Kitchen System</span>
+            <span id="loginBtnLoading" class="hidden">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Authenticating...
+            </span>
+          </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+          <p class="text-gray-400 text-sm">
+            Need access? Contact your restaurant manager
+          </p>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="text-center mt-8 slide-in-left" style="animation-delay: 0.3s;">
+        <div class="text-xs text-gray-400">
+          <p>🔒 Secure Staff Authentication System</p>
+          <p class="mt-1">Powered by MenuSwift Technology</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+   firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // FIX 1: Authenticate anonymously so Firebase allows the database read
+    
+    
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('staffPassword');
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      // Toggle icon
+      this.innerHTML = type === 'password' 
+        ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+           </svg>`
+        : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+           </svg>`;
+    });
+    
+    // Show error message
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+      errorEl.classList.add('error-message');
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        errorEl.classList.add('hidden');
+      }, 5000);
+    }
+    
+    // Hide error message
+    function hideError() {
+      document.getElementById('errorMessage').classList.add('hidden');
+    }
+    
+    // Set loading state
+    function setLoadingState(isLoading) {
+      const loginBtn = document.getElementById('loginBtn');
+      const loginBtnText = document.getElementById('loginBtnText');
+      const loginBtnLoading = document.getElementById('loginBtnLoading');
+      
+      if (isLoading) {
+        loginBtn.disabled = true;
+        loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        loginBtnText.classList.add('hidden');
+        loginBtnLoading.classList.remove('hidden');
+      } else {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        loginBtnText.classList.remove('hidden');
+        loginBtnLoading.classList.add('hidden');
+      }
+    }
+    
+    // Form submission
+    document.getElementById('staffLoginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideError();
+      setLoadingState(true);
+      
+      // Username input field ab Email ke liye use hoga
+      const email = document.getElementById('staffUsername').value.trim(); 
+      const password = document.getElementById('staffPassword').value.trim();
+      
+      if (!email || !password) {
+        showError('Please enter both Email and Password');
+        setLoadingState(false);
+        return;
+      }
+      
+      try {
+        // NAYA CODE: Secure login directly through Firebase Auth
+        const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const uid = userCred.user.uid;
+        
+        // Ab hum secure hain. Database se staff ki details fetch karein
+        const staffSnapshot = await db.ref('staff').once('value');
+        const allStaff = staffSnapshot.val() || {};
+        
+        let foundStaff = null;
+        let restaurantId = null;
+        
+        for (const [restId, staffData] of Object.entries(allStaff)) {
+          if (staffData && staffData[uid]) {
+            foundStaff = { ...staffData[uid], id: uid };
+            restaurantId = restId;
+            break;
+          }
+        }
+        
+        if (!foundStaff || foundStaff.status !== 'active') {
+          showError('Account is inactive or not found.');
+          await firebase.auth().signOut();
+          setLoadingState(false);
+          return;
+        }
+
+        // ... Yahan se aage ka aapka original restaurant verification aur sessionStorage wala code same rahega ...
+        
+        // Verify restaurant exists and is active
+        const restaurantSnapshot = await db.ref(`restaurants/${restaurantId}`).once('value');
+        const restaurantData = restaurantSnapshot.val();
+        
+        if (!restaurantData) {
+          showError('Restaurant not found. Please contact administrator.');
+          setLoadingState(false);
+          return;
+        }
+        
+        if (restaurantData.blocked || restaurantData.revoked) {
+          showError('Restaurant access is suspended. Please contact administrator.');
+          setLoadingState(false);
+          return;
+        }
+        
+        // Create session data
+        const sessionData = {
+          staffId: foundStaff.id,
+          staffName: foundStaff.name,
+          staffUsername: foundStaff.username,
+          restaurantId: restaurantId,
+          restaurantName: restaurantData.name,
+          role: foundStaff.role || 'staff',
+          loginTime: Date.now(),
+          permissions: foundStaff.permissions || {
+            viewOrders: true,
+            manageOrders: true,
+            accessReports: false
+          }
+        };
+        
+        // Store session
+        sessionStorage.setItem('kotAccess', JSON.stringify(sessionData));
+        
+        // Update last login time
+        await db.ref(`staff/${restaurantId}/${foundStaff.id}/lastLogin`).set(Date.now());
+        
+        // Success - redirect to KOT system
+        setLoadingState(false);
+        
+        // Show success message briefly before redirect
+        const successEl = document.createElement('div');
+        successEl.className = 'fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl shadow-2xl z-50';
+        successEl.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Login successful! Redirecting...</span>
+          </div>
+        `;
+        document.body.appendChild(successEl);
+        
+        setTimeout(() => {
+          window.location.href = 'kot.html';
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        showError('Connection error. Please check your internet and try again.');
+        setLoadingState(false);
+      }
+    });
+    
+    // Check if already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const existingSession = sessionStorage.getItem('kotAccess');
+      if (existingSession) {
+        try {
+          const session = JSON.parse(existingSession);
+          // Check if session is still valid (24 hours)
+          if (Date.now() - session.loginTime < 24 * 60 * 60 * 1000) {
+            window.location.href = 'kot.html';
+            return;
+          } else {
+            // Session expired, clear it
+            sessionStorage.removeItem('kotAccess');
+          }
+        } catch (error) {
+          // Invalid session data, clear it
+          sessionStorage.removeItem('kotAccess');
+        }
+      }
+      
+      // Focus on first input
+      document.getElementById('staffUsername').focus();
+    });
+    
+    // Enter key handling
+    document.getElementById('staffUsername').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('staffPassword').focus();
+      }
+    });
+    
+    document.getElementById('staffPassword').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('staffLoginForm').dispatchEvent(new Event('submit'));
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenuSwift - forms</title>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Loading animation */
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Table animations */
+    .table-row:hover {
+      background-color: rgba(99, 102, 241, 0.05);
+      transform: scale(1.01);
+      transition: all 0.2s ease;
+    }
+
+    /* Mobile responsive table */
+    @media (max-width: 768px) {
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .mobile-card {
+        display: block;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        padding: 1rem;
+      }
+      
+      .mobile-card-header {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+      }
+      
+      .mobile-card-content {
+        color: #6B7280;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+    }
+
+    /* Slide animations */
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .slide-in-right { animation: slideInRight 0.3s ease-out; }
+
+    /* Notification styles */
+    .notification {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 9999;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    /* Mobile improvements */
+    @media (max-width: 768px) {
+      .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
+      .mobile-text-sm { font-size: 0.875rem; }
+      .mobile-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .mobile-btn-sm { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center">
+          <a href="index.html" class="text-xl sm:text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+            <span class="inline-block mr-2">🚀</span> MenuSwift
+          </a>
+          <span class="ml-4 text-gray-500 text-sm sm:text-base">Admin Panel</span>
+        </div>
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <span class="text-xs sm:text-sm text-gray-500">Last updated: <span id="lastUpdate">Never</span></span>
+          <a href="index.html" class="bg-gray-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg hover:bg-gray-700 transition-colors text-xs sm:text-sm">
+            Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-blue-100 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-xs sm:text-sm text-gray-500">Total Signups</p>
+            <p class="text-xl sm:text-2xl font-semibold" id="totalSignups">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-green-100 rounded-lg">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-xs sm:text-sm text-gray-500">Contact Messages</p>
+            <p class="text-xl sm:text-2xl font-semibold" id="totalContacts">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-purple-100 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-xs sm:text-sm text-gray-500">Total Entries</p>
+            <p class="text-xl sm:text-2xl font-semibold" id="totalEntries">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="flex items-center">
+          <div class="p-2 bg-yellow-100 rounded-lg">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <p class="text-xs sm:text-sm text-gray-500">Potential Revenue</p>
+            <p class="text-xl sm:text-2xl font-semibold" id="potentialRevenue">₹0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 sm:mb-8">
+      <h3 class="text-base sm:text-lg font-semibold mb-4">Admin Controls</h3>
+      <div class="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-4">
+        <button id="refreshData" class="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors mobile-btn-sm">
+          <span class="inline-block mr-1 sm:mr-2">🔄</span> Refresh Data
+        </button>
+        <button id="bulkDeleteBtn" class="bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-700 transition-colors mobile-btn-sm">
+          <span class="inline-block mr-1 sm:mr-2">🗑️</span> Delete Selected
+        </button>
+        <button id="exportData" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-700 transition-colors mobile-btn-sm">
+          <span class="inline-block mr-1 sm:mr-2">📊</span> Export CSV
+        </button>
+        <button id="clearAll" class="bg-gray-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors mobile-btn-sm">
+          <span class="inline-block mr-1 sm:mr-2">🧹</span> Clear All
+        </button>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <input type="text" id="searchInput" placeholder="Search submissions..." 
+               class="flex-1 px-3 sm:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+        <select id="filterType" class="px-3 sm:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+          <option value="all">All Forms</option>
+          <option value="signup">Signup Forms</option>
+          <option value="contact">Contact Forms</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden flex justify-center items-center py-12">
+      <div class="loading-spinner"></div>
+      <span class="ml-3 text-gray-600">Loading data...</span>
+    </div>
+
+    <!-- Data Container -->
+    <div id="dataContainer">
+      <!-- Signup Forms Section -->
+      <div id="signupSection" class="bg-white rounded-lg shadow mb-6 sm:mb-8">
+        <div class="p-4 sm:p-6 border-b">
+          <h4 class="text-lg sm:text-xl font-bold text-indigo-600 flex items-center">
+            <span class="mr-2">👥</span>
+            Signup Forms (<span id="signupCount">0</span>)
+            <input type="checkbox" id="selectAllSignup" class="ml-4 rounded" title="Select all signup forms">
+          </h4>
+        </div>
+        <div class="table-container">
+          <!-- Desktop Table View -->
+          <table class="hidden sm:table w-full">
+            <thead class="bg-indigo-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Restaurant</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seats</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="signupTableBody">
+              <!-- Data will be populated here -->
+            </tbody>
+          </table>
+          
+          <!-- Mobile Card View -->
+          <div id="signupCardContainer" class="block sm:hidden p-4">
+            <!-- Mobile cards will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Forms Section -->
+      <div id="contactSection" class="bg-white rounded-lg shadow mb-6 sm:mb-8">
+        <div class="p-4 sm:p-6 border-b">
+          <h4 class="text-lg sm:text-xl font-bold text-green-600 flex items-center">
+            <span class="mr-2">💬</span>
+            Contact Forms (<span id="contactCount">0</span>)
+            <input type="checkbox" id="selectAllContact" class="ml-4 rounded" title="Select all contact forms">
+          </h4>
+        </div>
+        <div class="table-container">
+          <!-- Desktop Table View -->
+          <table class="hidden sm:table w-full">
+            <thead class="bg-green-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Message</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="contactTableBody">
+              <!-- Data will be populated here -->
+            </tbody>
+          </table>
+          
+          <!-- Mobile Card View -->
+          <div id="contactCardContainer" class="block sm:hidden p-4">
+            <!-- Mobile cards will be populated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+      <div class="text-6xl mb-4">📊</div>
+      <h3 class="text-xl font-semibold text-gray-600 mb-2">No Data Available</h3>
+      <p class="text-gray-500">Forms submitted through your website will appear here.</p>
+      <button id="refreshFromEmpty" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+        Refresh Now
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Global variables
+    let signupData = [];
+    let contactData = [];
+    let selectedItems = new Set();
+
+    // Utility functions
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      
+      switch(type) {
+        case 'success':
+          notification.style.backgroundColor = '#10B981';
+          break;
+        case 'warning':
+          notification.style.backgroundColor = '#F59E0B';
+          break;
+        case 'error':
+          notification.style.backgroundColor = '#EF4444';
+          break;
+        default:
+          notification.style.backgroundColor = '#3B82F6';
+      }
+      
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    function formatDate(timestamp) {
+      return new Date(timestamp).toLocaleString();
+    }
+
+    function showLoading() {
+      document.getElementById('loadingSpinner').classList.remove('hidden');
+      document.getElementById('dataContainer').style.opacity = '0.5';
+      document.getElementById('emptyState').classList.add('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingSpinner').classList.add('hidden');
+      document.getElementById('dataContainer').style.opacity = '1';
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+    }
+
+    function updateStats() {
+      document.getElementById('totalSignups').textContent = signupData.length;
+      document.getElementById('totalContacts').textContent = contactData.length;
+      document.getElementById('totalEntries').textContent = signupData.length + contactData.length;
+      
+      // Calculate potential revenue
+      let revenue = 0;
+      signupData.forEach(item => {
+        const plan = item.subscriptionPlan;
+        if (plan.includes('299')) revenue += 299;
+        else if (plan.includes('399')) revenue += 399;
+        else if (plan.includes('499')) revenue += 499;
+        else if (plan.includes('999')) revenue += 999;
+      });
+      document.getElementById('potentialRevenue').textContent = `₹${revenue.toLocaleString()}`;
+    }
+
+    function renderSignupData() {
+      const tbody = document.getElementById('signupTableBody');
+      const cardContainer = document.getElementById('signupCardContainer');
+      const count = document.getElementById('signupCount');
+      
+      tbody.innerHTML = '';
+      cardContainer.innerHTML = '';
+      count.textContent = signupData.length;
+
+      if (signupData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No signup forms available</td></tr>';
+        cardContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No signup forms available</div>';
+        return;
+      }
+
+      signupData.forEach((item, index) => {
+        // Desktop table row
+        const row = document.createElement('tr');
+        row.className = 'table-row border-b hover:bg-gray-50';
+        row.innerHTML = `
+          <td class="px-4 py-3">
+            <input type="checkbox" class="rounded signup-checkbox" data-id="${item.id}" data-type="signup">
+          </td>
+          <td class="px-4 py-3 font-medium">${item.restaurantName}</td>
+          <td class="px-4 py-3">${item.ownerName}</td>
+          <td class="px-4 py-3">${item.ownerPhone}</td>
+          <td class="px-4 py-3">${item.totalSeats}</td>
+          <td class="px-4 py-3 text-sm">${item.subscriptionPlan}</td>
+          <td class="px-4 py-3 text-sm text-gray-500">${formatDate(item.timestamp)}</td>
+          <td class="px-4 py-3">
+            <button onclick="deleteItem('signup', '${item.id}')" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 transition-colors">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+
+        // Mobile card
+        const card = document.createElement('div');
+        card.className = 'mobile-card';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-3">
+            <div class="mobile-card-header">${item.restaurantName}</div>
+            <input type="checkbox" class="signup-checkbox" data-id="${item.id}" data-type="signup">
+          </div>
+          <div class="mobile-card-content space-y-1">
+            <div><strong>Owner:</strong> ${item.ownerName}</div>
+            <div><strong>Phone:</strong> ${item.ownerPhone}</div>
+            <div><strong>Seats:</strong> ${item.totalSeats}</div>
+            <div><strong>Plan:</strong> ${item.subscriptionPlan}</div>
+            <div><strong>Date:</strong> ${formatDate(item.timestamp)}</div>
+          </div>
+          <div class="mt-3">
+            <button onclick="deleteItem('signup', '${item.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors">
+              Delete
+            </button>
+          </div>
+        `;
+        cardContainer.appendChild(card);
+      });
+    }
+
+    function renderContactData() {
+      const tbody = document.getElementById('contactTableBody');
+      const cardContainer = document.getElementById('contactCardContainer');
+      const count = document.getElementById('contactCount');
+      
+      tbody.innerHTML = '';
+      cardContainer.innerHTML = '';
+      count.textContent = contactData.length;
+
+      if (contactData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No contact forms available</td></tr>';
+        cardContainer.innerHTML = '<div class="text-center text-gray-500 py-8">No contact forms available</div>';
+        return;
+      }
+
+      contactData.forEach((item, index) => {
+        // Desktop table row
+        const row = document.createElement('tr');
+        row.className = 'table-row border-b hover:bg-gray-50';
+        row.innerHTML = `
+          <td class="px-4 py-3">
+            <input type="checkbox" class="rounded contact-checkbox" data-id="${item.id}" data-type="contact">
+          </td>
+          <td class="px-4 py-3 font-medium">${item.name}</td>
+          <td class="px-4 py-3">${item.phone}</td>
+          <td class="px-4 py-3 max-w-xs">
+            <div class="truncate" title="${item.message}">${item.message}</div>
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-500">${formatDate(item.timestamp)}</td>
+          <td class="px-4 py-3">
+            <button onclick="deleteItem('contact', '${item.id}')" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 transition-colors">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+
+        // Mobile card
+        const card = document.createElement('div');
+        card.className = 'mobile-card';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-3">
+            <div class="mobile-card-header">${item.name}</div>
+            <input type="checkbox" class="contact-checkbox" data-id="${item.id}" data-type="contact">
+          </div>
+          <div class="mobile-card-content space-y-1">
+            <div><strong>Phone:</strong> ${item.phone}</div>
+            <div><strong>Message:</strong> ${item.message}</div>
+            <div><strong>Date:</strong> ${formatDate(item.timestamp)}</div>
+          </div>
+          <div class="mt-3">
+            <button onclick="deleteItem('contact', '${item.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors">
+              Delete
+            </button>
+          </div>
+        `;
+        cardContainer.appendChild(card);
+      });
+    }
+
+    function loadData() {
+      showLoading();
+      
+      // Load signup data from Firebase
+      onValue(ref(db, 'signupForm'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          signupData = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+        } else {
+          signupData = [];
+        }
+        renderSignupData();
+        updateStats();
+        checkEmptyState();
+      });
+
+      // Load contact data from Firebase
+      onValue(ref(db, 'contactForm'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          contactData = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+        } else {
+          contactData = [];
+        }
+        renderContactData();
+        updateStats();
+        checkEmptyState();
+        hideLoading();
+      });
+    }
+
+    function checkEmptyState() {
+      const isEmpty = signupData.length === 0 && contactData.length === 0;
+      if (isEmpty) {
+        document.getElementById('emptyState').classList.remove('hidden');
+        document.getElementById('dataContainer').classList.add('hidden');
+      } else {
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('dataContainer').classList.remove('hidden');
+      }
+    }
+
+    // Delete functions
+    window.deleteItem = async function(type, id) {
+      if (confirm('Are you sure you want to delete this item?')) {
+        try {
+          await remove(ref(db, `${type}Form/${id}`));
+          showNotification('Item deleted successfully!', 'success');
+        } catch (error) {
+          console.error('Error deleting item:', error);
+          showNotification('Error deleting item', 'error');
+        }
+      }
+    };
+
+    function bulkDelete() {
+      const selectedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked:not(#selectAllSignup):not(#selectAllContact)');
+      
+      if (selectedCheckboxes.length === 0) {
+        showNotification('Please select items to delete', 'warning');
+        return;
+      }
+
+      if (confirm(`Are you sure you want to delete ${selectedCheckboxes.length} selected items?`)) {
+        const deletePromises = [];
+        
+        selectedCheckboxes.forEach(checkbox => {
+          const id = checkbox.dataset.id;
+          const type = checkbox.dataset.type;
+          deletePromises.push(remove(ref(db, `${type}Form/${id}`)));
+        });
+        
+        Promise.all(deletePromises)
+          .then(() => {
+            showNotification(`${selectedCheckboxes.length} items deleted successfully!`, 'success');
+          })
+          .catch(error => {
+            console.error('Error in bulk delete:', error);
+            showNotification('Error during bulk delete', 'error');
+          });
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ WARNING: This will delete ALL data permanently. This action cannot be undone!\n\nAre you absolutely sure?')) {
+        const deletePromises = [];
+        
+        signupData.forEach(item => {
+          deletePromises.push(remove(ref(db, `signupForm/${item.id}`)));
+        });
+        
+        contactData.forEach(item => {
+          deletePromises.push(remove(ref(db, `contactForm/${item.id}`)));
+        });
+        
+        Promise.all(deletePromises)
+          .then(() => {
+            showNotification('All data cleared successfully!', 'success');
+          })
+          .catch(error => {
+            console.error('Error clearing data:', error);
+            showNotification('Error clearing data', 'error');
+          });
+      }
+    }
+
+    // Export functions
+    function exportToCSV() {
+      const allData = [
+        ...signupData.map(item => ({...item, type: 'signup'})),
+        ...contactData.map(item => ({...item, type: 'contact'}))
+      ];
+      
+      if (allData.length === 0) {
+        showNotification('No data to export', 'warning');
+        return;
+      }
+
+      const csvContent = convertToCSV(allData);
+      downloadCSV(csvContent, `menuswift_submissions_${new Date().toISOString().split('T')[0]}.csv`);
+      showNotification('Data exported successfully!', 'success');
+    }
+
+    function convertToCSV(data) {
+      const headers = ['Type', 'Name', 'Phone', 'Message/Restaurant', 'Additional Info', 'Date'];
+      const csvRows = [headers.join(',')];
+      
+      data.forEach(item => {
+        const row = [
+          item.type,
+          item.name || item.ownerName || '',
+          item.phone || item.ownerPhone || '',
+          item.message || item.restaurantName || '',
+          item.type === 'signup' ? `Seats: ${item.totalSeats}, Plan: ${item.subscriptionPlan}` : '',
+          formatDate(item.timestamp)
+        ];
+        csvRows.push(row.map(field => `"${field}"`).join(','));
+      });
+      
+      return csvRows.join('\n');
+    }
+
+    function downloadCSV(csvContent, filename) {
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    // Search and filter functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const filterType = document.getElementById('filterType');
+      
+      function filterData() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filterValue = filterType.value;
+        
+        // Show/hide sections based on filter
+        const signupSection = document.getElementById('signupSection');
+        const contactSection = document.getElementById('contactSection');
+        
+        if (filterValue === 'all') {
+          signupSection.style.display = 'block';
+          contactSection.style.display = 'block';
+        } else if (filterValue === 'signup') {
+          signupSection.style.display = 'block';
+          contactSection.style.display = 'none';
+        } else if (filterValue === 'contact') {
+          signupSection.style.display = 'none';
+          contactSection.style.display = 'block';
+        }
+        
+        // Filter table rows and cards based on search term
+        document.querySelectorAll('.table-row, .mobile-card').forEach(element => {
+          const text = element.textContent.toLowerCase();
+          element.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+      }
+      
+      searchInput.addEventListener('input', filterData);
+      filterType.addEventListener('change', filterData);
+    }
+
+    // Event listeners
+    document.getElementById('refreshData').addEventListener('click', loadData);
+    document.getElementById('refreshFromEmpty').addEventListener('click', loadData);
+    document.getElementById('bulkDeleteBtn').addEventListener('click', bulkDelete);
+    document.getElementById('exportData').addEventListener('click', exportToCSV);
+    document.getElementById('clearAll').addEventListener('click', clearAllData);
+
+    // Select all functionality
+    document.getElementById('selectAllSignup').addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.signup-checkbox');
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    document.getElementById('selectAllContact').addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.contact-checkbox');
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    // Initialize
+    setupSearch();
+    loadData();
+
+    // Auto-refresh every 30 seconds
+    setInterval(loadData, 30000);
+  </script>
+
+</body>
+</html>

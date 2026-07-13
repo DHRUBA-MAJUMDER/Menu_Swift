@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOT Panel - Kitchen Orders</title>
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <audio id="notificationSound" preload="auto">
+    <source src="sounds/notification.mp3" type="audio/wav">
+  </audio>
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .kot-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kot-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .kot-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .kot-card:hover::before {
+      opacity: 1;
+    }
+
+    .status-new {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: pulse 2s infinite;
+    }
+
+    .status-accepted {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .status-preparing {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .status-ready {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-served {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+
+    .status-rejected {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .timer-display {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .notification {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .priority-high {
+      border-left: 4px solid #ef4444;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+    }
+
+    .priority-medium {
+      border-left: 4px solid #f59e0b;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+    }
+
+    .priority-low {
+      border-left: 4px solid #10b981;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+    }
+
+    .tab-button {
+      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-button.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border-color: #3b82f6;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .tab-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-btn {
+      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.875rem;
+    }
+
+    .filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .history-card-professional {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .history-card-professional::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .history-card-professional:hover::before {
+      opacity: 1;
+    }
+
+    .history-card-professional:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-completed {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-rejected-badge {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
+    }
+
+    .item-name-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    .item-qty-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem 0.5rem;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 0.375rem;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .item-price-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 80px;
+    }
+
+    @media (max-width: 768px) {
+      .kot-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .kot-card {
+        padding: 1rem;
+      }
+
+      .filter-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+      }
+
+      .tab-button {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .filter-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+
+      .tab-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .filter-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .tab-buttons {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-title {
+        font-size: 1.5rem;
+      }
+
+      .header-subtitle {
+        font-size: 0.75rem;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+    }
+
+    .refresh-spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen">
+  <audio id="notificationSound" preload="auto">
+    <source src="sounds/notification.mp3" type="audio/wav">
+  </audio>
+
+  <header class="bg-gradient-to-r from-slate-800/90 to-slate-900/90 backdrop-blur-lg border-b border-white/10">
+    <div class="max-w-7xl mx-auto p-4 lg:p-6">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+            👨‍🍳
+          </div>
+          <div>
+            <h1 class="header-title text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+              Kitchen Order Tickets
+            </h1>
+            <p class="header-subtitle text-blue-200 text-sm">Professional order management system</p>
+          </div>
+        </div>
+
+        <div class="header-actions flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-sm text-gray-300">Staff</div>
+            <div id="staffDisplay" class="font-semibold text-blue-400">Loading...</div>
+          </div>
+          <button onclick="logout()" class="bg-gradient-to-r from-red-500 to-red-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm lg:text-base">
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto p-4">
+    <div class="glass-effect p-4 rounded-xl mb-6">
+      <div class="grid grid-cols-2 gap-2 tab-buttons">
+        <button id="ordersTab" class="tab-button active px-4 py-3 rounded-lg text-white font-medium">
+          📋 Active Orders
+        </button>
+        <button id="historyTab" class="tab-button px-4 py-3 rounded-lg text-white font-medium">
+          📊 Order History (24h)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="activeOrdersSection" class="max-w-7xl mx-auto p-4 lg:p-6">
+    <div class="analytics-grid grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-blue-400 mb-1" id="totalActiveOrders">0</div>
+        <div class="text-sm text-gray-300 mb-2">Active Orders</div>
+        <div class="text-xs text-blue-300 font-medium">🔥 Current Load</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-yellow-400 mb-1" id="avgPrepTime">0m</div>
+        <div class="text-sm text-gray-300 mb-2">Avg. Prep Time</div>
+        <div class="text-xs text-yellow-300 font-medium">⏱️ Efficiency</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-green-400 mb-1" id="todayCompleted">0</div>
+        <div class="text-sm text-gray-300 mb-2">Completed Today</div>
+        <div class="text-xs text-green-300 font-medium">✅ Success</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-purple-400 mb-1" id="kitchenLoad">Low</div>
+        <div class="text-sm text-gray-300 mb-2">Kitchen Load</div>
+        <div class="text-xs text-purple-300 font-medium">📈 Status</div>
+      </div>
+    </div>
+
+    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 mb-6">
+      <div class="flex flex-col gap-4">
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 filter-buttons">
+          <button class="filter-btn active" data-filter="all">
+            📋 All (<span id="count-all">0</span>)
+          </button>
+          <button class="filter-btn" data-filter="accepted">
+            ✅ Accepted (<span id="count-accepted">0</span>)
+          </button>
+          <button class="filter-btn" data-filter="preparing">
+            👨‍🍳 Preparing (<span id="count-preparing">0</span>)
+          </button>
+          <button class="filter-btn" data-filter="ready">
+            🍽️ Ready (<span id="count-ready">0</span>)
+          </button>
+          <button class="filter-btn" data-filter="served">
+            ✅ Served (<span id="count-served">0</span>)
+          </button>
+          <button class="filter-btn" data-filter="rejected">
+            ❌ Rejected (<span id="count-rejected">0</span>)
+          </button>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2 justify-between">
+          <div class="flex flex-wrap gap-2">
+            <button onclick="clearOldOrders()" class="bg-gradient-to-r from-red-500 to-red-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+              🗑️ Clear Old
+            </button>
+            <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+              <span id="refreshIcon">⏰</span> <span id="refreshText">Auto: ON</span>
+            </button>
+            <button onclick="refreshNow()" id="refreshNowBtn" class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+              🔄 Refresh
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-sm text-gray-300">
+            <span>🔊</span>
+            <button onclick="toggleSound()" id="soundToggle" class="text-green-400 hover:text-green-300">
+              Sound ON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="kotContainer" class="kot-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+    </div>
+
+    <div id="emptyState" class="text-center py-16 hidden">
+      <div class="text-6xl mb-4 opacity-50">👨‍🍳</div>
+      <h3 class="text-xl font-semibold text-gray-300 mb-2">No active orders</h3>
+      <p class="text-gray-400 mb-4">Orders will appear here when accepted by admin</p>
+      <div class="text-sm text-gray-500">
+        <p>💡 Tips:</p>
+        <p>• Orders are automatically synced in real-time</p>
+        <p>• Sound notifications alert you of new orders</p>
+        <p>• Use filters to organize orders by status</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="orderHistorySection" class="max-w-7xl mx-auto p-4 lg:p-6 hidden">
+    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 mb-6">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white mb-1">📊 Order History & Analytics</h2>
+          <p class="text-gray-300 text-sm">Comprehensive overview of orders processed in the last 24 hours</p>
+        </div>
+        <button onclick="refreshHistory()" class="btn-primary px-4 py-2 rounded-lg text-white font-medium">
+          🔄 Refresh History
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-green-400 mb-1" id="totalCompletedOrders">0</div>
+        <div class="text-sm text-gray-300 mb-2">Completed Orders</div>
+        <div class="text-xs text-green-300 font-medium">✅ Successfully Served</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-blue-400 mb-1" id="totalOrderItems">0</div>
+        <div class="text-sm text-gray-300 mb-2">Total Items</div>
+        <div class="text-xs text-blue-300 font-medium">📦 Items Prepared</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-yellow-400 mb-1" id="averageTime">0m</div>
+        <div class="text-sm text-gray-300 mb-2">Avg. Prep Time</div>
+        <div class="text-xs text-yellow-300 font-medium">⏱️ Kitchen Efficiency</div>
+      </div>
+      <div class="glass-effect p-4 rounded-xl text-center hover:scale-105 transition-all">
+        <div class="text-3xl font-bold text-red-400 mb-1" id="rejectedOrders">0</div>
+        <div class="text-sm text-gray-300 mb-2">Rejected Orders</div>
+        <div class="text-xs text-red-300 font-medium">❌ Declined Orders</div>
+      </div>
+    </div>
+
+    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 mb-6">
+      <h3 class="text-lg font-bold text-white mb-4">📈 Performance Metrics</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-3 bg-slate-800/50 rounded-lg">
+          <div class="text-xl font-bold text-purple-400" id="successRate">0%</div>
+          <div class="text-xs text-gray-300">Success Rate</div>
+        </div>
+        <div class="text-center p-3 bg-slate-800/50 rounded-lg">
+          <div class="text-xl font-bold text-cyan-400" id="fastestOrder">0m</div>
+          <div class="text-xs text-gray-300">Fastest Order</div>
+        </div>
+        <div class="text-center p-3 bg-slate-800/50 rounded-lg">
+          <div class="text-xl font-bold text-orange-400" id="slowestOrder">0m</div>
+          <div class="text-xs text-gray-300">Slowest Order</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="historyContainer" class="space-y-4">
+    </div>
+
+    <div id="historyEmptyState" class="text-center py-16 hidden">
+      <div class="text-6xl mb-4 opacity-50">📊</div>
+      <h3 class="text-xl font-semibold text-gray-300 mb-2">No order history available</h3>
+      <p class="text-gray-400 mb-4">Completed orders will appear here for analysis</p>
+      <div class="text-sm text-gray-500">
+        <p>History includes orders from the last 24 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let kotOrders = {};
+    let orderHistory = {};
+    let currentFilter = 'all';
+    let autoRefresh = true;
+    let refreshInterval;
+    let session = null;
+    let currentTab = 'orders';
+    let soundEnabled = true;
+    let lastOrderCount = 0;
+
+    function checkAuth() {
+      const sessionData = sessionStorage.getItem('kotAccess');
+      if (!sessionData) {
+        showNotification('Please login to access KOT system', 'error');
+        setTimeout(() => {
+          window.location.href = 'staff-login.html';
+        }, 2000);
+        return false;
+      }
+
+      try {
+        session = JSON.parse(sessionData);
+
+        if (Date.now() - session.loginTime > 24 * 60 * 60 * 1000) {
+          sessionStorage.removeItem('kotAccess');
+          showNotification('Session expired. Please login again.', 'error');
+          setTimeout(() => {
+            window.location.href = 'staff-login.html';
+          }, 2000);
+          return false;
+        }
+
+        document.getElementById('staffDisplay').textContent = session.staffName || session.staffUsername;
+        return true;
+      } catch (error) {
+        console.error('Session parse error:', error);
+        sessionStorage.removeItem('kotAccess');
+        showNotification('Invalid session. Please login again.', 'error');
+        setTimeout(() => {
+          window.location.href = 'staff-login.html';
+        }, 2000);
+        return false;
+      }
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.removeItem('kotAccess');
+
+        if (session && session.staffId && session.restaurantId) {
+          db.ref(`staff/${session.restaurantId}/${session.staffId}/lastLogout`).set(Date.now()).catch(() => {});
+        }
+
+        showNotification('Logged out successfully', 'success');
+        setTimeout(() => {
+          window.location.href = 'staff-login.html';
+        }, 1500);
+      }
+    }
+
+    const notificationSound = document.getElementById('notificationSound');
+
+    document.body.addEventListener('click', () => {
+      if (!soundEnabled) return;
+      notificationSound.play().then(() => {
+        notificationSound.pause();
+        notificationSound.currentTime = 0;
+        console.log('🔊 Sound enabled');
+      }).catch(() => {});
+    }, { once: true });
+
+    function playSound() {
+      if (soundEnabled) {
+        notificationSound.volume = 0.7;
+        notificationSound.currentTime = 0;
+        notificationSound.play().then(() => {
+          console.log('🔊 Notification sound played');
+        }).catch(err => {
+          console.log('Sound play failed:', err);
+        });
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const toggle = document.getElementById('soundToggle');
+      toggle.textContent = soundEnabled ? 'Sound ON' : 'Sound OFF';
+      toggle.className = soundEnabled ? 'text-green-400 hover:text-green-300' : 'text-red-400 hover:text-red-300';
+
+      showNotification(`Sound ${soundEnabled ? 'enabled' : 'disabled'}`, 'info');
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`${tab}Tab`).classList.add('active');
+
+      if (tab === 'orders') {
+        document.getElementById('activeOrdersSection').classList.remove('hidden');
+        document.getElementById('orderHistorySection').classList.add('hidden');
+      } else {
+        document.getElementById('activeOrdersSection').classList.add('hidden');
+        document.getElementById('orderHistorySection').classList.remove('hidden');
+        loadOrderHistory();
+      }
+    }
+
+    function initializeKOTListener() {
+      db.ref(`restaurants/${session.restaurantId}/orders`).on('value', (snapshot) => {
+        const allOrders = snapshot.val() || {};
+        const newKotOrders = {};
+        const newOrderHistory = {};
+
+        const now = Date.now();
+        const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+
+        let newOrderCount = 0;
+
+        Object.entries(allOrders).forEach(([orderId, order]) => {
+          const orderTime = order.timestamp || now;
+
+          if (orderTime < twentyFourHoursAgo) {
+            db.ref(`restaurants/${session.restaurantId}/orders/${orderId}`).remove();
+            return;
+          }
+
+          if (order.status === 'accepted' || order.kotStatus) {
+            if (order.kotStatus === 'served' || order.status === 'done') {
+              newOrderHistory[orderId] = {
+                ...order,
+                kotStatus: order.kotStatus || 'served',
+                completedTime: order.kotServedTime || order.timestamp
+              };
+            } else {
+              newKotOrders[orderId] = {
+                ...order,
+                kotStatus: order.kotStatus || 'accepted',
+                kotAcceptedTime: order.kotAcceptedTime || now
+              };
+              newOrderCount++;
+            }
+          }
+        });
+
+        const currentOrderCount = Object.keys(newKotOrders).length;
+        const hasNewOrders = Object.keys(newKotOrders).some(id => !kotOrders[id]);
+
+        if (hasNewOrders && Object.keys(kotOrders).length > 0) {
+          playSound();
+          showNotification('🔔 New order received in kitchen!', 'success');
+
+          const originalTitle = document.title;
+          let flashCount = 0;
+          const flashInterval = setInterval(() => {
+            document.title = flashCount % 2 === 0 ? '🔔 NEW ORDER!' : originalTitle;
+            flashCount++;
+            if (flashCount >= 6) {
+              clearInterval(flashInterval);
+              document.title = originalTitle;
+            }
+          }, 500);
+        }
+
+        lastOrderCount = currentOrderCount;
+        kotOrders = newKotOrders;
+        orderHistory = newOrderHistory;
+
+        if (currentTab === 'orders') {
+          renderKOTOrders();
+          updateCounts();
+          updateActiveOrdersAnalytics();
+        } else {
+          renderOrderHistory();
+        }
+      }, (error) => {
+        console.error('Firebase listener error:', error);
+        showNotification('Connection error. Retrying...', 'error');
+      });
+    }
+
+    function updateKOTStatus(orderId, newStatus) {
+      const timestamp = Date.now();
+      const updates = {
+        [`restaurants/${session.restaurantId}/orders/${orderId}/kotStatus`]: newStatus
+      };
+
+      switch(newStatus) {
+        case 'accepted':
+          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotAcceptedTime`] = timestamp;
+          break;
+        case 'preparing':
+          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotPrepStartTime`] = timestamp;
+          break;
+        case 'ready':
+          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotReadyTime`] = timestamp;
+          break;
+        case 'served':
+          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotServedTime`] = timestamp;
+          updates[`restaurants/${session.restaurantId}/orders/${orderId}/status`] = 'done';
+          break;
+      }
+
+      db.ref().update(updates).then(() => {
+        showNotification(`Order ${newStatus}!`, 'success');
+
+        if (newStatus === 'served') {
+          const order = kotOrders[orderId];
+          if (order) {
+            const completedOrder = {
+              ...order,
+              kotStatus: 'served',
+              kotServedTime: timestamp,
+              status: 'done',
+              clearedAt: timestamp,
+              clearedFrom: 'kot',
+              clearedBy: session.staffName || session.staffUsername || 'kitchen_staff'
+            };
+            db.ref(`restaurants/${session.restaurantId}/orderHistory/${orderId}`).set(completedOrder)
+              .then(() => {
+                console.log(`✅ Order ${orderId} saved to history by KOT staff`);
+              })
+              .catch(error => {
+                console.error('Error saving to history:', error);
+              });
+          }
+        }
+
+        if (soundEnabled) {
+          const successSound = new Audio('sounds/notification.mp3');
+          successSound.volume = 0.5;
+          successSound.play().catch(() => {});
+        }
+      }).catch((error) => {
+        console.error('Error updating KOT status:', error);
+        showNotification('Failed to update order status', 'error');
+      });
+    }
+
+    function rejectKOTOrder(orderId) {
+      if (!confirm('Are you sure you want to reject this order?')) return;
+
+      const updates = {
+        [`restaurants/${session.restaurantId}/orders/${orderId}/kotStatus`]: 'rejected',
+        [`restaurants/${session.restaurantId}/orders/${orderId}/status`]: 'rejected',
+        [`restaurants/${session.restaurantId}/orders/${orderId}/kotRejectedTime`]: Date.now()
+      };
+
+      db.ref().update(updates).then(() => {
+        showNotification('Order rejected!', 'error');
+      }).catch((error) => {
+        console.error('Error rejecting order:', error);
+        showNotification('Failed to reject order', 'error');
+      });
+    }
+
+    function getTimeElapsed(startTime) {
+      if (!startTime) return '00:00';
+      const elapsed = Date.now() - startTime;
+      const minutes = Math.floor(elapsed / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function getOrderPriority(timestamp) {
+      const elapsed = Date.now() - timestamp;
+      const minutes = elapsed / 60000;
+
+      if (minutes > 30) return 'high';
+      if (minutes > 15) return 'medium';
+      return 'low';
+    }
+
+    function updateActiveOrdersAnalytics() {
+      const totalActive = Object.keys(kotOrders).length;
+
+      let totalPrepTime = 0;
+      let countWithTime = 0;
+      Object.values(kotOrders).forEach(order => {
+        if (order.kotAcceptedTime) {
+          totalPrepTime += Date.now() - order.kotAcceptedTime;
+          countWithTime++;
+        }
+      });
+      const avgPrepTime = countWithTime > 0 ? Math.floor(totalPrepTime / countWithTime / 60000) : 0;
+
+      const todayStart = new Date().setHours(0, 0, 0, 0);
+      const completedToday = Object.values(orderHistory).filter(order =>
+        (order.kotServedTime || order.completedTime) > todayStart
+      ).length;
+
+      let kitchenLoad = 'Low';
+      if (totalActive > 20) kitchenLoad = 'Very High';
+      else if (totalActive > 15) kitchenLoad = 'High';
+      else if (totalActive > 10) kitchenLoad = 'Medium';
+      else if (totalActive > 5) kitchenLoad = 'Moderate';
+
+      document.getElementById('totalActiveOrders').textContent = totalActive;
+      document.getElementById('avgPrepTime').textContent = `${avgPrepTime}m`;
+      document.getElementById('todayCompleted').textContent = completedToday;
+      document.getElementById('kitchenLoad').textContent = kitchenLoad;
+
+      const loadElement = document.getElementById('kitchenLoad');
+      loadElement.className = 'text-3xl font-bold mb-1';
+      if (kitchenLoad === 'Very High') loadElement.classList.add('text-red-400');
+      else if (kitchenLoad === 'High') loadElement.classList.add('text-orange-400');
+      else if (kitchenLoad === 'Medium') loadElement.classList.add('text-yellow-400');
+      else if (kitchenLoad === 'Moderate') loadElement.classList.add('text-blue-400');
+      else loadElement.classList.add('text-green-400');
+    }
+
+    function renderKOTOrders() {
+      const container = document.getElementById('kotContainer');
+      const emptyState = document.getElementById('emptyState');
+      container.innerHTML = '';
+
+      const filteredOrders = Object.entries(kotOrders).filter(([_, order]) => {
+        if (currentFilter === 'all') return true;
+        return (order.kotStatus || 'accepted') === currentFilter;
+      });
+
+      if (filteredOrders.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      filteredOrders.sort(([_, a], [__, b]) => {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const aPriority = getOrderPriority(a.kotAcceptedTime || a.timestamp);
+        const bPriority = getOrderPriority(b.kotAcceptedTime || b.timestamp);
+
+        if (priorityOrder[aPriority] !== priorityOrder[bPriority]) {
+          return priorityOrder[bPriority] - priorityOrder[aPriority];
+        }
+
+        return (a.kotAcceptedTime || a.timestamp) - (b.kotAcceptedTime || b.timestamp);
+      });
+
+      filteredOrders.forEach(([orderId, order]) => {
+        const card = createKOTCard(orderId, order);
+        container.appendChild(card);
+      });
+
+      const orderCount = filteredOrders.length;
+      document.title = orderCount > 0 ? `(${orderCount}) KOT System` : 'KOT System - Kitchen Orders';
+    }
+
+    function createKOTCard(orderId, order) {
+      const priority = getOrderPriority(order.kotAcceptedTime || order.timestamp);
+      const status = order.kotStatus || 'accepted';
+
+      const card = document.createElement('div');
+      card.className = `kot-card rounded-2xl p-4 shadow-xl fade-in priority-${priority}`;
+
+      let totalItems = 0;
+      let totalAmount = 0;
+      (order.cartItems || []).forEach(item => {
+        totalItems += item.quantity;
+        const itemTotal = Number(item.totalPrice) || (Number(item.unitPrice || item.price || 0) * item.quantity);
+        totalAmount += itemTotal;
+      });
+
+      const orderTime = new Date(order.timestamp || Date.now()).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const kotAcceptedTime = order.kotAcceptedTime ?
+        new Date(order.kotAcceptedTime).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : 'N/A';
+
+      card.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-lg font-bold text-white">KOT #${orderId.slice(-6)}</h2>
+              <span class="status-${status} px-2 py-1 rounded-full text-xs font-semibold text-white">
+                ${status.toUpperCase()}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
+              <span>🕒 ${orderTime}</span>
+              <span>✅ ${kotAcceptedTime}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold text-blue-400">${totalItems}</div>
+            <div class="text-xs text-gray-400">Items</div>
+          </div>
+        </div>
+
+        <div class="glass-effect p-2 rounded-lg mb-3">
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-300">Time Elapsed:</span>
+            <span class="timer-display text-yellow-400 text-sm" id="timer-${orderId}">
+              ${getTimeElapsed(order.kotAcceptedTime || order.timestamp)}
+            </span>
+          </div>
+          <div class="mt-1 text-xs text-gray-400 text-center">
+            Priority: <span class="font-semibold ${priority === 'high' ? 'text-red-400' : priority === 'medium' ? 'text-yellow-400' : 'text-green-400'}">${priority.toUpperCase()}</span>
+          </div>
+        </div>
+
+        <div class="glass-effect p-2 rounded-lg mb-3">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-sm">👤</span>
+            <span class="font-medium text-white text-sm truncate">${order.customerName || 'Walk-in'}</span>
+            <span class="text-gray-400">|</span>
+            <span class="text-gray-300 text-sm">Table: ${order.tableNumber || 'N/A'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs">${order.type === 'dine-in' ? '🏪' : order.type === 'takeaway' ? '📦' : '🚚'}</span>
+            <span class="text-xs text-gray-300 capitalize">${order.type || 'Dine-in'}</span>
+          </div>
+        </div>
+
+        <div class="glass-effect p-3 rounded-lg mb-3">
+          <h3 class="font-medium text-white mb-2 text-sm flex items-center justify-between">
+            <span>📋 Order Items</span>
+            <span class="text-green-400 font-bold">₹${totalAmount.toFixed(2)}</span>
+          </h3>
+          <div class="space-y-1 max-h-48 overflow-y-auto">
+            ${(order.cartItems || []).map(item => {
+              const unitPrice = Number(item.unitPrice || item.price || 0);
+              const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
+              const vegTag = item.veg ?
+                `<span class="text-xs px-1.5 py-0.5 rounded-full ${
+                  item.veg === 'Veg' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                }">${item.veg}</span>` : '';
+
+              return `
+                <div class="item-row">
+                  <div class="item-name-section">
+                    <span class="text-white font-medium text-sm">${item.name}</span>
+                    <div class="flex items-center gap-1">
+                      ${vegTag}
+                      <span class="text-xs text-gray-400">${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'}</span>
+                    </div>
+                  </div>
+                  <div class="item-qty-section">
+                    <span class="text-white font-bold text-sm">×${item.quantity}</span>
+                    <span class="text-xs text-blue-300">Qty</span>
+                  </div>
+                  <div class="item-price-section">
+                    <span class="text-green-400 font-bold text-sm">₹${itemTotal.toFixed(2)}</span>
+                    <span class="text-xs text-gray-400">@₹${unitPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="glass-effect p-2 rounded-lg mb-3">
+          <h3 class="font-medium text-white mb-1 text-sm">📊 Timeline:</h3>
+          <div class="space-y-0.5 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-300">✅ Accepted:</span>
+              <span class="text-green-400">${kotAcceptedTime}</span>
+            </div>
+            ${order.kotPrepStartTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">👨‍🍳 Preparing:</span>
+                <span class="text-blue-400">${new Date(order.kotPrepStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+            ${order.kotReadyTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">🍽️ Ready:</span>
+                <span class="text-yellow-400">${new Date(order.kotReadyTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+            ${order.kotServedTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">✅ Served:</span>
+                <span class="text-green-400">${new Date(order.kotServedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          ${getActionButtons(orderId, status)}
+        </div>
+      `;
+
+      return card;
+    }
+
+    function getActionButtons(orderId, status) {
+      switch(status) {
+        case 'accepted':
+          return `
+            <div class="flex gap-2">
+              <button onclick="updateKOTStatus('${orderId}', 'preparing')"
+                class="flex-1 btn-primary text-white px-3 py-2 rounded-lg font-medium text-xs">
+                👨‍🍳 Start Prep
+              </button>
+              <button onclick="rejectKOTOrder('${orderId}')"
+                class="btn-danger text-white px-3 py-2 rounded-lg font-medium text-xs">
+                ❌
+              </button>
+            </div>
+          `;
+        case 'preparing':
+          return `
+            <button onclick="updateKOTStatus('${orderId}', 'ready')"
+              class="w-full btn-success text-white px-3 py-2 rounded-lg font-medium text-xs">
+              🍽️ Mark Ready
+            </button>
+          `;
+        case 'ready':
+          return `
+            <button onclick="updateKOTStatus('${orderId}', 'served')"
+              class="w-full btn-success text-white px-3 py-2 rounded-lg font-medium text-xs">
+              ✅ Mark Served
+            </button>
+          `;
+        case 'served':
+          return `
+            <div class="text-center text-green-400 font-semibold py-2 text-xs">
+              ✅ Order Completed
+            </div>
+          `;
+        case 'rejected':
+          return `
+            <div class="text-center text-red-400 font-semibold py-2 text-xs">
+              ❌ Order Rejected
+            </div>
+          `;
+        default:
+          return '';
+      }
+    }
+
+    function updateCounts() {
+      const counts = {
+        all: Object.keys(kotOrders).length,
+        accepted: 0,
+        preparing: 0,
+        ready: 0,
+        served: 0,
+        rejected: 0
+      };
+
+      Object.values(kotOrders).forEach(order => {
+        const status = order.kotStatus || 'accepted';
+        if (counts[status] !== undefined) {
+          counts[status]++;
+        }
+      });
+
+      Object.entries(counts).forEach(([status, count]) => {
+        const element = document.getElementById(`count-${status}`);
+        if (element) {
+          element.textContent = count;
+        }
+      });
+    }
+
+    function updateTimers() {
+      Object.entries(kotOrders).forEach(([orderId, order]) => {
+        const timerElement = document.getElementById(`timer-${orderId}`);
+        if (timerElement) {
+          timerElement.textContent = getTimeElapsed(order.kotAcceptedTime || order.timestamp);
+        }
+      });
+    }
+
+    function loadOrderHistory() {
+      renderOrderHistory();
+    }
+
+    function renderOrderHistory() {
+      const container = document.getElementById('historyContainer');
+      const emptyState = document.getElementById('historyEmptyState');
+
+      const allHistoryOrders = {};
+
+      Object.assign(allHistoryOrders, orderHistory);
+
+      Object.entries(kotOrders).forEach(([orderId, order]) => {
+        if (order.kotStatus === 'served' || order.status === 'done') {
+          allHistoryOrders[orderId] = order;
+        }
+      });
+
+      container.innerHTML = '';
+
+      const historyEntries = Object.entries(allHistoryOrders);
+
+      if (historyEntries.length === 0) {
+        emptyState.classList.remove('hidden');
+        updateHistoryStats([]);
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      historyEntries.sort(([_, a], [__, b]) => {
+        const aTime = a.kotServedTime || a.completedTime || a.timestamp;
+        const bTime = b.kotServedTime || b.completedTime || b.timestamp;
+        return bTime - aTime;
+      });
+
+      historyEntries.forEach(([orderId, order]) => {
+        const card = createProfessionalHistoryCard(orderId, order);
+        container.appendChild(card);
+      });
+
+      updateEnhancedHistoryStats(historyEntries.map(([_, order]) => order));
+    }
+
+    function createProfessionalHistoryCard(orderId, order) {
+      const card = document.createElement('div');
+      card.className = 'history-card-professional p-4 rounded-xl shadow-lg fade-in';
+
+      const completedTime = order.kotServedTime || order.completedTime || order.timestamp;
+      const completedTimeStr = new Date(completedTime).toLocaleString();
+      const completedDateStr = new Date(completedTime).toLocaleDateString();
+      const completedTimeOnly = new Date(completedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const startTime = order.kotAcceptedTime || order.timestamp;
+      const totalTime = completedTime - startTime;
+      const totalMinutes = Math.floor(totalTime / 60000);
+      const totalSeconds = Math.floor((totalTime % 60000) / 1000);
+
+      let totalItems = 0;
+      let totalValue = 0;
+      (order.cartItems || []).forEach(item => {
+        totalItems += item.quantity;
+        const itemTotal = Number(item.totalPrice) || (Number(item.unitPrice || item.price || 0) * item.quantity);
+        totalValue += itemTotal;
+      });
+
+      const finalStatus = order.kotStatus || 'completed';
+      const statusClass = finalStatus === 'served' ? 'status-completed' : 'status-rejected-badge';
+      const statusIcon = finalStatus === 'served' ? '✅' : '❌';
+
+      const orderTypeIcon = order.type === 'dine-in' ? '🏪' : order.type === 'takeaway' ? '📦' : '🚚';
+      const orderTypeText = order.type === 'dine-in' ? 'Dine In' : order.type === 'takeaway' ? 'Takeaway' : 'Delivery';
+
+      card.innerHTML = `
+        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2 flex-wrap">
+              <h3 class="text-lg font-bold text-white">Order #${orderId.slice(-6)}</h3>
+              <span class="status-badge ${statusClass}">
+                ${statusIcon} ${finalStatus.toUpperCase()}
+              </span>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-gray-300 mb-2 flex-wrap">
+              <span class="flex items-center gap-1">
+                <span>👤</span>
+                <span class="font-medium truncate">${order.customerName || 'Walk-in Customer'}</span>
+              </span>
+              ${order.tableNumber ? `
+                <span class="flex items-center gap-1">
+                  <span>🪑</span>
+                  <span>Table ${order.tableNumber}</span>
+                </span>
+              ` : ''}
+              <span class="flex items-center gap-1">
+                <span>${orderTypeIcon}</span>
+                <span>${orderTypeText}</span>
+              </span>
+            </div>
+            <div class="text-xs text-gray-400">
+              <span>📅 ${completedDateStr}</span> •
+              <span>🕐 Completed at ${completedTimeOnly}</span>
+            </div>
+          </div>
+          <div class="text-right lg:text-left">
+            <div class="text-2xl font-bold text-green-400 mb-1">₹${totalValue.toFixed(2)}</div>
+            <div class="text-xs text-gray-400">Order Value</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <div class="text-center p-3 glass-effect rounded-lg">
+            <div class="text-xl font-bold text-blue-400">${totalItems}</div>
+            <div class="text-xs text-gray-400">Items</div>
+          </div>
+          <div class="text-center p-3 glass-effect rounded-lg">
+            <div class="text-xl font-bold text-yellow-400">${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}</div>
+            <div class="text-xs text-gray-400">Prep Time</div>
+          </div>
+          <div class="text-center p-3 glass-effect rounded-lg">
+            <div class="text-xl font-bold text-purple-400">${(order.cartItems || []).length}</div>
+            <div class="text-xs text-gray-400">Dishes</div>
+          </div>
+          <div class="text-center p-3 glass-effect rounded-lg">
+            <div class="text-xl font-bold ${totalMinutes <= 15 ? 'text-green-400' : totalMinutes <= 30 ? 'text-yellow-400' : 'text-red-400'}">
+              ${totalMinutes <= 15 ? '⚡' : totalMinutes <= 30 ? '⏱️' : '🐌'}
+            </div>
+            <div class="text-xs text-gray-400">Speed</div>
+          </div>
+        </div>
+
+        <div class="glass-effect p-3 rounded-lg mb-3">
+          <h4 class="font-medium text-white mb-2 text-sm">📋 Order Summary:</h4>
+          <div class="space-y-1 max-h-32 overflow-y-auto">
+            ${(order.cartItems || []).map(item => {
+              const unitPrice = Number(item.unitPrice || item.price || 0);
+              const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
+              return `
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-gray-300 truncate flex-1 mr-2">${item.name} ${item.plateType ? `(${item.plateType})` : ''}</span>
+                  <span class="text-white font-medium flex-shrink-0">${item.quantity}x • ₹${itemTotal.toFixed(2)}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="glass-effect p-3 rounded-lg">
+          <h4 class="font-medium text-white mb-2 text-sm">⏰ Order Timeline:</h4>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-300">🎯 Order Placed:</span>
+              <span class="text-blue-400">${new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            ${order.kotAcceptedTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">✅ Kitchen Accepted:</span>
+                <span class="text-green-400">${new Date(order.kotAcceptedTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+            ${order.kotPrepStartTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">👨‍🍳 Started Preparing:</span>
+                <span class="text-blue-400">${new Date(order.kotPrepStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+            ${order.kotReadyTime ? `
+              <div class="flex justify-between">
+                <span class="text-gray-300">🍽️ Ready to Serve:</span>
+                <span class="text-yellow-400">${new Date(order.kotReadyTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ` : ''}
+            <div class="flex justify-between font-medium">
+              <span class="text-gray-300">🏁 ${finalStatus === 'served' ? 'Order Completed:' : 'Order Rejected:'}</span>
+              <span class="${finalStatus === 'served' ? 'text-green-400' : 'text-red-400'}">${completedTimeOnly}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function updateEnhancedHistoryStats(orders) {
+      const completed = orders.filter(o => o.kotStatus === 'served' || o.status === 'done').length;
+      const rejected = orders.filter(o => o.kotStatus === 'rejected').length;
+      const total = orders.length;
+
+      let totalItems = 0;
+      let totalTime = 0;
+      let validTimeOrders = 0;
+      let fastestTime = Infinity;
+      let slowestTime = 0;
+
+      orders.forEach(order => {
+        (order.cartItems || []).forEach(item => {
+          totalItems += item.quantity;
+        });
+
+        if (order.kotAcceptedTime && (order.kotServedTime || order.completedTime)) {
+          const orderTime = (order.kotServedTime || order.completedTime) - order.kotAcceptedTime;
+          const orderMinutes = Math.floor(orderTime / 60000);
+
+          totalTime += orderTime;
+          validTimeOrders++;
+
+          if (orderMinutes < fastestTime) fastestTime = orderMinutes;
+          if (orderMinutes > slowestTime) slowestTime = orderMinutes;
+        }
+      });
+
+      const avgTime = validTimeOrders > 0 ? Math.floor(totalTime / validTimeOrders / 60000) : 0;
+      const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      document.getElementById('totalCompletedOrders').textContent = completed;
+      document.getElementById('totalOrderItems').textContent = totalItems;
+      document.getElementById('averageTime').textContent = `${avgTime}m`;
+      document.getElementById('rejectedOrders').textContent = rejected;
+
+      document.getElementById('successRate').textContent = `${successRate}%`;
+      document.getElementById('fastestOrder').textContent = fastestTime === Infinity ? '0m' : `${fastestTime}m`;
+      document.getElementById('slowestOrder').textContent = `${slowestTime}m`;
+    }
+
+    function refreshHistory() {
+      loadOrderHistory();
+      showNotification('History refreshed!', 'success');
+    }
+
+    function refreshNow() {
+      const btn = document.getElementById('refreshNowBtn');
+      const originalContent = btn.innerHTML;
+      btn.innerHTML = '<span class="refresh-spinner">🔄</span> Refreshing...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        showNotification('Data refreshed!', 'success');
+      }, 1000);
+    }
+
+    function clearOldOrders() {
+      if (!confirm('Clear all orders older than 24 hours?')) return;
+
+      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+      let clearedCount = 0;
+
+      const allOrders = {...kotOrders, ...orderHistory};
+      Object.entries(allOrders).forEach(([orderId, order]) => {
+        const orderTime = order.timestamp || Date.now();
+        if (orderTime < twentyFourHoursAgo) {
+          db.ref(`restaurants/${session.restaurantId}/orders/${orderId}`).remove();
+          clearedCount++;
+        }
+      });
+
+      if (clearedCount > 0) {
+        showNotification(`Cleared ${clearedCount} old orders`, 'success');
+      } else {
+        showNotification('No old orders to clear', 'info');
+      }
+    }
+
+    function toggleAutoRefresh() {
+      autoRefresh = !autoRefresh;
+      const btn = document.getElementById('autoRefreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      const text = document.getElementById('refreshText');
+
+      if (autoRefresh) {
+        text.textContent = 'Auto: ON';
+        icon.textContent = '⏰';
+        btn.className = 'bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm';
+        startAutoRefresh();
+      } else {
+        text.textContent = 'Auto: OFF';
+        icon.textContent = '⏸️';
+        btn.className = 'bg-gradient-to-r from-red-500 to-red-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm';
+        stopAutoRefresh();
+      }
+    }
+
+    function startAutoRefresh() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => {
+        updateTimers();
+      }, 1000);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-sm`;
+
+      const colors = {
+        success: 'bg-gradient-to-r from-green-500 to-green-600 border-green-400 text-white',
+        error: 'bg-gradient-to-r from-red-500 to-red-600 border-red-400 text-white',
+        info: 'bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white'
+      };
+
+      notification.className += ` ${colors[type]}`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span class="font-medium">${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 500);
+      }, 4000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!checkAuth()) return;
+
+      console.log('🍳 KOT System initialized for:', session.restaurantId);
+      console.log('👤 Staff:', session.staffName);
+
+      document.getElementById('ordersTab').addEventListener('click', () => switchTab('orders'));
+      document.getElementById('historyTab').addEventListener('click', () => switchTab('history'));
+
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          renderKOTOrders();
+        });
+      });
+
+      initializeKOTListener();
+      startAutoRefresh();
+
+      setTimeout(() => {
+        showNotification(`Welcome ${session.staffName}! KOT system ready.`, 'success');
+      }, 1000);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      stopAutoRefresh();
+    });
+
+    setInterval(() => {
+      if (session && Date.now() - session.loginTime > 24 * 60 * 60 * 1000) {
+        showNotification('Session expired. Please login again.', 'error');
+        setTimeout(() => {
+          sessionStorage.removeItem('kotAccess');
+          window.location.href = 'staff-login.html';
+        }, 3000);
+      }
+    }, 60000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAutoRefresh();
+      } else {
+        if (autoRefresh) {
+          startAutoRefresh();
+        }
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (session) {
+        localStorage.setItem(`kotFilter_${session.restaurantId}`, currentFilter);
+      }
+    });
+
+    if (session && sessionStorage.getItem('kotAccess')) {
+      const savedFilter = localStorage.getItem(`kotFilter_${JSON.parse(sessionStorage.getItem('kotAccess')).restaurantId}`);
+      if (savedFilter) {
+        currentFilter = savedFilter;
+        setTimeout(() => {
+          document.querySelector(`[data-filter="${savedFilter}"]`)?.classList.add('active');
+          document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter !== savedFilter) {
+              btn.classList.remove('active');
+            }
+          });
+        }, 100);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,3837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    html, body {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      padding: 2rem;
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    @media (max-width: 640px) {
+      .modal-content {
+        padding: 1.5rem;
+        margin: 0.5rem;
+        max-height: 95vh;
+        max-width: 95%;
+        border-radius: 1rem;
+      }
+    }
+
+    .blink-text {
+      animation: blink-animation 1s steps(2, start) 5;
+    }
+
+    @keyframes blink-animation {
+      50% {
+        color: #0bd894;
+      }
+    }
+
+    .toggle-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toggle-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .toggle-btn:hover::before {
+      left: 100%;
+    }
+
+    .toggle-btn.active {
+      outline: 2px solid #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+      scale: 1.05;
+    }
+
+    @keyframes ping-slow {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1.4);
+        opacity: 0;
+      }
+    }
+
+    .animate-ping-slow {
+      animation: ping-slow 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+      }
+    }
+
+    .pulse-glow {
+      animation: pulse-glow 2s infinite;
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+   .order-card {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+    .order-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .order-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .order-card:hover::before {
+      opacity: 1;
+    }
+
+    .status-badge {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(239, 68, 68, 0.5);
+    }
+
+    .header-gradient {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      outline: none;
+    }
+
+    .mobile-menu {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-menu.open {
+      transform: translateX(0);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .notification {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Enhanced scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+    }
+
+    /* Professional button styles - smaller and more compact */
+    .btn-compact {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-compact:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Mobile responsive grid - 2 orders per row */
+    @media (max-width: 768px) {
+      .orders-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      .order-card {
+        padding: 0.75rem;
+      }
+
+      .order-card h2 {
+        font-size: 0.875rem;
+      }
+
+      .order-card .total-price {
+        font-size: 1rem;
+      }
+
+      /* Ensure quantity is always visible on mobile */
+      .order-item-row {
+        min-width: 0;
+      }
+
+      .order-item-quantity {
+        min-width: 60px;
+        flex-shrink: 0;
+      }
+    }
+
+    /* Payment specific styles - Enhanced Mobile Responsive */
+    .payment-section {
+      display: none;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    .payment-section.active {
+      display: block;
+    }
+
+    .plan-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .plan-card {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+    }
+
+    .plan-card:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    }
+
+    .plan-card.selected {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .plan-header {
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .plan-name {
+        font-size: 1rem;
+      }
+    }
+
+    .plan-seats {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .plan-price {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #3b82f6;
+      margin-bottom: 0.25rem;
+    }
+
+    @media (max-width: 640px) {
+      .plan-price {
+        font-size: 1.5rem;
+      }
+    }
+
+    .plan-period {
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .billing-toggle {
+      display: flex;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 0.25rem;
+      margin: 1rem 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .billing-option {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      color: #94a3b8;
+      position: relative;
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .billing-option {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    .billing-option.active {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .discount-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #10b981;
+      color: white;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.375rem;
+      font-size: 0.6rem;
+      font-weight: 600;
+    }
+
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 640px) {
+      .payment-methods {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+    }
+
+    .payment-method {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      color: white;
+    }
+
+    @media (max-width: 640px) {
+      .payment-method {
+        padding: 1rem;
+      }
+    }
+
+    .payment-method:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .payment-method.selected {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .payment-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .payment-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.375rem;
+      }
+    }
+
+    .payment-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 640px) {
+      .payment-title {
+        font-size: 0.875rem;
+      }
+    }
+
+    .payment-desc {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 640px) {
+      .payment-desc {
+        font-size: 0.7rem;
+      }
+    }
+
+    .summary-card {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 1rem;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 640px) {
+      .summary-card {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+      }
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .summary-label {
+      font-weight: 500;
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .summary-label {
+        font-size: 0.8rem;
+      }
+    }
+
+    .summary-value {
+      font-weight: 600;
+      color: white;
+      font-size: 0.875rem;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .summary-value {
+        font-size: 0.8rem;
+        max-width: 60%;
+      }
+    }
+
+    .qr-section {
+      text-align: center;
+      margin: 1.5rem 0;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 640px) {
+      .qr-section {
+        margin: 1rem 0;
+        padding: 1rem;
+      }
+    }
+
+    .qr-code {
+      margin: 1rem 0;
+      display: inline-block;
+      padding: 0.75rem;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .qr-code {
+        margin: 0.75rem 0;
+        padding: 0.5rem;
+      }
+
+      .qr-code canvas {
+        max-width: 180px !important;
+        max-height: 180px !important;
+      }
+    }
+
+    .upi-id {
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .upi-id {
+        padding: 0.625rem;
+        font-size: 0.8rem;
+        margin: 0.75rem 0;
+      }
+    }
+
+    .copy-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 640px) {
+      .copy-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    .copy-btn:hover {
+      background: #059669;
+      transform: scale(1.05);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .payment-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+      padding: 1rem;
+    }
+
+    .payment-modal.show {
+      display: flex;
+    }
+
+    .payment-modal-content {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      max-width: 400px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    @media (max-width: 640px) {
+      .payment-modal-content {
+        padding: 1.25rem;
+        max-width: 95%;
+        max-height: 90vh;
+      }
+    }
+
+    .payment-modal h3 {
+      margin-bottom: 1rem;
+      color: white;
+      text-align: center;
+      font-size: 1.125rem;
+    }
+
+    @media (max-width: 640px) {
+      .payment-modal h3 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .form-group {
+        margin-bottom: 0.75rem;
+      }
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .form-group label {
+        font-size: 0.8rem;
+        margin-bottom: 0.375rem;
+      }
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    @media (max-width: 640px) {
+
+      .form-group input,
+      .form-group textarea {
+        padding: 0.625rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #64748b;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .btn-group {
+        gap: 0.5rem;
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Success Alert Styles */
+    .success-alert {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 25px 50px rgba(16, 185, 129, 0.3);
+      z-index: 9999;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-width: 300px;
+    }
+
+    @media (max-width: 640px) {
+      .success-alert {
+        padding: 1.5rem;
+        margin: 1rem;
+        min-width: auto;
+        width: calc(100% - 2rem);
+      }
+    }
+
+    .success-alert h3 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 640px) {
+      .success-alert h3 {
+        font-size: 1.25rem;
+      }
+    }
+
+    .success-alert p {
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .success-alert p {
+        font-size: 0.875rem;
+        margin-bottom: 1.25rem;
+      }
+    }
+
+    .success-alert button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 640px) {
+      .success-alert button {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    .success-alert button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* NEW: Renewal Banner Styles */
+    .renewal-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      z-index: 60;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      display: none;
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .renewal-banner.show {
+      display: block;
+    }
+
+    .renewal-banner-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .renewal-banner-content {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    .renewal-banner-text {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+    }
+
+    .renewal-banner-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .renewal-banner-actions {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .renewal-banner button {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .renewal-banner button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .renewal-banner .renew-btn {
+      background: rgba(16, 185, 129, 0.9);
+      border-color: #10b981;
+    }
+
+    .renewal-banner .renew-btn:hover {
+      background: #10b981;
+    }
+
+    .body-with-banner {
+      padding-top: 80px;
+    }
+
+    @media (max-width: 768px) {
+      .body-with-banner {
+        padding-top: 100px;
+      }
+    }
+
+
+    /* Bill printer specific styles */
+    .bill-content {
+      width: 80mm;
+      max-width: 80mm;
+      margin: 0 auto;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.3;
+      background: white;
+      color: black;
+    }
+
+    .bill-header {
+      text-align: center;
+      border-bottom: 1px dashed #000;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bill-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .bill-total {
+      border-top: 1px dashed #000;
+      padding-top: 5px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .bill-footer {
+      text-align: center;
+      border-top: 1px dashed #000;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-size: 10px;
+    }
+
+    /* Hide error messages initially */
+    .error-message {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .error-message.show {
+      opacity: 1;
+    }
+
+   
+
+    /* Enhanced Mobile Responsive Improvements */
+    @media (max-width: 640px) {
+      .modal {
+        padding: 0.5rem;
+      }
+
+      .btn-primary,
+      .btn-danger,
+      .btn-compact {
+        font-size: 0.8rem;
+        padding: 0.625rem 1rem;
+      }
+
+      .payment-section h2 {
+        font-size: 1.125rem;
+      }
+
+      .plan-features {
+        font-size: 0.75rem;
+      }
+
+    }
+
+   
+ 
+
+  #ordersContainer {
+  transition: opacity 0.3s ease;
+}
+html, body {
+  background: #020617 !important;
+  min-height: 100vh;
+}
+@media screen {
+  #billTemplate {
+    display: none !important;
+  }
+}
+
+@media print {
+  /* Dashboard ke baaki elements hide karein */
+  body > *:not(#billTemplate) { 
+    display: none !important;
+  }
+  /* Bill template ko wapas visible karein */
+  #billTemplate, #billTemplate * {
+    visibility: visible;
+  }
+  /* Bill ko page ke top-left mein set karein */
+  #billTemplate {
+    position: absolute;
+    display: block !important;
+    left: 0;
+    top: 0;
+    width: 80mm; /* Thermal printer width */
+  }
+
+
+  #billTemplate {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* CENTER */
+    width: 300px; /* bill size adjust kar sakte ho */
+    background: white;
+    padding: 20px;
+    box-shadow: none;
+  }
+
+  @page {
+    margin: 0;
+    size: auto;
+  }
+}
+
+
+.btn-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+    /* Payment Verification Modal */
+    .verify-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .verify-modal-overlay.show {
+      display: flex;
+    }
+    .verify-modal-content {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+    @media (max-width: 640px) {
+      .verify-modal-content {
+        padding: 1.25rem;
+        max-width: 95%;
+        border-radius: 1rem;
+      }
+    }
+    .verify-screenshot-container {
+      background: rgba(255,255,255,0.05);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    .verify-screenshot-container img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .verify-screenshot-container img:hover {
+      transform: scale(1.02);
+    }
+    .payment-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .payment-status-badge.online-pending {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .payment-status-badge.online-verified {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .payment-status-badge.online-rejected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .payment-status-badge.cash {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .btn-verify {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    .btn-verify:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+    }
+    .fullscreen-img-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      cursor: zoom-out;
+      padding: 1rem;
+    }
+    .fullscreen-img-overlay.show {
+      display: flex;
+    }
+    .fullscreen-img-overlay img {
+      max-width: 95%;
+      max-height: 95vh;
+      object-fit: contain;
+      border-radius: 0.5rem;
+    }
+    @keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+  <audio id="notificationSound" src="sounds/mixkit-software-interface-remove-2576_mQWL2lvz.mp3" preload="auto"></audio>
+<div id="pageLoader" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#0f172a;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  color:white;
+  font-size:20px;
+  flex-direction:column;
+  transition:opacity 0.4s ease;
+">
+
+  <div style="
+    width:60px;
+    height:60px;
+    border:4px solid #ffffff30;
+    border-top:4px solid #22c55e;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+  "></div>
+
+  <p style="margin-top:15px;">🍽️ Preparing Dashboard...</p>
+
+</div>
+
+  <!-- NEW: Renewal Banner -->
+  <div id="renewalBanner" class="renewal-banner">
+    <div class="renewal-banner-content">
+      <div class="renewal-banner-text">
+        <span class="text-2xl">⚠️</span>
+        <div>
+          <div class="font-bold" id="renewalBannerTitle">Subscription Expiring Soon!</div>
+          <div class="text-sm opacity-90" id="renewalBannerMessage">Please renew your subscription for uninterrupted
+            service</div>
+        </div>
+      </div>
+      <div class="renewal-banner-actions">
+        <button class="renew-btn" onclick="startDirectRenewal()">
+          <span>🔄</span> Renew Now
+        </button>
+        <button onclick="dismissRenewalBanner()">
+          <span>×</span> Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Button -->
+  <button id="mobileMenuBtn"
+    class="lg:hidden fixed top-4 left-4 z-50 bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl text-white shadow-lg">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+  </button>
+
+  <!-- Enhanced Mobile-First Header -->
+  <header class="header-gradient shadow-2xl">
+    <div class="max-w-7xl mx-auto p-4 lg:p-6">
+      <!-- Mobile Header -->
+      <div class="lg:hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3 ml-16">
+            <!-- <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-xl">
+            🍽️
+          </div> -->
+            <div>
+           <div class="flex items-center justify-between gap-2">
+  <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-white break-words">
+    Order Dashboard
+  </h1>
+  <span class="flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full">
+    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+    Live
+  </span>
+</div>
+
+
+              <!-- <p class="text-blue-200 text-xs">Real-time management</p> -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobileMenu"
+          class="mobile-menu fixed inset-y-0 left-0 w-80 bg-gradient-to-b from-slate-800 to-slate-900 z-40 p-6 shadow-2xl">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-lg font-bold text-white">Menu</h2>
+            <button id="closeMobileMenu" class="text-gray-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <a href="manage.html" target="_blank"
+              class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105 transition-all">
+              <span class="text-lg">📋</span>
+              <span class="font-medium text-sm">Manage Menu</span>
+            </a>
+            <a href="report.html" target="_blank"
+              class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 transition-all">
+              <span class="text-lg">📊</span>
+              <span class="font-medium text-sm">Reports</span>
+            </a>
+            <button onclick="openSubscriptionModal()"
+              class="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:scale-105 transition-all">
+              <span class="text-lg">💳</span>
+              <span class="font-medium text-sm">Subscription</span>
+            </button>
+            <button onclick="openSupportModal()"
+              class="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:scale-105 transition-all relative">
+              <span class="text-lg">📩</span>
+              <span class="font-medium text-sm">Support</span>
+              <span id="greenDotMobile"
+                class="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full ring-2 ring-white hidden animate-ping-slow"></span>
+            </button>
+            <a href="legal.html"
+              class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:scale-105 transition-all">
+              <span class="text-lg">⚖️</span>
+              <span class="font-medium text-sm">Legal</span>
+            </a>
+            <a href="staff-management.html"
+              class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-600 to-red-700 text-white hover:scale-105 transition-all">
+              <span class="text-lg">👨‍💼</span>
+              <span class="font-medium text-sm">staff</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Header -->
+      <div class="hidden lg:flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <!-- <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+          🍽️
+        </div> -->
+          <div>
+         <div class="flex items-center justify-between gap-2">
+        
+  <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-white break-words">
+    Order Dashboard
+  </h1>
+  <span class="flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full">
+    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+    Live
+  </span>
+</div>
+
+            <!-- <p class="text-blue-200 text-sm">Professional order management</p> -->
+          </div>
+        </div>
+
+        <div class="flex gap-2 flex-wrap">
+          <a href="manage.html" target="_blank"
+            class="btn-primary text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2">
+            <span>📋</span> Manage Menu
+          </a>
+          <a href="report.html" target="_blank"
+            class="bg-gradient-to-r from-green-500 to-emerald-600 text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2">
+            <span>📊</span> Reports
+          </a>
+          <button onclick="openSubscriptionModal()"
+            class="bg-gradient-to-r from-purple-500 to-pink-600 text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2">
+            <span>💳</span> Subscription
+          </button>
+          <button onclick="openSupportModal()"
+            class="bg-gradient-to-r from-blue-500 to-cyan-600 text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2 relative">
+            <span>📩</span> Support
+            <span id="greenDot"
+              class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full ring-2 ring-white hidden animate-ping-slow"></span>
+          </button>
+          <a href="legal.html"
+            class="bg-gradient-to-r from-gray-600 to-gray-700 text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2">
+            <span>⚖️</span> Legal
+          </a>
+          <a href="staff-management.html"
+            class="bg-gradient-to-r from-purple-600 to-red-700 text-white btn-compact hover:scale-105 transition-all duration-300 flex items-center gap-2">
+            <span>👨‍💼</span> staff
+          </a>
+        </div>
+      </div>
+    </div>
+    
+  </header>
+
+  <!-- Enhanced Revoke Notice Overlay with Payment Link -->
+  <div id="revokeNotice" style="display: none;"
+    class="fixed inset-0 bg-black bg-opacity-95 flex justify-center items-center z-50 backdrop-blur-sm p-4">
+    <div
+      class="bg-gradient-to-br from-red-600 to-red-800 text-white p-6 lg:p-8 rounded-2xl text-center max-w-md w-full border border-red-400 shadow-2xl">
+      <div class="text-4xl lg:text-6xl mb-4">🚫</div>
+      <h2 class="text-2xl lg:text-3xl font-bold mb-4">Access Revoked</h2>
+      <p class="mb-6 text-red-100 text-sm lg:text-base">Your subscription has been revoked.<br />Please contact support
+        or renew to regain access.</p>
+      <div class="text-xs lg:text-sm text-red-200 bg-red-700/50 p-4 rounded-lg mb-6">
+        <p><strong>Reason:</strong> <span id="revokeReason">Payment overdue</span></p>
+        <p><strong>Contact:</strong> support@menuswift.in</p>
+      </div>
+      <!-- NEW: Payment Link in Revoke Notice -->
+      <button onclick="startDirectRenewal()"
+        class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2">
+        <span>💳</span> Make Payment to Restore Access
+      </button>
+    </div>
+  </div>
+
+  <!-- Enhanced Subscription Modal with Integrated Payment -->
+  <div id="subscriptionModal" class="modal">
+    <div class="modal-content text-white">
+
+      <!-- Subscription Overview -->
+      <div id="subscription-overview" class="payment-section active">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+              💳
+            </div>
+            <h2 class="text-xl lg:text-2xl font-bold">Subscription Manager</h2>
+          </div>
+          <button onclick="closeSubscriptionModal()" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="subscriptionDetails" class="text-sm mb-6 space-y-3">Loading...</div>
+        <div id="renewalSection" style="display: none;" class="mb-4">
+          <div
+            class="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-xl p-4 mb-4">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="text-2xl">⚠️</span>
+              <div>
+                <h4 class="font-bold text-yellow-400" id="renewalTitle">Renewal Required</h4>
+                <p class="text-sm text-yellow-200" id="renewalMessage">Your subscription is about to expire.</p>
+              </div>
+            </div>
+            <button onclick="startDirectRenewal()"
+              class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold">
+              <span class="text-lg">🔄</span> Renew Subscription - ₹<span id="autoRenewalAmount">299</span>
+            </button>
+          </div>
+        </div>
+        <button onclick="closeSubscriptionModal()"
+          class="w-full bg-gradient-to-r from-red-500 to-red-600 btn-compact hover:scale-105 transition-all duration-300 font-medium">
+          Close
+        </button>
+      </div>
+
+      <!-- Payment Summary (skipping plan selection) -->
+      <div id="payment-summary" class="payment-section">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Payment Summary</h2>
+          <button onclick="showPaymentSection('subscription-overview')" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="summary-card" id="order-summary">
+          <!-- Summary will be populated by JavaScript -->
+        </div>
+
+        <button class="btn-primary w-full py-3 rounded-lg font-semibold" onclick="proceedToPaymentMethods()">
+          Proceed to Payment
+        </button>
+      </div>
+
+      <!-- Payment Methods (Card option removed) -->
+      <div id="payment-methods" class="payment-section">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Choose Payment Method</h2>
+          <button onclick="showPaymentSection('payment-summary')" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="payment-methods">
+          <div class="payment-method" onclick="selectPaymentMethod('upi')">
+            <div class="payment-icon">📱</div>
+            <div class="payment-title">UPI Payment</div>
+            <div class="payment-desc">Pay using any UPI app</div>
+          </div>
+
+          <div class="payment-method" onclick="selectPaymentMethod('qr')">
+            <div class="payment-icon">📷</div>
+            <div class="payment-title">Scan QR Code</div>
+            <div class="payment-desc">Scan with any UPI app</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI Payment -->
+      <div id="upi-payment" class="payment-section">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">UPI Payment</h2>
+          <button onclick="showPaymentSection('payment-methods')" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="summary-card" id="upi-summary">
+          <!-- Summary will be populated -->
+        </div>
+
+        <div class="upi-id">
+          <span>paytmqr16rldimnbx@paytm</span>
+          <button class="copy-btn" onclick="copyUpiId()">Copy</button>
+        </div>
+
+        <button
+          class="bg-gradient-to-r from-green-500 to-green-600 text-white w-full py-3 rounded-lg font-semibold mb-3 hover:scale-105 transition-all"
+          onclick="openUpiApp()">
+          Open UPI App & Pay
+        </button>
+
+        <div class="text-center text-gray-400 mb-3">— OR —</div>
+
+        <button class="btn-primary w-full py-3 rounded-lg font-semibold" onclick="showPaymentRefModal()">
+          I Have Completed Payment
+        </button>
+      </div>
+
+      <!-- QR Payment -->
+      <div id="qr-payment" class="payment-section">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Scan QR Code</h2>
+          <button onclick="showPaymentSection('payment-methods')" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="summary-card" id="qr-summary">
+          <!-- Summary will be populated -->
+        </div>
+
+        <div class="qr-section">
+          <h3 class="text-white text-lg font-semibold mb-4">Scan with any UPI App</h3>
+          <div class="qr-code" id="payment-qr-code"></div>
+          <div class="upi-id">
+            <span>paytmqr16rldimnbx@paytm</span>
+            <button class="copy-btn" onclick="copyUpiId()">Copy</button>
+          </div>
+        </div>
+
+        <button class="btn-primary w-full py-3 rounded-lg font-semibold" onclick="showPaymentRefModal()">
+          I Have Completed Payment
+        </button>
+      </div>
+
+      <!-- Payment Status -->
+      <div id="payment-status" class="payment-section">
+        <div class="text-center">
+          <div class="text-6xl mb-4" id="status-icon">⏳</div>
+          <h2 class="text-xl font-bold mb-2" id="status-title">Payment Pending</h2>
+          <p class="text-gray-300 mb-6" id="status-message">Waiting for admin approval...</p>
+          <div class="summary-card" id="final-payment-summary"></div>
+
+          <!-- Enhanced buttons with dashboard redirect -->
+          <div class="space-y-3">
+            <button
+              class="bg-gradient-to-r from-blue-600 to-blue-700 text-white w-full py-3 rounded-lg font-semibold hover:scale-105 transition-all"
+              onclick="goToDashboard()">
+              Return to Dashboard
+            </button>
+            <button
+              class="bg-gradient-to-r from-gray-600 to-gray-700 text-white w-full py-3 rounded-lg font-semibold hover:scale-105 transition-all"
+              onclick="startNewPayment()">
+              Make Another Payment
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Payment Reference Modal -->
+  <div id="payment-ref-modal" class="payment-modal">
+    <div class="payment-modal-content">
+      <h3>Enter Payment Reference</h3>
+      <div class="form-group">
+        <label for="payment-ref">Payment Reference Number</label>
+        <input type="text" id="payment-ref" placeholder="Enter transaction reference" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label for="payment-note">Additional Note (Optional)</label>
+        <textarea id="payment-note" placeholder="Any additional information" rows="2"></textarea>
+      </div>
+      <div class="btn-group">
+        <button
+          class="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-2 rounded-lg font-semibold hover:scale-105 transition-all"
+          onclick="closePaymentRefModal()">Cancel</button>
+        <button class="btn-primary px-4 py-2 rounded-lg font-semibold" onclick="submitPaymentWithRef()">Submit
+          Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Support Modal -->
+  <div id="supportModal" class="modal">
+    <div class="modal-content text-white space-y-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+            📬
+          </div>
+          <h2 class="text-xl lg:text-2xl font-bold">Support Center</h2>
+        </div>
+        <button onclick="closeSupportModal()" class="text-gray-400 hover:text-white lg:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Ticket Creation -->
+      <div id="createTicketSection" class="space-y-4">
+       <div class="glass-effect p-4 rounded-2xl flex flex-col justify-between h-full">
+          <label class="block text-sm font-medium mb-2 text-blue-200">Describe your issue</label>
+          <textarea id="newTicketMessage" placeholder="Please provide detailed information about your issue..."
+            class="w-full p-4 bg-white/10 border border-white/20 rounded-xl h-32 resize-none text-white placeholder-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all focus:outline-none"></textarea>
+        </div>
+        <button onclick="submitNewTicket()" class="btn-primary w-full py-3 rounded-xl font-semibold">
+          Submit Support Ticket
+        </button>
+      </div>
+
+      <!-- Active Ticket -->
+      <div id="activeTicketSection" class="hidden space-y-4">
+      <div class="glass-effect p-4 rounded-2xl flex flex-col justify-between h-full">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-blue-200">Conversation</h3>
+            <button onclick="clearAllMessages()"
+              class="btn-danger btn-compact font-medium flex items-center gap-2 hover:scale-105 transition-all">
+              <span>🗑️</span> Clear All
+            </button>
+          </div>
+          <div id="ticketMessages"
+            class="bg-black/30 p-4 rounded-xl max-h-64 overflow-y-auto text-sm space-y-3 border border-white/10"></div>
+        </div>
+       <div class="glass-effect p-4 rounded-2xl flex flex-col justify-between h-full">
+          <textarea id="replyMessage" placeholder="Type your message..."
+            class="w-full bg-white/10 border border-white/20 rounded-xl p-4 h-20 resize-none text-white placeholder-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all focus:outline-none"></textarea>
+          <button onclick="sendTicketReply()" class="btn-primary w-full py-3 rounded-xl font-semibold mt-3">
+            Send Message
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Announcements -->
+      <div id="adminBroadcastSection" class="border-t border-white/20 pt-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">📢</span>
+            <h3 class="text-lg font-semibold">Admin Announcements</h3>
+          </div>
+          <button onclick="clearAllBroadcasts()"
+            class="btn-danger btn-compact font-medium flex items-center gap-1 hover:scale-105 transition-all">
+            <span>🗑️</span> Clear
+          </button>
+        </div>
+        <div id="broadcastMessages"
+          class="glass-effect p-4 rounded-xl text-sm text-gray-300 space-y-3 max-h-40 overflow-y-auto"></div>
+      </div>
+
+      <button onclick="closeSupportModal()"
+        class="hidden lg:block w-full bg-gradient-to-r from-gray-600 to-gray-700 py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300">
+        Close Support Center
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div class="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+    <!-- Enhanced Search and Filter Section -->
+    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 fade-in">
+      <!-- Mobile Search -->
+      <div class="mb-4 lg:hidden">
+        <div class="relative">
+          <input type="text" id="searchInputMobile" placeholder="🔍 Search orders..."
+            class="search-input w-full p-3 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-sm" />
+          <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Layout -->
+      <div class="hidden lg:flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4">
+        <div class="w-full lg:w-1/3">
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="🔍 Search by Name or Table..."
+              class="search-input w-full p-3 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all" />
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+       <div class="flex items-center gap-2 flex-wrap">
+          <button
+            class="toggle-btn bg-gradient-to-r from-blue-500 to-blue-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
+            data-filter="all">
+            🆕 New Orders
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-green-500 to-green-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
+            data-filter="accepted">
+            ✅ Accepted
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-red-500 to-red-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
+            data-filter="rejected">
+            ❌ Rejected
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-purple-500 to-purple-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
+            data-filter="dinein">
+            🏪 Dine-In
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-yellow-500 to-yellow-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
+            data-filter="takeaway">
+            📦 Takeaway
+          </button>
+          <button onclick="clearAllDoneOrders()"
+            class="bg-gradient-to-r from-pink-500 to-pink-600 btn-compact text-white font-semibold hover:scale-105 transition-all duration-300">
+            🧹 Clear Done
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Filter Buttons -->
+      <div class="lg:hidden">
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <button
+            class="toggle-btn bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
+            data-filter="all">
+            🆕 New
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
+            data-filter="accepted">
+            ✅ Accepted
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
+            data-filter="rejected">
+            ❌ Rejected
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
+            data-filter="dinein">
+            🏪 Dine-In
+          </button>
+          <button
+            class="toggle-btn bg-gradient-to-r from-yellow-500 to-yellow-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
+            data-filter="takeaway">
+            📦 Takeaway
+          </button>
+          <button onclick="clearAllDoneOrders()"
+            class="bg-gradient-to-r from-pink-500 to-pink-600 px-3 py-2 rounded-xl text-white font-medium text-xs hover:scale-105 transition-all duration-300">
+            🧹 Clear Done
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Grid -->
+    <div id="ordersContainer" class="orders-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+      <!-- Orders will be inserted here -->
+    </div>
+  </div>
+
+  <!-- Hidden Bill Template for Printing -->
+  <div id="billTemplate" style="
+  display: none;
+  width: 80mm;
+  margin: 0 auto;
+  background: white;
+  padding: 10px;
+">
+    <div class="bill-content">
+      <div class="bill-header">
+        <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="billRestaurantName">RESTAURANT NAME
+        </div>
+        <!-- <div style="font-size: 12px; margin-bottom: 5px;" id="billRestaurantAddress">Restaurant Address</div> -->
+        <div style="font-size: 12px; margin-bottom: 10px;">Email: <span id="billRestaurantPhone">abc@gmal.com</span>
+        </div>
+        <div style="font-size: 14px; font-weight: bold;">CUSTOMER BILL</div>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Order #:</span>
+          <span id="billOrderId"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Customer:</span>
+          <span id="billCustomerName"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Table:</span>
+          <span id="billTableNumber"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Type:</span>
+          <span id="billOrderType"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Date:</span>
+          <span id="billDate"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Time:</span>
+          <span id="billTime"></span>
+        </div>
+      </div>
+
+      <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;">
+        <div style="display: flex; font-weight: bold;">
+  <span style="width:40%;">ITEM</span>
+  <span style="width:15%; text-align:center;">QTY</span>
+  <span style="width:20%; text-align:right;">RATE</span>
+  <span style="width:25%; text-align:right;">AMOUNT</span>
+</div>
+        <div id="billItems"></div>
+      </div>
+
+      <div class="bill-total">
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+          <span>TOTAL AMOUNT:</span>
+          <span id="billTotalAmount"></span>
+        </div>
+      </div>
+
+      <div class="bill-footer">
+        <div style="margin-bottom: 5px;">Thank you for dining with us!</div>
+        <div style="margin-bottom: 5px;">Visit us again soon</div>
+        <div style="font-size: 8px;">Powered by MenuSwift</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    let isFirstLoad = true;
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    const notificationSound = document.getElementById("notificationSound");
+    let soundEnabled = false;
+    let ordersData = {};
+    let currentFilter = "all";
+    let lastSeen = {};
+    let restaurantId = null;
+    let connectionStatus = true;
+    let restaurantData = null;
+    let renewalBannerDismissed = false; // NEW: Track banner dismissal
+
+    // Payment system variables
+    let currentPaymentSection = 'subscription-overview';
+    let currentPayment = null;
+    let selectedPlan = null;
+    let billingCycle = 'monthly';
+
+    // Dynamic subscription plans - will be updated based on restaurant data
+    let plans = [
+      { id: 'starter', name: 'Starter', seats: '1-20 seats', price: 299, maxSeats: 20, features: ['Basic POS', 'Inventory Management', 'Basic Reports'] },
+      { id: 'professional', name: 'Professional', seats: '21-50 seats', price: 399, maxSeats: 50, features: ['Advanced POS', 'Inventory + Supply Chain', 'Advanced Analytics', 'Customer Management'] },
+      { id: 'business', name: 'Business', seats: '51-100 seats', price: 499, maxSeats: 100, features: ['Enterprise POS', 'Multi-location Support', 'Advanced Reports', 'Staff Management', 'API Access'] },
+      { id: 'enterprise', name: 'Enterprise', seats: '101+ seats', price: 999, maxSeats: Infinity, features: ['Custom Solutions', 'Dedicated Support', 'White-label Options', 'Advanced Integrations', 'Priority Support'] }
+    ];
+
+    // Mobile menu functionality
+    document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+      document.getElementById("mobileMenu").classList.add("open");
+    });
+
+    document.getElementById("closeMobileMenu").addEventListener("click", () => {
+      document.getElementById("mobileMenu").classList.remove("open");
+    });
+
+    // Close mobile menu when clicking outside
+    document.getElementById("mobileMenu").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) {
+        document.getElementById("mobileMenu").classList.remove("open");
+      }
+    });
+
+    // Enable sound immediately when user interacts (click, mouse, keyboard)
+    document.body.addEventListener("click", enableSound);
+    document.addEventListener("mousemove", enableSound);
+    document.addEventListener("keydown", enableSound);
+
+    function enableSound() {
+      if (!soundEnabled) {
+        notificationSound.play()
+          .then(() => {
+            notificationSound.pause();
+            notificationSound.currentTime = 0;
+            soundEnabled = true;
+            console.log("🔊 Sound enabled");
+          })
+          .catch(() => {
+            console.warn("Waiting for user interaction to enable sound…");
+          });
+      }
+    }
+
+
+    function playSound() {
+      notificationSound.currentTime = 0;
+      notificationSound.play().catch(err => {
+        console.warn("Sound blocked", err);
+      });
+    }
+
+
+    // NEW: Direct renewal function that skips plan selection
+    function startDirectRenewal() {
+      // Auto-determine plan and amount from restaurant data
+      const autoAmount = restaurantData?.subscriptionPlan || 299;
+
+      // Create automatic payment without plan selection
+      currentPayment = {
+        id: generatePaymentId(),
+        restaurantId: restaurantId,
+        restaurantName: restaurantData.name,
+        seatCount: restaurantData.totalSeats,
+        ownerName: restaurantData.ownerName || 'Restaurant Owner',
+        ownerPhone: restaurantData.phone || restaurantData.ownerEmail,
+        planName: `Current Plan (${restaurantData.totalSeats} seats)`,
+        billingCycle: 'monthly',
+        amount: autoAmount,
+        originalAmount: autoAmount,
+        discount: 0,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        method: null
+      };
+
+      // Open modal and go directly to payment summary
+      openSubscriptionModal();
+      showPaymentSection('payment-summary');
+      updateDirectRenewalSummary();
+
+      // Dismiss renewal banner
+      dismissRenewalBanner();
+    }
+    // ===== FIXED RAZORPAY CHECKOUT FUNCTION =====
+    // ===== FINAL RAZORPAY SUBSCRIPTION FUNCTION (WITH ACTUAL PLAN IDs) =====
+    async function launchRazorpay(amount, planName) {
+      try {
+        showNotification("Initiating auto-pay setup...", "info");
+        // Function ke start mein check karein ki restaurantId variable mein kya hai
+console.log("Launching for Restaurant ID:", restaurantId);
+
+        // ✅ Aapke Razorpay Dashboard ke asli Plan IDs
+        const planMapping = {
+            299: "plan_TBUSDQhUGDd0f2", // Basic
+            399: "plan_TBUTAjbRbNW5xq", // Standard
+            499: "plan_TBUTbC4mAqZjou", // Premium
+            999: "plan_TBUU3ix0jhYJzn"  // Enterprise
+        };
+
+        const selectedPlanId = planMapping[amount];
+
+        if (!selectedPlanId) {
+            showNotification("Invalid Plan ID mapping. Contact Admin.", "error");
+            return;
+        }
+
+        // 1. Backend ko call karke Subscription ID generate karein
+        const response = await fetch('/api/create-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            planId: selectedPlanId, 
+            restaurantId: restaurantId 
+          })
+        });
+
+        const subData = await response.json();
+
+        if (!subData || !subData.id) {
+          console.error("Subscription creation failed:", subData);
+          showNotification("Failed to connect to payment server.", "error");
+          return;
+        }
+
+        // 2. Razorpay popup kholen Subscription ID ke sath
+        var options = {
+          "key": "rzp_live_TAUHvjsB1yJexf", 
+          "name": "Menu Swift Technology",
+          "description": "Monthly Subscription: " + planName,
+          "image": "images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png",
+          
+          // 🔥 Backend se aayi hui subscription_id
+          "subscription_id": subData.id, 
+          
+          "handler": function (response) {
+            // PAYMENT SUCCESS (Mandate Created)
+            console.log("Subscription Auto-Pay Set!", response);
+            
+            currentPayment.paymentReference = response.razorpay_payment_id;
+            currentPayment.subscriptionId = response.razorpay_subscription_id; 
+            currentPayment.method = "razorpay_autopay";
+            currentPayment.status = "approved";
+            currentPayment.submittedAt = new Date().toISOString();
+            currentPayment.isRecurring = true; 
+            
+            // Firebase mein save karein
+            db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).set(currentPayment)
+              .then(() => {
+                showNotification('Auto-pay setup successful!', 'success');
+                closeSubscriptionModal();
+                
+                // Restaurant ka expiry date 30 din aage badhayein
+                db.ref("restaurants/" + restaurantId).once("value")
+                .then((snapshot) => {
+                    const restaurant = snapshot.val() || {};
+                    const currentExpiry = Number(restaurant.subscriptionExpiry || 0);
+                    const now = Date.now();
+                    const baseTime = currentExpiry > now ? currentExpiry : now;
+                    const newExpiry = baseTime + (30 * 24 * 60 * 60 * 1000);
+
+                    return db.ref("restaurants/" + restaurantId).update({
+                        subscriptionExpiry: newExpiry,
+                        subscriptionPlan: amount,
+                        razorpaySubscriptionId: response.razorpay_subscription_id 
+                    });
+                });
+              });
+          },
+          
+          "prefill": {
+            "name": restaurantData?.ownerName || "Restaurant Owner",
+            "email": restaurantData?.ownerEmail || "",
+            "contact": restaurantData?.phone || ""
+          },
+          "theme": {
+            "color": "#3b82f6"
+          }
+        };
+
+        var rzp = new Razorpay(options);
+        
+        rzp.on('payment.failed', function (response){
+            console.error("Auto-pay setup failed", response.error);
+            showNotification('Auto-pay setup failed: ' + response.error.description, 'error');
+        });
+        
+        rzp.open();
+
+      } catch (err) {
+        console.error("Error in Razorpay Subscription:", err);
+        showNotification("Payment gateway could not be loaded.", "error");
+      }
+    }
+
+    // NEW: Update summary for direct renewal
+    function updateDirectRenewalSummary() {
+      const summaryHTML = `
+      <div class="summary-row">
+        <span class="summary-label">Restaurant:</span>
+        <span class="summary-value">${currentPayment.restaurantName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Plan:</span>
+        <span class="summary-value">${currentPayment.planName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Billing:</span>
+        <span class="summary-value">Monthly Renewal</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Total Amount:</span>
+        <span class="summary-value">₹${currentPayment.amount}</span>
+      </div>
+    `;
+      document.getElementById('order-summary').innerHTML = summaryHTML;
+    }
+
+    // NEW: Renewal banner functions
+    function showRenewalBanner(daysLeft, isExpired = false) {
+      if (renewalBannerDismissed) return;
+
+      const banner = document.getElementById('renewalBanner');
+      const title = document.getElementById('renewalBannerTitle');
+      const message = document.getElementById('renewalBannerMessage');
+
+      if (isExpired) {
+        title.textContent = 'Subscription Expired!';
+        message.textContent = 'Your service has been suspended. Please renew immediately to restore access.';
+        banner.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+      } else {
+        title.textContent = 'Subscription Expiring Soon!';
+        message.textContent = `Only ${daysLeft} days left! Please renew for uninterrupted service.`;
+        banner.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+      }
+
+      banner.classList.add('show');
+      document.body.classList.add('body-with-banner');
+    }
+
+    function dismissRenewalBanner() {
+      const banner = document.getElementById('renewalBanner');
+      banner.classList.remove('show');
+      document.body.classList.remove('body-with-banner');
+      renewalBannerDismissed = true;
+
+      // Store dismissal for current session
+      sessionStorage.setItem('renewalBannerDismissed', 'true');
+    }
+
+    function openSubscriptionModal() {
+      document.getElementById("subscriptionModal").style.display = "flex";
+      document.getElementById("mobileMenu").classList.remove("open");
+      showPaymentSection('subscription-overview');
+      setupPaymentEventListeners();
+    }
+
+    function closeSubscriptionModal() {
+      document.getElementById("subscriptionModal").style.display = "none";
+      // Reset payment state
+      currentPayment = null;
+      selectedPlan = null;
+      billingCycle = 'monthly';
+      currentPaymentSection = 'subscription-overview';
+
+      // Clear form fields
+      document.getElementById('payment-ref').value = '';
+      document.getElementById('payment-note').value = '';
+    }
+
+    function setupPaymentEventListeners() {
+      // Modal close on outside click
+      document.getElementById('payment-ref-modal').addEventListener('click', function (e) {
+        if (e.target === this) {
+          closePaymentRefModal();
+        }
+      });
+
+      // Payment status is now tracked via Firebase real-time listener
+    }
+
+    function showPaymentSection(sectionName) {
+      // Hide all sections
+      document.querySelectorAll('.payment-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // Show target section
+      document.getElementById(sectionName).classList.add('active');
+      currentPaymentSection = sectionName;
+    }
+
+    function getRecommendedPlan() {
+      const seats = restaurantData?.totalSeats || 0;
+      return plans.find(plan =>
+        seats <= plan.maxSeats && (plans.indexOf(plan) === 0 ||
+          seats > plans[plans.indexOf(plan) - 1]?.maxSeats)
+      ) || plans[0];
+    }
+
+    function proceedToPaymentMethods() {
+  // If we don't have a current payment, it means we're using direct renewal
+  if (!currentPayment) {
+    const autoAmount = restaurantData?.subscriptionPlan || 299;
+    currentPayment = {
+      id: generatePaymentId(),
+      restaurantId: restaurantId,
+      restaurantName: restaurantData.name,
+      seatCount: restaurantData.totalSeats,
+      ownerName: restaurantData.ownerName || 'Restaurant Owner',
+      ownerPhone: restaurantData.phone || restaurantData.ownerEmail,
+      planName: `Current Plan (${restaurantData.totalSeats} seats)`,
+      billingCycle: 'monthly',
+      amount: autoAmount,
+      originalAmount: autoAmount,
+      discount: 0,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      method: null
+    };
+  }
+  // INSTEAD of showing the manual payment section, launch Razorpay immediately
+  launchRazorpay(currentPayment.amount, currentPayment.planName);
+}
+
+      showPaymentSection('payment-methods');
+    
+
+    function selectPaymentMethod(method) {
+      currentPayment.method = method;
+
+      // Update UI
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+      });
+      event.target.closest('.payment-method').classList.add('selected');
+
+      setTimeout(() => {
+        if (method === 'upi') {
+          showUpiPayment();
+        } else if (method === 'qr') {
+          showQrPayment();
+        }
+      }, 300);
+    }
+
+    function showUpiPayment() {
+      updatePaymentSummary('upi-summary');
+      showPaymentSection('upi-payment');
+    }
+
+    function showQrPayment() {
+      updatePaymentSummary('qr-summary');
+      generateQRCode();
+      showPaymentSection('qr-payment');
+    }
+
+    function updatePaymentSummary(elementId) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = `
+      <div class="summary-row">
+        <span class="summary-label">Payment ID:</span>
+        <span class="summary-value">${currentPayment.id}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Restaurant:</span>
+        <span class="summary-value">${currentPayment.restaurantName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Plan:</span>
+        <span class="summary-value">${currentPayment.planName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Total Amount:</span>
+        <span class="summary-value">₹${currentPayment.amount}</span>
+      </div>
+    `;
+    }
+
+    function generateQRCode() {
+      try {
+        const upiString = `upi://pay?pa=paytmqr16rldimnbx@paytm&pn=RestaurantPay&am=${currentPayment.amount}&cu=INR&tn=${encodeURIComponent(currentPayment.planName + ' - ' + currentPayment.restaurantName)}`;
+
+        const container = document.getElementById('payment-qr-code');
+        container.innerHTML = '';
+
+        const canvas = document.createElement('canvas');
+        container.appendChild(canvas);
+
+        QRCode.toCanvas(canvas, upiString, {
+          width: 200,
+          height: 200,
+          color: {
+            dark: '#1e293b',
+            light: '#ffffff'
+          },
+          margin: 2,
+          scale: 8
+        }, function (error) {
+          if (error) {
+            console.error('QR Code generation error:', error);
+            container.innerHTML = `
+            <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.3);">
+              <p><strong>QR Code Error</strong></p>
+              <p>Unable to generate QR code. Please use UPI ID instead.</p>
+            </div>
+          `;
+          }
+        });
+      } catch (error) {
+        console.error('QR Code library error:', error);
+        const container = document.getElementById('payment-qr-code');
+        container.innerHTML = `
+        <div style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.3);">
+          <p><strong>QR Code Unavailable</strong></p>
+          <p>Please copy the UPI ID and pay manually through your UPI app.</p>
+        </div>
+      `;
+      }
+    }
+
+    function copyUpiId() {
+      const upiId = 'paytmqr16rldimnbx@paytm';
+      navigator.clipboard.writeText(upiId).then(() => {
+        showNotification('UPI ID copied to clipboard!', 'success');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = upiId;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('UPI ID copied to clipboard!', 'success');
+      });
+    }
+
+    function openUpiApp() {
+      const upiString = `upi://pay?pa=paytmqr16rldimnbx@paytm&pn=RestaurantPay&am=${currentPayment.amount}&cu=INR&tn=${encodeURIComponent(currentPayment.planName + ' - ' + currentPayment.restaurantName)}`;
+
+      try {
+        window.open(upiString, '_blank');
+      } catch (error) {
+        console.log('UPI app redirect failed:', error);
+      }
+
+      setTimeout(() => {
+        showNotification('If UPI app didn\'t open, please copy the UPI ID and pay manually', 'info');
+      }, 2000);
+    }
+
+    function showPaymentRefModal() {
+      document.getElementById('payment-ref-modal').classList.add('show');
+    }
+
+    function closePaymentRefModal() {
+      document.getElementById('payment-ref-modal').classList.remove('show');
+    }
+
+    function submitPaymentWithRef() {
+      const paymentRef = document.getElementById('payment-ref').value.trim();
+      const paymentNote = document.getElementById('payment-note').value.trim();
+
+      if (!paymentRef) {
+        showNotification('Please enter payment reference number', 'error');
+        return;
+      }
+
+      currentPayment.paymentReference = paymentRef;
+      currentPayment.paymentNote = paymentNote;
+      currentPayment.submittedAt = new Date().toISOString();
+
+      markAsPaid();
+      closePaymentRefModal();
+    }
+
+    function markAsPaid() {
+      if (!currentPayment) return;
+
+      // Save payment to Firebase so admin panel can see it
+      db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).set(currentPayment)
+        .then(() => {
+          console.log('✅ Payment saved to Firebase');
+        })
+        .catch(err => {
+          console.error('Error saving payment to Firebase:', err);
+        });
+
+      // Show payment status with enhanced success handling
+      showPaymentStatus();
+
+      // Show success alert immediately
+      showSuccessAlert();
+
+      // Start listening for status updates from Firebase
+      startPaymentStatusListener();
+    }
+
+    // Enhanced success alert function
+    function showSuccessAlert() {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'success-alert';
+      alertDiv.innerHTML = `
+      <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+      <h3>Payment Submitted Successfully!</h3>
+      <p>Your payment has been submitted for verification. Please wait up to 30 minutes for admin to extend your subscription expiry.</p>
+      <p style="font-size: 0.9rem; color: rgba(255,255,255,0.9); margin-bottom: 1.5rem;">
+        <strong>Note:</strong> You will receive confirmation once your payment is approved.
+      </p>
+      <button onclick="this.parentElement.remove()">Got it!</button>
+    `;
+
+      document.body.appendChild(alertDiv);
+
+      // Auto remove after 8 seconds
+      setTimeout(() => {
+        if (alertDiv.parentElement) {
+          alertDiv.remove();
+        }
+      }, 8000);
+
+      showNotification('Payment submitted for verification!', 'success');
+    }
+
+    function showPaymentStatus() {
+      updateFinalSummary();
+      showPaymentSection('payment-status');
+    }
+
+    function updateFinalSummary() {
+      const element = document.getElementById('final-payment-summary');
+      let summaryHTML = `
+      <div class="summary-row">
+        <span class="summary-label">Payment ID:</span>
+        <span class="summary-value">${currentPayment.id}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Restaurant:</span>
+        <span class="summary-value">${currentPayment.restaurantName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Plan:</span>
+        <span class="summary-value">${currentPayment.planName}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Method:</span>
+        <span class="summary-value">${currentPayment.method.toUpperCase()}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Status:</span>
+        <span class="summary-value">${currentPayment.status.toUpperCase()}</span>
+      </div>
+    `;
+
+      if (currentPayment.paymentReference) {
+        summaryHTML += `
+        <div class="summary-row">
+          <span class="summary-label">Reference:</span>
+          <span class="summary-value">${currentPayment.paymentReference}</span>
+        </div>
+      `;
+      }
+
+      summaryHTML += `
+      <div class="summary-row">
+        <span class="summary-label">Total Amount:</span>
+        <span class="summary-value">₹${currentPayment.amount}</span>
+      </div>
+    `;
+
+      element.innerHTML = summaryHTML;
+    }
+
+    function startPaymentStatusListener() {
+      if (!currentPayment || !restaurantId) return;
+
+      db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).on('value', snapshot => {
+        const updatedPayment = snapshot.val();
+        if (!updatedPayment || updatedPayment.status === currentPayment.status) return;
+
+        currentPayment = updatedPayment;
+
+        const statusIcon = document.getElementById('status-icon');
+        const statusTitle = document.getElementById('status-title');
+        const statusMessage = document.getElementById('status-message');
+
+        if (currentPayment.status === 'approved') {
+          statusIcon.textContent = '✅';
+          statusTitle.textContent = 'Payment Successful!';
+          statusMessage.textContent = 'Your subscription has been activated successfully. Please contact 6003252577 for further assistance.';
+
+          const approvedAlertDiv = document.createElement('div');
+          approvedAlertDiv.className = 'success-alert';
+          approvedAlertDiv.innerHTML = `
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+          <h3>Payment Approved!</h3>
+          <p>Congratulations! Your subscription has been activated successfully.</p>
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.9); margin-bottom: 1.5rem;">
+            Your subscription expiry has been extended. You can now access all premium features.
+          </p>
+          <button onclick="goToDashboard(); this.parentElement.remove();">Go to Dashboard</button>
+          `;
+          document.body.appendChild(approvedAlertDiv);
+
+          showNotification('Payment approved successfully!', 'success');
+
+          // Stop listening
+          db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).off();
+        } else if (currentPayment.status === 'declined') {
+          statusIcon.textContent = '❌';
+          statusTitle.textContent = 'Payment Failed';
+          statusMessage.textContent = 'Your payment was declined. Please try again or contact support.';
+          showNotification('Payment was declined', 'error');
+
+          // Stop listening
+          db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).off();
+        }
+
+        updateFinalSummary();
+      });
+    }
+
+    // Keep old function name as alias for backward compatibility
+    function checkPaymentStatus() {
+      startPaymentStatusListener();
+    }
+
+    function goToDashboard() {
+      closeSubscriptionModal();
+      showNotification('Redirected to dashboard', 'success');
+      // Optionally refresh the page to reload subscription data
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+    }
+
+    function startNewPayment() {
+      currentPayment = null;
+      selectedPlan = null;
+      billingCycle = 'monthly';
+
+      // Clear all form fields
+      document.getElementById('payment-ref').value = '';
+      document.getElementById('payment-note').value = '';
+
+      // Reset payment method selection
+      document.querySelectorAll('.payment-method').forEach(method => {
+        method.classList.remove('selected');
+      });
+
+      showPaymentSection('subscription-overview');
+    }
+
+    function generatePaymentId() {
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substr(2, 6);
+      return `RP${timestamp}${random}`.toUpperCase();
+    }
+
+    function openSupportModal() {
+      document.getElementById("supportModal").style.display = "flex";
+      document.getElementById("mobileMenu").classList.remove("open");
+    }
+
+    function closeSupportModal() {
+      document.getElementById("supportModal").style.display = "none";
+    }
+
+    // Clear all messages function
+    window.clearAllMessages = () => {
+      if (!window.activeTicketId || !restaurantId) {
+        showNotification("No active ticket found", "error");
+        return;
+      }
+
+      if (!confirm("Are you sure you want to clear all messages in this conversation? This action cannot be undone.")) {
+        return;
+      }
+
+      db.ref(`supportTickets/${restaurantId}/${window.activeTicketId}/messages`).remove()
+        .then(() => {
+          showNotification("All messages cleared successfully!", "success");
+          document.getElementById("ticketMessages").innerHTML = `
+          <div class="text-center text-gray-400 py-8">
+            <div class="text-3xl mb-2">💬</div>
+            <p>All messages have been cleared</p>
+          </div>
+        `;
+        })
+        .catch(error => {
+          console.error("Error clearing messages:", error);
+          showNotification("Failed to clear messages. Please try again.", "error");
+        });
+    };
+
+    // Clear all broadcasts function
+    window.clearAllBroadcasts = () => {
+      if (!confirm("Are you sure you want to clear all admin announcements? This action cannot be undone.")) {
+        return;
+      }
+
+      // Clear from local storage to persist across sessions
+      localStorage.setItem('clearedBroadcasts', 'true');
+
+      document.getElementById("broadcastMessages").innerHTML = `
+      <div class="text-center text-gray-400 py-4">
+        <div class="text-2xl mb-2">📢</div>
+        <p>All announcements cleared locally</p>
+      </div>
+    `;
+      showNotification("Announcements cleared from view", "success");
+    };
+
+    // Print Bill Function
+    
+    window.printBill = (orderId) => {
+      const order = ordersData[orderId];
+      if (!order) {
+        showNotification("Order not found", "error");
+        return;
+      }
+
+      // Populate bill template
+      
+const orderType = order.orderType || order.type || "N/A";
+document.getElementById("billOrderType").textContent = orderType.toUpperCase();
+      document.getElementById("billRestaurantName").textContent = restaurantData?.name || "RESTAURANT NAME";
+      // document.getElementById("billRestaurantAddress").textContent = restaurantData?.address || "Restaurant Address";
+      document.getElementById("billRestaurantPhone").textContent = "Email: " + (restaurantData?.ownerEmail || "N/A");
+      document.getElementById("billOrderId").textContent = orderId;
+      document.getElementById("billCustomerName").textContent = order.customerName || "N/A";
+      document.getElementById("billTableNumber").textContent = order.tableNumber || "N/A";
+      document.getElementById("billOrderType").textContent = order.type || "N/A";
+
+      const orderDate = new Date(order.timestamp || Date.now());
+      document.getElementById("billDate").textContent = orderDate.toLocaleDateString();
+      document.getElementById("billTime").textContent = orderDate.toLocaleTimeString();
+
+      // Populate items
+      const itemsContainer = document.getElementById("billItems");
+      itemsContainer.innerHTML = "";
+     let subtotal = 0;
+
+(order.cartItems || []).forEach(item => {
+  const unitPrice = Number(item.unitPrice || 0);
+  const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+  
+  subtotal += itemTotal;
+  
+});
+
+
+const gstAmount = Number(order.gstAmount || 0);
+const total = Number(order.totalAmount || (subtotal + gstAmount));
+document.getElementById("billTotalAmount").textContent = `₹${total.toFixed(2)}`;
+const gstPercent = Number(order.gstPercent || 0);
+
+const totalsHTML = `
+  <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+
+  <div style="display:flex; justify-content:space-between;">
+    <span>Subtotal</span>
+    <span>₹${subtotal.toFixed(2)}</span>
+  </div>
+
+  <div style="display:flex; justify-content:space-between;">
+    <span>GST (${gstPercent}%)</span>
+    <span>₹${gstAmount.toFixed(2)}</span>
+  </div>
+
+  <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+`;
+
+// document.getElementById("billItems").insertAdjacentHTML("beforeend", totalsHTML);
+
+(order.cartItems || []).forEach(item => {
+  const unitPrice = Number(item.unitPrice || 0);
+  const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+
+  const itemDiv = document.createElement("div");
+  itemDiv.style.cssText = "margin-bottom: 4px; font-size: 12px;";
+
+itemDiv.innerHTML = `
+  <div style="display:flex; justify-content:space-between;">
+    
+    <span style="width:40%;">${item.name}</span>
+    
+    <span style="width:15%; text-align:center;">
+      ${item.quantity}
+    </span>
+    
+    <span style="width:20%; text-align:right;">
+      ₹${unitPrice.toFixed(2)}
+    </span>
+    
+    <span style="width:25%; text-align:right;">
+      ₹${itemTotal.toFixed(2)}
+    </span>
+
+  </div>
+`;
+  itemsContainer.appendChild(itemDiv);
+});
+itemsContainer.insertAdjacentHTML("beforeend", totalsHTML);
+
+      // document.getElementById("billTotalAmount").textContent = `₹${total.toFixed(2)}`;
+
+      // Show bill template and print
+      const billTemplate = document.getElementById("billTemplate");
+     billTemplate.style.display = "block";
+
+setTimeout(() => {
+
+    window.print();
+
+},300);
+
+window.onafterprint = () => {
+
+    billTemplate.style.display = "none";
+
+};
+//       document.getElementById("billItems").insertAdjacentHTML("beforeend", `
+//   <div style="text-align:center; margin-top:10px;">
+//     Thank You! Visit Again 🙏
+//   </div>
+// `);
+
+      showNotification("Bill sent to printer!", "success");
+    };
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        // Delay redirect to prevent flash
+        setTimeout(() => {
+          window.location.href = "admin-login.html";
+        }, 100);
+        return;
+      }
+
+      db.ref("owners/" + user.uid).once("value").then(snapshot => {
+        const ownerData = snapshot.val();
+        if (!ownerData || !ownerData.restaurantId) {
+          setTimeout(() => {
+            alert("Unauthorized access.");
+            auth.signOut().then(() => window.location.href = "admin-login.html");
+          }, 100);
+          return;
+        }
+
+        restaurantId = ownerData.restaurantId;
+        localStorage.setItem("restaurantId", restaurantId);
+
+        // Enhanced real-time monitoring for blocking/unblocking
+        function checkAccessStatus() {
+          // Monitor owner status changes in real-time
+          db.ref("owners/" + user.uid).on("value", ownerSnapshot => {
+            const currentOwnerData = ownerSnapshot.val();
+            if (!currentOwnerData) {
+              setTimeout(() => {
+                alert("Account not found.");
+                auth.signOut().then(() => window.location.href = "admin-login.html");
+              }, 100);
+              return;
+            }
+
+            // Check if owner is blocked or revoked
+            if (currentOwnerData.blocked || currentOwnerData.revoked) {
+              const reason = currentOwnerData.revokedReason || currentOwnerData.blockedReason || "Account suspended";
+              document.getElementById("revokeReason").textContent = reason;
+              document.getElementById("revokeNotice").style.display = "flex";
+              return;
+            } else {
+              // Owner is unblocked - hide revoke notice
+              document.getElementById("revokeNotice").style.display = "none";
+            }
+          });
+
+          // Monitor restaurant status changes in real-time
+          db.ref("restaurants/" + restaurantId).on("value", restaurantSnapshot => {
+            const currentRestaurantData = restaurantSnapshot.val();
+            if (!currentRestaurantData) {
+              setTimeout(() => {
+                alert("Restaurant not found.");
+                auth.signOut().then(() => window.location.href = "admin-login.html");
+              }, 100);
+              return;
+            }
+
+            restaurantData = currentRestaurantData;
+
+            // Check if restaurant is blocked or revoked
+            if (currentRestaurantData.blocked || currentRestaurantData.revoked) {
+              const reason = currentRestaurantData.revokedReason || currentRestaurantData.blockedReason || "Account suspended";
+              document.getElementById("revokeReason").textContent = reason;
+              document.getElementById("revokeNotice").style.display = "flex";
+              return;
+            } else {
+              // Restaurant is unblocked - hide revoke notice and continue normal operation
+              document.getElementById("revokeNotice").style.display = "none";
+
+              // Load subscription info
+              loadSubscriptionInfo(currentRestaurantData);
+            }
+          });
+        }
+
+        // Start monitoring access status with delay to prevent flash
+        setTimeout(() => {
+          checkAccessStatus();
+        }, 300);
+
+        function loadSubscriptionInfo(restaurantData) {
+          // Auto-set ₹299 plan if seats ≤ 20
+          if (restaurantData.totalSeats && restaurantData.totalSeats <= 20 && restaurantData.subscriptionPlan !== 299) {
+            db.ref("restaurants/" + restaurantId + "/subscriptionPlan").set(299);
+            restaurantData.subscriptionPlan = 299;
+          }
+
+          // Enhanced expiry calculation
+          let expiry = "N/A";
+          let expiryClass = "text-red-400";
+          let needsRenewal = false;
+          let daysLeft = 0;
+          let isExpired = false;
+
+          if (restaurantData.subscriptionExpiry && !isNaN(Number(restaurantData.subscriptionExpiry))) {
+            const now = Date.now();
+            const remaining = restaurantData.subscriptionExpiry - now;
+            daysLeft = Math.ceil(remaining / (1000 * 60 * 60 * 24));
+
+            if (remaining > 0) {
+              expiry = `${daysLeft} days remaining`;
+              expiryClass = daysLeft <= 7 ? "text-yellow-400" : "text-green-400";
+              needsRenewal = daysLeft <= 5; // Show renewal when 5 days or less
+            } else {
+              expiry = "❌ Expired - Service Suspended";
+              expiryClass = "text-red-400 font-bold";
+              needsRenewal = true;
+              isExpired = true;
+            }
+          }
+
+          document.getElementById("subscriptionDetails").innerHTML = `
+          <div class="space-y-4">
+          <div class="glass-effect p-4 rounded-2xl flex flex-col justify-between h-full">
+              <div class="flex items-center justify-between">
+                <span class="text-blue-200">🏢 Restaurant</span>
+                <span class="font-semibold text-right">${restaurantData.name}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-blue-200">💳 Subscription Plan</span>
+                <span class="font-semibold text-green-400">₹${restaurantData.subscriptionPlan}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-blue-200">🪑 Total Seats</span>
+                <span class="font-semibold">${restaurantData.totalSeats}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-blue-200">📧 Email</span>
+                <span class="font-semibold text-right text-xs lg:text-sm break-all">${restaurantData.ownerEmail}</span>
+              </div>
+            </div>
+            
+           <div class="glass-effect p-4 rounded-2xl flex flex-col justify-between h-full">
+              <div class="flex items-center justify-between">
+                <span class="text-blue-200">⏰ Status</span>
+                <span class="font-bold ${expiryClass} text-right text-xs lg:text-sm">${expiry}</span>
+              </div>
+              ${expiry !== "N/A" && !expiry.includes("Expired") && !needsRenewal ? `
+                <div class="mt-3 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                  <p class="text-yellow-300 text-xs lg:text-sm">⚠️ Please renew before expiry to avoid service interruption.</p>
+                </div>
+              ` : ""}
+              ${expiry.includes("Expired") ? `
+                <div class="mt-3 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+                  <p class="text-red-300 text-xs lg:text-sm">🚨 Your service has been suspended due to expired subscription. Please renew immediately.</p>
+                </div>
+              ` : ""}
+            </div>
+          </div>
+        `;
+// ✅ SHOW PAGE AFTER DATA LOAD
+const loader = document.getElementById("pageLoader");
+loader.style.opacity = "0";
+setTimeout(() => {
+  loader.style.display = "none";
+  document.body.style.visibility = "visible";
+}, 400);
+document.body.style.visibility = "visible";
+          // Show/hide renewal section based on expiry
+          const renewalSection = document.getElementById("renewalSection");
+          const autoRenewalAmount = document.getElementById("autoRenewalAmount");
+
+          if (needsRenewal) {
+            renewalSection.style.display = "block";
+
+            // Update renewal message
+            const renewalTitle = document.getElementById("renewalTitle");
+            const renewalMessage = document.getElementById("renewalMessage");
+
+            // Update auto renewal amount
+            autoRenewalAmount.textContent = restaurantData.subscriptionPlan || 299;
+
+            if (expiry.includes("Expired")) {
+              renewalTitle.textContent = "Subscription Expired";
+              renewalMessage.textContent = "Your subscription has expired. Please renew immediately to restore access.";
+            } else {
+              renewalTitle.textContent = "Renewal Required";
+              renewalMessage.textContent = `Your subscription expires in ${daysLeft} days. Renew now to avoid interruption.`;
+            }
+          } else {
+            renewalSection.style.display = "none";
+          }
+
+          // NEW: Show renewal banner on page load if needed and not dismissed
+          if (needsRenewal && !sessionStorage.getItem('renewalBannerDismissed')) {
+            setTimeout(() => {
+              showRenewalBanner(daysLeft, isExpired);
+            }, 1000);
+          }
+        }
+
+        // Load Admin Broadcasts with persistence
+        db.ref("adminBroadcasts").on("value", snap => {
+          const box = document.getElementById("broadcastMessages");
+          const data = snap.val() || {};
+
+          // Check if user has cleared broadcasts
+          if (localStorage.getItem('clearedBroadcasts') === 'true') {
+            box.innerHTML = `
+            <div class="text-center text-gray-400 py-4">
+              <div class="text-2xl mb-2">📢</div>
+              <p>All announcements cleared locally</p>
+            </div>
+          `;
+            return;
+          }
+
+          box.innerHTML = "";
+
+          if (Object.keys(data).length === 0) {
+            box.innerHTML = '<div class="text-center text-gray-400 py-4">No announcements at this time</div>';
+            return;
+          }
+
+          Object.entries(data).sort((a, b) => b[0] - a[0]).forEach(([ts, msg]) => {
+            const div = document.createElement("div");
+            const time = new Date(+ts).toLocaleString();
+            div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
+            div.innerHTML = `
+            <div class="font-semibold text-blue-300 text-xs mb-1">📅 ${time}</div>
+            <div class="text-white text-sm">${msg}</div>
+          `;
+            box.appendChild(div);
+          });
+        });
+
+        // Check if there's an active ticket
+        db.ref(`supportTickets/${restaurantId}`).once("value").then(ticketSnap => {
+          const tickets = ticketSnap.val() || {};
+          const activeTicket = Object.entries(tickets).find(([_, t]) => t.status !== "closed");
+          if (activeTicket) {
+            setupActiveTicket(activeTicket[0]);
+          }
+        });
+
+        // Enhanced Orders listener with better error handling
+       db.ref(`restaurants/${restaurantId}/orders`).on("value", snapshot => {
+  const newData = snapshot.val() || {};
+
+  const isNew = Object.keys(newData).some(id => !ordersData[id]);
+
+  if (isNew && Object.keys(ordersData).length > 0) {
+    enableSound();
+    setTimeout(() => playSound(), 100);
+    showNotification("New order received!", "success");
+  }
+
+  ordersData = newData;
+
+  if (isFirstLoad) {
+  const loader = document.getElementById("pageLoader");
+loader.style.opacity = "0";
+setTimeout(() => {
+  loader.style.display = "none";
+  document.body.style.visibility = "visible";
+}, 400);
+    document.body.style.visibility = "visible";
+    isFirstLoad = false;
+  }
+
+  // 🔥 ALWAYS render
+  renderOrders(currentFilter);
+});
+
+
+        // Search and filter handlers for both mobile and desktop
+        function setupSearchHandlers() {
+          const searchInputs = [
+            document.getElementById("searchInput"),
+            document.getElementById("searchInputMobile")
+          ].filter(Boolean);
+
+          searchInputs.forEach(input => {
+            input.addEventListener("input", (e) => {
+              // Sync search inputs
+              searchInputs.forEach(otherInput => {
+                if (otherInput !== input) {
+                  otherInput.value = e.target.value;
+                }
+              });
+              renderOrders(currentFilter);
+            });
+          });
+        }
+
+        setupSearchHandlers();
+
+        document.querySelectorAll(".toggle-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentFilter = btn.dataset.filter;
+            renderOrders(currentFilter);
+            // Close mobile menu after selection
+            document.getElementById("mobileMenu").classList.remove("open");
+          });
+        });
+
+        // Support ticket functions
+        window.submitNewTicket = async () => {
+          const msg = document.getElementById("newTicketMessage").value.trim();
+          if (!msg) return alert("Please enter a message.");
+
+          try {
+            const ticketRef = db.ref(`supportTickets/${restaurantId}`);
+            const snap = await ticketRef.once("value");
+            let existingTicketId = null;
+
+            const tickets = snap.val() || {};
+            for (const [ticketId, ticketData] of Object.entries(tickets)) {
+              const messages = ticketData.messages || {};
+              const hasAdminReply = Object.values(messages).some(m => m.sender === "admin");
+              if (!hasAdminReply) {
+                existingTicketId = ticketId;
+                break;
+              }
+            }
+
+            const timestamp = Date.now();
+            let targetTicketId = existingTicketId || timestamp;
+
+            if (!existingTicketId) {
+              await db.ref(`supportTickets/${restaurantId}/${targetTicketId}`).set({
+                status: "open",
+                timestamp: timestamp
+              });
+            }
+
+            await db.ref(`supportTickets/${restaurantId}/${targetTicketId}/messages/${timestamp}`).set({
+              sender: "owner",
+              text: msg,
+              timestamp: timestamp
+            });
+
+            document.getElementById("newTicketMessage").value = "";
+            setupActiveTicket(targetTicketId);
+            showNotification("Support ticket submitted successfully!", "success");
+          } catch (error) {
+            console.error("Error submitting ticket:", error);
+            showNotification("Failed to submit ticket. Please try again.", "error");
+          }
+        };
+
+        window.sendTicketReply = () => {
+          const text = document.getElementById("replyMessage").value.trim();
+          if (!text) return alert("Write something");
+          const ts = Date.now();
+          db.ref(`supportTickets/${restaurantId}/${window.activeTicketId}/messages/${ts}`).set({
+            sender: "owner",
+            text,
+            timestamp: ts
+          }).then(() => {
+            document.getElementById("replyMessage").value = "";
+            showNotification("Message sent!", "success");
+          }).catch(error => {
+            console.error("Error sending reply:", error);
+            showNotification("Failed to send message. Please try again.", "error");
+          });
+        };
+
+        window.setupActiveTicket = (ticketId) => {
+          window.activeTicketId = ticketId;
+          document.getElementById("createTicketSection").classList.add("hidden");
+          document.getElementById("activeTicketSection").classList.remove("hidden");
+          const msgBox = document.getElementById("ticketMessages");
+
+          db.ref(`supportTickets/${restaurantId}/${ticketId}/messages`).on("value", snap => {
+            const msgs = snap.val() || {};
+            msgBox.innerHTML = "";
+
+            if (Object.keys(msgs).length === 0) {
+              msgBox.innerHTML = `
+              <div class="text-center text-gray-400 py-8">
+                <div class="text-3xl mb-2">💬</div>
+                <p>No messages yet</p>
+              </div>
+            `;
+              return;
+            }
+
+            Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp).forEach(([_, m]) => {
+              const who = m.sender === "owner" ? "👤 You" : "👨‍💼 Admin";
+              const time = new Date(m.timestamp).toLocaleTimeString();
+              const el = document.createElement("div");
+              el.className = `p-3 rounded-lg ${m.sender === "owner" ? "bg-blue-600/30 ml-4" : "bg-green-600/30 mr-4"} border border-white/10 hover:bg-opacity-40 transition-all`;
+              el.innerHTML = `
+              <div class="font-semibold text-xs mb-1 text-gray-300">${who} — 🕒 ${time}</div>
+              <div class="text-white text-sm break-words">${m.text}</div>
+            `;
+              msgBox.appendChild(el);
+            });
+            msgBox.scrollTop = msgBox.scrollHeight;
+          });
+
+          db.ref(`supportTickets/${restaurantId}/${ticketId}/status`).on("value", s => {
+            const status = s.val();
+            if (status === "closed") {
+              alert("❌ This ticket has been closed by Admin.");
+              document.getElementById("replyMessage").disabled = true;
+            }
+          });
+        };
+
+        // Order management functions
+        window.updateOrderStatus = (id, status) => {
+          // First update the status in the order
+          db.ref(`restaurants/${restaurantId}/orders/${id}/status`).set(status).then(() => {
+            showNotification(`Order ${status}!`, "success");
+
+            // ✅ FIX: When marking as done, keep it in active orders so it shows in dashboard
+            // It will be moved to history only when user clicks "Clear"
+            if (status === "done") {
+              const order = ordersData[id];
+              if (order) {
+                // Update the order with the new status
+                const updatedOrder = { ...order, status: "done" };
+                // Save to history for reporting, but keep in active orders for dashboard
+                db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(updatedOrder);
+              }
+            }
+          }).catch(error => {
+            console.error("Error updating order:", error);
+            showNotification("Failed to update order status", "error");
+          });
+        };
+
+        window.completeOrder = id => {
+          // ✅ FIX: Move order to history instead of deleting
+          const order = ordersData[id];
+          if (order) {
+            // Add metadata before saving to history
+            const orderWithMetadata = {
+              ...order,
+              clearedAt: Date.now(),
+              clearedFrom: 'dashboard',
+              clearedBy: 'admin'
+            };
+
+            // Save to order history first
+            db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(orderWithMetadata).then(() => {
+              console.log(`✅ Order ${id} saved to history successfully`);
+              // Then remove from active orders
+              return db.ref(`restaurants/${restaurantId}/orders/${id}`).remove();
+            }).then(() => {
+              console.log(`✅ Order ${id} removed from active orders`);
+              showNotification("Order moved to history!", "success");
+            }).catch(error => {
+              console.error("Error moving order to history:", error);
+              showNotification("Failed to clear order", "error");
+            });
+          } else {
+            // If order not found in memory, just remove it
+            db.ref(`restaurants/${restaurantId}/orders/${id}`).remove().then(() => {
+              showNotification("Order cleared!", "success");
+            }).catch(error => {
+              console.error("Error removing order:", error);
+              showNotification("Failed to clear order", "error");
+            });
+          }
+        };
+
+        window.clearAllDoneOrders = () => {
+          if (!confirm("Clear all DONE orders? They will be moved to order history.")) return;
+          let clearedCount = 0;
+          const promises = [];
+
+          // ✅ FIX: Move all done orders to history instead of deleting
+          Object.entries(ordersData).forEach(([id, order]) => {
+            if (order.status === "done") {
+              // Add metadata before saving to history
+              const orderWithMetadata = {
+                ...order,
+                clearedAt: Date.now(),
+                clearedFrom: 'dashboard',
+                clearedBy: 'admin',
+                bulkClear: true
+              };
+
+              // Save to history first, then remove from active orders
+              const promise = db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(orderWithMetadata)
+                .then(() => {
+                  console.log(`✅ Order ${id} saved to history successfully`);
+                  return db.ref(`restaurants/${restaurantId}/orders/${id}`).remove();
+                })
+                .then(() => {
+                  console.log(`✅ Order ${id} removed from active orders`);
+                  clearedCount++;
+                })
+                .catch(error => {
+                  console.error(`Error moving order ${id} to history:`, error);
+                });
+              promises.push(promise);
+            }
+          });
+
+          // Wait for all operations to complete
+          Promise.all(promises).then(() => {
+            if (clearedCount > 0) {
+              showNotification(`Moved ${clearedCount} completed orders to history`, "success");
+            } else {
+              showNotification("No completed orders to clear", "info");
+            }
+          });
+        };
+
+        // Enhanced render function with better mobile UI and print button
+      // Enhanced render function with better mobile UI and print button
+       function renderOrders(filter) {
+          const container = document.getElementById("ordersContainer");
+          if (!container) return; 
+
+          container.innerHTML = "";
+
+          const searchQuery = (
+            document.getElementById("searchInput")?.value ||
+            document.getElementById("searchInputMobile")?.value ||
+            ""
+          ).toLowerCase();
+
+          const sortedIds = Object.keys(ordersData).sort((a, b) => {
+            return (ordersData[b].timestamp || 0) - (ordersData[a].timestamp || 0);
+          });
+
+          let displayedCount = 0;
+
+          for (const id of sortedIds) {
+            const order = ordersData[id];
+            const status = (order.status || "new").toLowerCase();
+            
+            // 🔥 Catching all variations of order type from Firebase
+            const type = (order.type || order.orderType || order.order_type || "").toLowerCase().trim();
+            
+            const name = (order.customerName || "").toLowerCase();
+            const table = (order.tableNumber || "").toLowerCase();
+
+            // Filter logic matches normalized values
+            if (filter === "accepted" && status !== "accepted") continue;
+            if (filter === "rejected" && status !== "rejected") continue;
+            if (filter === "dinein" && !type.includes("dine")) continue;
+            if (filter === "takeaway" && !type.includes("take")) continue;
+            if (filter === "all" && status !== "new") continue;
+            if (searchQuery && !name.includes(searchQuery) && !table.includes(searchQuery)) continue;
+
+            displayedCount++;
+
+            let subtotal = 0; 
+            (order.cartItems || []).forEach(item => {
+              const itemTotal = Number(item.totalPrice || 0);
+              subtotal += itemTotal; 
+            });
+
+            const time = order.timestamp
+              ? new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : '';
+
+            const statusColors = {
+              new: "from-blue-500 to-blue-600",
+              accepted: "from-green-500 to-green-600",
+              rejected: "from-red-500 to-red-600",
+              done: "from-purple-500 to-purple-600"
+            };
+
+            const typeIcon = type.includes("dine") ? "🏪" : "📦";
+
+            const card = document.createElement("div");
+            card.className = "order-card rounded-2xl p-3 lg:p-4 shadow-xl space-y-3 flex flex-col justify-between fade-in";
+
+            card.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div class="space-y-1 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h2 class="text-sm lg:text-lg font-bold text-white">#${id}</h2>
+                  <span class="status-badge px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${statusColors[status]} text-white">
+                    ${status.toUpperCase()}
+                  </span>
+                  ${getPaymentBadgeHTML(order)}
+                </div>
+                <div class="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
+                  <span class="flex items-center gap-1">🕒 ${time}</span>
+                </div>
+              </div>
+              <div class="text-right ml-2">
+                <div class="total-price text-sm lg:text-base font-bold text-white">₹${Number(order.totalAmount || subtotal).toFixed(2)}</div>
+                <div class="text-xs text-gray-400">
+                  Subtotal: ₹${subtotal.toFixed(2)}<br>
+                  GST (${order.gstPercent || 0}%): ₹${Number(order.gstAmount || 0).toFixed(2)}
+                </div>
+              </div>
+            </div>
+            
+            <div class="glass-effect p-2 lg:p-3 rounded-xl flex-1 flex flex-col justify-between">
+              <div class="flex items-center gap-2 mb-2 flex-wrap text-xs lg:text-sm">
+                <span>👤</span>
+                <span class="font-semibold text-white">${order.customerName}</span>
+                <span class="text-gray-400">|</span>
+                <span class="text-gray-300">Table: ${order.tableNumber || "N/A"}</span>
+                <span class="text-gray-400">|</span>
+                
+                <span class="px-2 py-0.5 rounded font-medium ${type.includes('dine') ? 'bg-purple-500/20 text-purple-300' : 'bg-yellow-500/20 text-yellow-300'}">
+                  ${typeIcon} ${type.includes('dine') ? 'Dine-In' : type.includes('take') ? 'Takeaway' : 'Order'}
+                </span>
+              </div>
+              
+              <div class="space-y-1 max-h-32 lg:max-h-48 overflow-y-auto">
+                ${(order.cartItems || []).map(item => {
+                  const unitPrice = Number(item.unitPrice || 0);
+                  const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+                  const vegTag = item.veg ? `<span class="text-xs px-1 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
+                  return `
+                    <div class="order-item-row flex justify-between items-center py-1">
+                      <div class="flex items-center gap-1 flex-1 min-w-0">
+                        <span class="text-white font-medium text-xs truncate">${item.name}</span>
+                        ${vegTag}
+                      </div>
+                      <div class="order-item-quantity text-right ml-2 flex-shrink-0">
+                        <div class="text-white font-semibold text-xs">₹${itemTotal.toFixed(2)}</div>
+                        <div class="text-xs text-gray-400">
+                          ${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'} × ${item.quantity}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+
+            <div class="mt-auto pt-3 space-y-2 w-full">
+              ${getVerifyButtonHTML(id, order)}
+              
+              ${status === "new" ? `
+                <div class="flex gap-2">
+                  <button onclick="updateOrderStatus('${id}', 'accepted')" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
+                    <span>✅</span> Accept
+                  </button>
+                  <button onclick="updateOrderStatus('${id}', 'rejected')" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
+                    <span>❌</span> Reject
+                  </button>
+                </div>
+              ` : ""}
+              
+              ${status === "accepted" ? `
+                <div class="grid grid-cols-1 gap-2 w-full">
+                  <button onclick="updateOrderStatus('${id}', 'done')" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                    <span>🎉</span> Mark as Done
+                  </button>
+                  <button onclick="printBill('${id}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
+                    <span>🖨️</span> Print Bill
+                  </button>
+                </div>
+              ` : ""}
+              
+              ${(status === "done" || status === "rejected") ? `
+                <div class="flex gap-2">
+                  <button onclick="printBill('${id}')" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
+                    <span>🖨️</span> Print Bill
+                  </button>
+                  <button onclick="completeOrder('${id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
+                    <span>🗑️</span> Clear
+                  </button>
+                </div>
+              ` : ""}
+            </div>
+            `;
+            container.appendChild(card);
+          }
+
+          if (displayedCount === 0) {
+            container.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-12 lg:py-16 text-center">
+              <div class="text-4xl lg:text-6xl mb-4 opacity-50">📋</div>
+              <h3 class="text-lg lg:text-xl font-semibold text-gray-300 mb-2">No orders found</h3>
+              <p class="text-gray-400 text-sm lg:text-base">Orders will appear here when customers place them</p>
+            </div>
+          `;
+          }
+        }
+      }).catch(error => {
+        console.error("Error loading owner data:", error);
+        // Prevent error flash by delaying redirect
+        setTimeout(() => {
+          showNotification("Authentication error. Please login again.", "error");
+          auth.signOut().then(() => window.location.href = "admin-login.html");
+        }, 100);
+      });
+    });
+
+
+        // ===== PAYMENT VERIFICATION FUNCTIONS =====
+        let currentVerifyOrderId = null;
+
+        window.openVerifyModal = (orderId) => {
+          currentVerifyOrderId = orderId;
+          const order = ordersData[orderId];
+          if (!order) {
+            showNotification("Order not found", "error");
+            return;
+          }
+
+          // Populate order details
+          const detailsEl = document.getElementById('verifyOrderDetails');
+          detailsEl.innerHTML = `
+            <div class="flex justify-between text-gray-300">
+              <span>Order ID:</span>
+              <span class="text-white font-semibold">#${orderId}</span>
+            </div>
+            <div class="flex justify-between text-gray-300">
+              <span>Customer:</span>
+              <span class="text-white font-semibold">${order.customerName || 'N/A'}</span>
+            </div>
+            <div class="flex justify-between text-gray-300">
+              <span>Amount:</span>
+              <span class="text-white font-semibold">₹${Number(order.totalAmount || 0).toFixed(2)}</span>
+            </div>
+            <div class="flex justify-between text-gray-300">
+              <span>Payment Method:</span>
+              <span class="text-yellow-400 font-semibold">${(order.paymentType || order.paymentMethod || 'N/A').toUpperCase()}</span>
+            </div>
+            ${order.transactionId ? `<div class="flex justify-between text-gray-300">
+              <span>Transaction ID:</span>
+              <span class="text-white font-semibold text-xs">${order.transactionId}</span>
+            </div>` : ''}
+          `;
+
+          // Show screenshot
+          const screenshotArea = document.getElementById('verifyScreenshotArea');
+          if (order.paymentScreenshot) {
+            screenshotArea.innerHTML = `
+              <img src="${order.paymentScreenshot}" alt="Payment Screenshot" 
+                onclick="openFullscreenImg('${order.paymentScreenshot}')"
+                onerror="this.parentElement.innerHTML='<p class=\'text-red-400\'>⚠️ Failed to load screenshot</p>'"
+                style="max-width:100%; border-radius:0.75rem; cursor:zoom-in;">
+              <p class="text-gray-400 text-xs mt-2">Click image to view full screen</p>
+            `;
+          } else {
+            screenshotArea.innerHTML = '<p class="text-gray-500 py-8">📷 No screenshot was uploaded by the customer</p>';
+          }
+
+          document.getElementById('paymentVerifyModal').classList.add('show');
+        };
+
+        window.closeVerifyModal = () => {
+          document.getElementById('paymentVerifyModal').classList.remove('show');
+          currentVerifyOrderId = null;
+        };
+
+        window.openFullscreenImg = (src) => {
+          document.getElementById('fullscreenImg').src = src;
+          document.getElementById('fullscreenImgOverlay').classList.add('show');
+        };
+
+        window.verifyPayment = (status) => {
+          if (!currentVerifyOrderId) return;
+          
+          const confirmMsg = status === 'verified' 
+            ? 'Are you sure you want to VERIFY this payment?' 
+            : 'Are you sure you want to REJECT this payment?';
+          
+          if (!confirm(confirmMsg)) return;
+
+          db.ref(`restaurants/${restaurantId}/orders/${currentVerifyOrderId}/paymentVerified`).set(status)
+            .then(() => {
+              if (status === 'verified') {
+                showNotification(`Payment VERIFIED for order #${currentVerifyOrderId}`, 'success');
+              } else {
+                showNotification(`Payment REJECTED for order #${currentVerifyOrderId}`, 'error');
+              }
+              closeVerifyModal();
+            })
+            .catch(error => {
+              console.error("Error updating payment status:", error);
+              showNotification("Failed to update payment status", "error");
+            });
+        };
+
+        // Helper to get payment badge HTML
+        function getPaymentBadgeHTML(order) {
+          const method = (order.paymentType || order.paymentMethod || '').toLowerCase();
+          const verified = order.paymentVerified;
+
+          if (method === 'online' || method === 'upi' || method === 'card' || method === 'netbanking') {
+            if (verified === true || verified === 'verified') {
+              return '<span class="payment-status-badge online-verified">💚 Paid & Verified</span>';
+            } else if (verified === 'rejected') {
+              return '<span class="payment-status-badge online-rejected">❌ Payment Rejected</span>';
+            } else {
+              return '<span class="payment-status-badge online-pending">⏳ Online - Not Verified</span>';
+            }
+          } else if (method === 'cash' || method === 'cod' || method === 'counter') {
+            return '<span class="payment-status-badge cash">💵 Cash Payment</span>';
+          }
+          return '<span class="payment-status-badge cash">💵 Cash Payment</span>';
+        }
+
+        // Helper to get verify button HTML
+        function getVerifyButtonHTML(orderId, order) {
+          const method = (order.paymentType || order.paymentMethod || '').toLowerCase();
+          const verified = order.paymentVerified;
+          
+          if ((method === 'online' || method === 'upi' || method === 'card' || method === 'netbanking') && verified !== true && verified !== 'verified' && verified !== 'rejected') {
+            return `<button onclick="openVerifyModal('${orderId}')" class="w-full btn-verify text-white btn-compact font-semibold flex items-center justify-center gap-2 py-2 rounded-xl">
+              <span>🔍</span> Verify Payment
+            </button>`;
+          } else if ((method === 'online' || method === 'upi' || method === 'card' || method === 'netbanking') && (verified === true || verified === 'verified' || verified === 'rejected')) {
+            return `<button onclick="openVerifyModal('${orderId}')" class="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white btn-compact font-semibold flex items-center justify-center gap-2 py-2 rounded-xl hover:scale-105 transition-all">
+              <span>👁️</span> View Payment Details
+            </button>`;
+          }
+          return '';
+        }
+
+    // Enhanced notification system with mobile optimization
+    function showNotification(message, type = "info") {
+      const notification = document.createElement("div");
+      notification.className = `notification fixed top-20 lg:top-6 right-4 lg:right-6 z-50 p-3 lg:p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-xs lg:max-w-sm`;
+
+      const colors = {
+        success: "bg-gradient-to-r from-green-500 to-green-600 border-green-400 text-white",
+        error: "bg-gradient-to-r from-red-500 to-red-600 border-red-400 text-white",
+        info: "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white"
+      };
+
+      notification.className += ` ${colors[type]}`;
+      notification.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="text-sm lg:text-base">${type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}</span>
+        <span class="font-medium text-xs lg:text-sm">${message}</span>
+      </div>
+    `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.transform = "translateX(0)";
+      }, 100);
+
+      setTimeout(() => {
+        notification.style.transform = "translateX(100%)";
+        setTimeout(() => notification.remove(), 500);
+      }, 3000);
+    }
+
+    // GREEN DOT FEATURE: Enhanced unread message detection
+    function checkUnreadAdminMessage() {
+      if (!restaurantId) return;
+      db.ref(`supportTickets/${restaurantId}`).once("value").then(snap => {
+        const tickets = snap.val() || {};
+        let showDot = false;
+
+        Object.values(tickets).forEach(ticket => {
+          const messages = Object.values(ticket.messages || {}).sort((a, b) => a.timestamp - b.timestamp);
+          if (messages.length > 0) {
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg.sender === "admin") {
+              showDot = true;
+            }
+          }
+        });
+
+        // Update both desktop and mobile green dots
+        document.getElementById("greenDot")?.classList.toggle("hidden", !showDot);
+        document.getElementById("greenDotMobile")?.classList.toggle("hidden", !showDot);
+      }).catch(error => {
+        console.error("Error checking admin messages:", error);
+      });
+    }
+
+    // Initialize dashboard
+    document.addEventListener("DOMContentLoaded", () => {
+      // Set default active filter
+      document.querySelector('[data-filter="all"]')?.classList.add("active");
+
+      // Run unread message check every 5 seconds
+      setInterval(checkUnreadAdminMessage, 5000);
+
+      // Initial check
+      setTimeout(checkUnreadAdminMessage, 2000);
+
+      // Add fade-in animation to main content
+      setTimeout(() => {
+        document.querySelectorAll('.fade-in').forEach(el => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        });
+      }, 100);
+
+      // Check if banner was dismissed in this session
+      if (sessionStorage.getItem('renewalBannerDismissed')) {
+        renewalBannerDismissed = true;
+      }
+    });
+
+    // Handle window resize for responsive behavior
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        document.getElementById("mobileMenu").classList.remove("open");
+      }
+    });
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        console.log("✅ Owner logged in:", user.uid);
+
+        // Pehle owner ke data se restaurantId nikalo
+        firebase.database().ref("owners/" + user.uid).once("value").then(snapshot => {
+          const ownerData = snapshot.val();
+
+          if (ownerData && ownerData.restaurantId) {
+            const restaurantId = ownerData.restaurantId;
+
+            // ✅ Ensure ownerRestaurantIndex exists
+            const user = firebase.auth().currentUser;
+
+            if (user) {
+              firebase.database().ref('admins/' + user.uid).once('value')
+                .then(snap => {
+                  if (snap.exists()) {
+                    // ✅ user is admin → allow writing
+                    firebase.database().ref('ownerRestaurantIndex/' + restaurantId).set(user.uid)
+                      .then(() => {
+                        console.log("Index saved by admin");
+                      })
+                      .catch(err => {
+                        console.error("Error adding ownerRestaurantIndex:", err);
+                      });
+                  } else {
+                    console.log("Not an admin → skipping ownerRestaurantIndex write");
+                  }
+                });
+            }
+
+
+            // Ab dashboard ka data load karo
+            // Removed because this function doesn't exist
+            // loadDashboardData();
+            console.log("Owner logged in, dashboard loaded successfully");
+
+
+          } else {
+            console.warn("⚠️ No restaurantId found for this owner:", user.uid);
+            alert("No restaurant linked with your account. Please contact admin.");
+          }
+        });
+
+      } else {
+        console.warn("⚠️ No user logged in, redirecting to login...");
+        window.location.href = "admin-login.html  ";
+      }
+    });
+
+//     function printBill() {
+//   const bill = document.getElementById("billTemplate");
+
+//   bill.style.display = "block";
+
+//   setTimeout(() => {
+//     document.body.style.height = "auto";
+//     document.body.style.overflow = "hidden";
+
+//     window.print();
+
+//     bill.style.display = "none";
+//   }, 200);
+// }
+
+  </script>
+  
+
+
+  <!-- Payment Verification Modal -->
+  <div id="paymentVerifyModal" class="verify-modal-overlay" onclick="if(event.target===this)closeVerifyModal()">
+    <div class="verify-modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center text-xl">💳</div>
+          <h2 class="text-lg lg:text-xl font-bold text-white">Verify Payment</h2>
+        </div>
+        <button onclick="closeVerifyModal()" class="text-gray-400 hover:text-white transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="verifyOrderDetails" class="glass-effect p-3 rounded-xl mb-4 space-y-2 text-sm">
+        </div>
+
+      <div class="verify-screenshot-container" id="verifyScreenshotContainer">
+        <p class="text-gray-400 text-sm mb-2">📸 Payment Screenshot</p>
+        <div id="verifyScreenshotArea">
+          <p class="text-gray-500">No screenshot uploaded</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button onclick="verifyPayment('verified')" class="bg-gradient-to-r from-green-500 to-green-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 py-3 rounded-xl">
+          <span>✅</span> Verify Payment
+        </button>
+        <button onclick="verifyPayment('rejected')" class="bg-gradient-to-r from-red-500 to-red-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 py-3 rounded-xl">
+          <span>❌</span> Reject Payment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="fullscreenImgOverlay" class="fullscreen-img-overlay" onclick="this.classList.remove('show')">
+    <img id="fullscreenImg" src="" alt="Payment Screenshot">
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const loader = document.getElementById("pageLoader");
+      if(loader) {
+        loader.style.opacity = "0";
+        setTimeout(() => {
+          loader.style.display = "none";
+          document.body.style.visibility = "visible";
+        }, 400);
+      }
+      document.body.style.visibility = "visible";
+    }, 4000);
+  </script>
+</body>
+</html>

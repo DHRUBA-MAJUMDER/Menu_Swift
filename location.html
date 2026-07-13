@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location Settings - MenuSwift Admin</title>
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      min-height: 100vh;
+      color: #1f2937;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-container {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.98);
+      border-radius: 24px;
+      box-shadow: 0 32px 64px -12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+      width: 100%; max-width: 560px;
+      padding: 2.5rem;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, #2563eb, #06b6d4, #10b981);
+      border-radius: 24px 24px 0 0;
+    }
+
+    .card-header { text-align: center; margin-bottom: 2rem; }
+    .card-header .icon {
+      width: 72px; height: 72px; border-radius: 18px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 12px 32px rgba(37,99,235,0.3);
+    }
+    .card-header .icon svg { width: 36px; height: 36px; color: #fff; }
+    .card-header h1 {
+      font-size: 1.75rem; font-weight: 800;
+      background: linear-gradient(135deg, #1e293b, #475569);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .card-header p { color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label {
+      display: block; font-size: 0.875rem; font-weight: 600;
+      color: #374151; margin-bottom: 0.5rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.875rem 1rem;
+      border: 2px solid #e2e8f0; border-radius: 12px;
+      font-size: 0.95rem; font-family: inherit;
+      background: #f8fafc; transition: all 0.2s; color: #1f2937;
+    }
+    .form-input:focus {
+      outline: none; border-color: #2563eb; background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .form-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.375rem; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem; background: #f1f5f9; border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .toggle-row span { font-weight: 600; font-size: 0.9rem; color: #374151; }
+    .toggle-switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #cbd5e1; border-radius: 28px; transition: 0.3s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 22px; height: 22px;
+      left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+      transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    input:checked + .toggle-slider { background: linear-gradient(135deg, #10b981, #059669); }
+    input:checked + .toggle-slider::before { transform: translateX(24px); }
+
+    .btn {
+      width: 100%; padding: 1rem; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff; box-shadow: 0 8px 24px rgba(37,99,235,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(37,99,235,0.45); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: #f1f5f9; color: #475569;
+      margin-top: 0.75rem;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    .btn-use-my-loc {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: #fff; box-shadow: 0 4px 16px rgba(6,182,212,0.3);
+      margin-bottom: 1.5rem;
+    }
+    .btn-use-my-loc:hover { transform: translateY(-1px); }
+
+    .alert {
+      padding: 1rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500;
+      margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+    .alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+
+    .current-settings {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 1rem; margin-bottom: 1.5rem;
+    }
+    .current-settings h3 { font-size: 0.85rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; }
+    .setting-row { display: flex; justify-content: space-between; padding: 0.375rem 0; font-size: 0.85rem; }
+    .setting-row .label { color: #64748b; }
+    .setting-row .value { font-weight: 600; color: #1f2937; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: rgba(255,255,255,0.7); font-size: 0.875rem; font-weight: 500;
+      text-decoration: none; margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #fff; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 20px; height: 20px; border: 2px solid transparent; border-top: 2px solid currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    @media (max-width: 480px) {
+      .page-container { padding: 1rem; }
+      .card { padding: 1.75rem; }
+      .row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <a href="dashboard.html" class="back-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Back to Dashboard
+    </a>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h1>Location Settings</h1>
+        <p>Configure geofence for your restaurant menu access</p>
+      </div>
+
+      <div id="messageArea"></div>
+
+      <!-- Current Settings Display -->
+      <div id="currentSettings" class="current-settings" style="display:none;">
+        <h3>📍 Current Configuration</h3>
+        <div class="setting-row"><span class="label">Latitude</span><span class="value" id="curLat">—</span></div>
+        <div class="setting-row"><span class="label">Longitude</span><span class="value" id="curLng">—</span></div>
+        <div class="setting-row"><span class="label">Allowed Radius</span><span class="value" id="curRadius">—</span></div>
+        <div class="setting-row"><span class="label">Location Check</span><span class="value" id="curSkip">—</span></div>
+      </div>
+
+      <!-- Use My Location Button -->
+      <button id="useMyLocBtn" class="btn btn-use-my-loc" onclick="useMyLocation()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        📍 Use My Current Location
+      </button>
+
+      <form id="locationForm" onsubmit="saveLocation(event)">
+        <div class="row-2">
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input type="number" step="any" id="latitude" class="form-input" placeholder="e.g. 26.1445" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input type="number" step="any" id="longitude" class="form-input" placeholder="e.g. 91.7362" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Allowed Radius (in km)</label>
+          <input type="number" step="0.01" min="0.01" max="50" id="allowedRadius" class="form-input" placeholder="e.g. 0.5" required>
+          <p class="form-hint">Customers within this radius can access the menu. (e.g., 0.1 = 100 meters, 1 = 1 km)</p>
+        </div>
+
+        <div class="toggle-row">
+          <span>Skip Location Verification</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="skipLocation">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <p class="form-hint" style="margin-top:-1rem; margin-bottom:1.5rem;">
+          When enabled, anyone can access the menu without location check.
+        </p>
+
+        <button type="submit" class="btn btn-primary" id="saveBtn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span id="saveBtnText">Save Location Settings</span>
+          <div id="saveSpinner" class="spinner" style="display:none;"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const restaurantId = localStorage.getItem('restaurantId');
+    const ownerUid = localStorage.getItem('ownerUid');
+
+    function showMsg(type, text) {
+      const area = document.getElementById('messageArea');
+      area.innerHTML = `<div class="alert alert-${type}">${type==='success'?'✅':type==='error'?'❌':'ℹ️'} ${text}</div>`;
+      setTimeout(() => area.innerHTML = '', 5000);
+    }
+
+    // Auth check
+    if (!restaurantId || !ownerUid) {
+      document.querySelector('.card').innerHTML = `
+        <div style="text-align:center;padding:2rem;">
+          <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1rem;">🔒 Access Denied</h2>
+          <p style="color:#64748b;margin-bottom:1.5rem;">Please log in to the admin panel first.</p>
+          <a href="admin-login.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;">Go to Login</a>
+        </div>
+      `;
+    }
+
+    // Load current settings
+    function loadCurrentSettings() {
+      if (!restaurantId) return;
+      db.ref(`/restaurants/${restaurantId}`).once('value').then(snap => {
+        const data = snap.val();
+        if (!data) return;
+
+        const settings = document.getElementById('currentSettings');
+        if (data.latitude || data.longitude || data.allowedRadius) {
+          settings.style.display = 'block';
+          document.getElementById('curLat').textContent = data.latitude || '—';
+          document.getElementById('curLng').textContent = data.longitude || '—';
+          document.getElementById('curRadius').textContent = data.allowedRadius ? data.allowedRadius + ' km' : '—';
+          document.getElementById('curSkip').textContent = data.skipLocationVerification ? 'Disabled (open access)' : 'Enabled';
+        }
+
+        // Pre-fill form
+        if (data.latitude) document.getElementById('latitude').value = data.latitude;
+        if (data.longitude) document.getElementById('longitude').value = data.longitude;
+        if (data.allowedRadius) document.getElementById('allowedRadius').value = data.allowedRadius;
+        if (data.skipLocationVerification) document.getElementById('skipLocation').checked = true;
+      });
+    }
+
+    function useMyLocation() {
+      const btn = document.getElementById('useMyLocBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Getting location...';
+
+      if (!navigator.geolocation) {
+        showMsg('error', 'Geolocation not supported in this browser.');
+        btn.disabled = false;
+        btn.innerHTML = '📍 Use My Current Location';
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          document.getElementById('latitude').value = pos.coords.latitude.toFixed(6);
+          document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
+          showMsg('success', 'Location captured! Review and save.');
+          btn.disabled = false;
+          btn.innerHTML = '📍 Use My Current Location';
+        },
+        err => {
+          showMsg('error', 'Could not get your location. Please enter manually.');
+          btn.disabled = false;
+          btn.innerHTML = '📍 Use My Current Location';
+        },
+        { enableHighAccuracy: true, timeout: 15000 }
+      );
+    }
+
+    function saveLocation(e) {
+      e.preventDefault();
+      if (!restaurantId) { showMsg('error', 'No restaurant linked.'); return; }
+
+      const lat = parseFloat(document.getElementById('latitude').value);
+      const lng = parseFloat(document.getElementById('longitude').value);
+      const radius = parseFloat(document.getElementById('allowedRadius').value);
+      const skip = document.getElementById('skipLocation').checked;
+
+      if (isNaN(lat) || lat < -90 || lat > 90) { showMsg('error', 'Invalid latitude (-90 to 90).'); return; }
+      if (isNaN(lng) || lng < -180 || lng > 180) { showMsg('error', 'Invalid longitude (-180 to 180).'); return; }
+      if (isNaN(radius) || radius <= 0) { showMsg('error', 'Radius must be greater than 0.'); return; }
+
+      const btn = document.getElementById('saveBtn');
+      const text = document.getElementById('saveBtnText');
+      const spinner = document.getElementById('saveSpinner');
+      btn.disabled = true;
+      text.textContent = 'Saving...';
+      spinner.style.display = 'inline-block';
+
+      const updates = {
+        latitude: lat,
+        longitude: lng,
+        allowedRadius: radius,
+        skipLocationVerification: skip
+      };
+
+      db.ref(`/restaurants/${restaurantId}`).update(updates)
+        .then(() => {
+          showMsg('success', 'Location settings saved successfully!');
+          loadCurrentSettings();
+        })
+        .catch(err => {
+          console.error(err);
+          showMsg('error', 'Failed to save. Check permissions.');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          text.textContent = 'Save Location Settings';
+          spinner.style.display = 'none';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCurrentSettings);
+  </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Bulk Message Sender (Meta API)</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 16px; }
+  textarea, input, button { width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 250px; }
+  button { background: #25d366; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+  button:hover { background: #1ebe5d; }
+  #log { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; height: 250px; overflow-y: auto; background: #f9f9f9; font-family: monospace; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+  <h1>💬 WhatsApp Bulk Sender (Official Meta API)</h1>
+
+  <label><strong>Access Token</strong> (Paste here, safe locally):</label>
+  <input id="token" type="text" placeholder="Paste your Access Token here..." />
+
+  <label><strong>Phone Number ID</strong> (from Meta WhatsApp Setup)</label>
+  <input id="phoneId" type="text" placeholder="e.g. 799408219924903" />
+
+  <label><strong>Message Text</strong></label>
+  <textarea id="message" rows="4" placeholder="Type your message here..."></textarea>
+
+  <label><strong>Recipient Numbers</strong> (comma or newline separated, with country code e.g. 919876543210)</label>
+  <textarea id="numbers" rows="6" placeholder="Enter numbers here..."></textarea>
+
+  <button id="sendBtn">🚀 Send Messages</button>
+
+  <div id="log"></div>
+
+<script>
+async function sendMessage(number, msg, token, phoneId) {
+  const url = `https://graph.facebook.com/v21.0/${phoneId}/messages`;
+  const payload = {
+    messaging_product: "whatsapp",
+    to: number,
+    type: "text",
+    text: { body: msg }
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+document.getElementById("sendBtn").addEventListener("click", async () => {
+  const token = document.getElementById("token").value.trim();
+  const phoneId = document.getElementById("phoneId").value.trim();
+  const message = document.getElementById("message").value.trim();
+  const rawNumbers = document.getElementById("numbers").value;
+  const numbers = rawNumbers.split(/[\s,]+/).filter(n => n.length > 5);
+
+  const log = document.getElementById("log");
+  log.textContent = "Starting bulk send...\n";
+
+  if (!token || !phoneId || !message || numbers.length === 0) {
+    log.textContent += "❌ Please fill all fields.\n";
+    return;
+  }
+
+  for (let i = 0; i < numbers.length; i++) {
+    const n = numbers[i];
+    log.textContent += `📤 Sending to ${n}...\n`;
+    const res = await sendMessage(n, message, token, phoneId);
+    if (res.messages) {
+      log.textContent += `✅ Sent to ${n}\n`;
+    } else {
+      log.textContent += `❌ Error sending to ${n}: ${JSON.stringify(res)}\n`;
+    }
+    await new Promise(r => setTimeout(r, 1500)); // delay to avoid rate limits
+  }
+
+  log.textContent += "\n✅ Bulk messaging complete.\n";
+});
+</script>
+</body>
+</html>

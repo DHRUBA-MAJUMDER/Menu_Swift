@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .staff-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .staff-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .staff-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .staff-card:hover::before {
+      opacity: 1;
+    }
+
+    .status-online {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-offline {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+
+    .status-active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-inactive {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+
+    .status-suspended {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .modal {
+      backdrop-filter: blur(20px);
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .analytics-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .analytics-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .search-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .filter-select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: #3b82f6;
+    }
+
+    .pagination-btn {
+      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .pagination-btn:hover {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transform: translateY(-2px);
+    }
+
+    .pagination-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .bulk-action-bar {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .bulk-action-bar.active {
+      transform: translateY(0);
+    }
+
+    .performance-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .performance-excellent {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .performance-good {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+
+    .performance-average {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .performance-poor {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    .activity-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .activity-online {
+      background: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+      animation: pulse 2s infinite;
+    }
+
+    .activity-offline {
+      background: #6b7280;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    .session-badge {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      color: #60a5fa;
+    }
+
+    .log-entry {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #3b82f6;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.25rem;
+    }
+
+    .online-notification {
+      animation: slideInNotif 0.5s ease-out;
+    }
+
+    @keyframes slideInNotif {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .checkbox-custom {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      background: transparent;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .checkbox-custom:checked {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-color: #3b82f6;
+    }
+
+    .checkbox-custom:checked::after {
+      content: '✓';
+      position: absolute;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @media (max-width: 768px) {
+      .staff-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        margin: 1rem;
+        max-width: none;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .header-actions button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen">
+
+  <div id="bulkActionBar" class="bulk-action-bar fixed top-0 left-0 right-0 z-40 p-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <span id="selectedCount" class="font-medium text-center sm:text-left">0 selected</span>
+        <select id="bulkActionSelect" class="filter-select px-3 py-2 rounded-lg text-white text-sm">
+          <option value="">Select Action</option>
+          <option value="activate">Activate</option>
+          <option value="deactivate">Deactivate</option>
+          <option value="suspend">Suspend</option>
+          <option value="forceLogout">Force Logout</option>
+          <option value="delete">Delete</option>
+          <option value="export">Export Selected</option>
+        </select>
+        <button onclick="executeBulkAction()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">
+          Execute
+        </button>
+      </div>
+      <button onclick="clearSelection()" class="text-gray-400 hover:text-white">
+        ✕ Clear
+      </button>
+    </div>
+  </div>
+
+  <header class="bg-gradient-to-r from-slate-800/90 to-slate-900/90 backdrop-blur-lg border-b border-white/10 relative z-30">
+    <div class="max-w-7xl mx-auto p-4 lg:p-6">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+            👥
+          </div>
+          <div>
+            <h1 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Staff Management
+            </h1>
+            <p class="text-blue-200 text-sm">Advanced staff administration with real-time tracking</p>
+          </div>
+        </div>
+
+        <div class="header-actions flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button onclick="viewActivityLogs()" class="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+            📊 Activity Logs
+          </button>
+          <button onclick="importData()" class="bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+            📤 Import
+          </button>
+          <button onclick="exportData()" class="bg-gradient-to-r from-green-500 to-green-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+            📊 Export
+          </button>
+          <button onclick="openAddStaffModal()" class="btn-primary px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+            ➕ Add Staff
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto p-4 lg:p-6">
+
+    <div class="analytics-grid grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl">
+            👥
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="totalStaff">0</div>
+            <div class="text-xs text-gray-400">Total Staff</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-2xl">
+            🟢
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="onlineStaff">0</div>
+            <div class="text-xs text-gray-400">Online Now</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-2xl">
+            👨‍🍳
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="waiterCount">0</div>
+            <div class="text-xs text-gray-400">Waiters</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl">
+            📋
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="todayOrders">0</div>
+            <div class="text-xs text-gray-400">Today Orders</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-2xl">
+            ✅
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="activeStaff">0</div>
+            <div class="text-xs text-gray-400">Active</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-card rounded-xl p-4 shadow-lg fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-2xl">
+            💰
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white" id="totalSales">₹0</div>
+            <div class="text-xs text-gray-400">Total Sales</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 mb-6">
+      <div class="flex flex-col gap-4">
+
+        <div class="flex flex-col lg:flex-row gap-4">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="🔍 Search by name, username, email, or phone..."
+              class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none"
+            />
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <span id="searchCount" class="text-sm"></span>
+            </div>
+          </div>
+
+          <div class="filter-actions flex gap-2">
+            <button onclick="clearFilters()" class="bg-gradient-to-r from-gray-500 to-gray-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+              🔄 Reset
+            </button>
+            <button onclick="toggleAdvancedFilters()" id="advancedFilterBtn" class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2 rounded-lg text-white font-medium hover:scale-105 transition-all text-sm">
+              ⚙️ Advanced
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Role</label>
+            <select id="roleFilter" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+              <option value="all">All Roles</option>
+              <option value="waiter">Waiter</option>
+              <option value="staff">Kitchen Staff</option>
+              <option value="chef">Head Chef</option>
+              <option value="manager">Manager</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+            <select id="statusFilter" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Activity</label>
+            <select id="activityFilter" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+              <option value="all">All</option>
+              <option value="online">Online Now</option>
+              <option value="offline">Offline</option>
+              <option value="today">Active Today</option>
+              <option value="week">Active This Week</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Sort By</label>
+            <select id="sortBy" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+              <option value="name">Name</option>
+              <option value="role">Role</option>
+              <option value="status">Status</option>
+              <option value="lastLogin">Last Activity</option>
+              <option value="performance">Performance</option>
+              <option value="createdAt">Date Added</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="advancedFilters" class="hidden border-t border-white/10 pt-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Hire Date Range</label>
+              <div class="flex gap-2">
+                <input type="date" id="hireDateFrom" class="search-input px-3 py-2 rounded-lg text-white text-sm flex-1">
+                <input type="date" id="hireDateTo" class="search-input px-3 py-2 rounded-lg text-white text-sm flex-1">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Order Performance</label>
+              <select id="performanceFilter" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+                <option value="all">All Levels</option>
+                <option value="excellent">Excellent (50+ orders)</option>
+                <option value="good">Good (20-49 orders)</option>
+                <option value="average">Average (5-19 orders)</option>
+                <option value="new">New (0-4 orders)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Department</label>
+              <select id="departmentFilter" class="filter-select w-full px-3 py-2 rounded-lg text-white">
+                <option value="all">All Departments</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="service">Service</option>
+                <option value="management">Management</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-4 gap-3">
+        <div class="flex items-center gap-4">
+          <h2 class="text-xl font-bold text-white">Staff Members</h2>
+          <span id="staffCount" class="text-gray-400 text-sm"></span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="selectAll" class="checkbox-custom" onchange="toggleSelectAll()">
+          <label for="selectAll" class="text-sm text-gray-300">Select All</label>
+        </div>
+      </div>
+
+      <div id="staffContainer" class="staff-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      </div>
+    </div>
+
+    <div id="paginationContainer" class="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4">
+      <div class="text-sm text-gray-400">
+        Showing <span id="showingFrom">1</span> to <span id="showingTo">10</span> of <span id="totalRecords">0</span> results
+      </div>
+
+      <div class="flex items-center gap-2" id="paginationButtons">
+      </div>
+    </div>
+
+    <div id="emptyState" class="text-center py-16 hidden">
+      <div class="text-6xl mb-4 opacity-50">👥</div>
+      <h3 class="text-xl font-semibold text-gray-300 mb-2">No staff members found</h3>
+      <p class="text-gray-400 mb-4">Try adjusting your search criteria or add new staff members</p>
+      <button onclick="openAddStaffModal()" class="btn-primary px-6 py-2 rounded-lg text-white font-medium">
+        Add First Staff Member
+      </button>
+    </div>
+  </div>
+
+  <div id="staffModal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-content rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-2xl">
+            👤
+          </div>
+          <h2 id="modalTitle" class="text-2xl font-bold text-white">Add Staff Member</h2>
+        </div>
+        <button onclick="closeStaffModal()" class="text-gray-400 hover:text-white text-2xl">
+          ✕
+        </button>
+      </div>
+
+      <form id="staffForm" class="space-y-6">
+        <div class="glass-effect p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-white mb-4">👤 Personal Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Full Name *</label>
+              <input
+                type="text"
+                id="staffName"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter full name"
+                required
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Email Address *</label>
+              <input
+                type="email"
+                id="staffEmail"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter email address"
+                required
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
+              <input
+                type="tel"
+                id="staffPhone"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter phone number"
+                required
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Address</label>
+              <input
+                type="text"
+                id="staffAddress"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter address"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-effect p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-white mb-4">💼 Work Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Username *</label>
+              <input
+                type="text"
+                id="staffUsername"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter username for login"
+                required
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Password *</label>
+              <input
+                type="password"
+                id="staffPassword"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter password"
+                required
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Role *</label>
+              <select id="staffRole" class="filter-select w-full px-4 py-3 rounded-lg text-white">
+                <option value="waiter">Waiter</option>
+                <option value="staff">Kitchen Staff</option>
+                <option value="chef">Head Chef</option>
+                <option value="manager">Manager</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Department *</label>
+              <select id="staffDepartment" class="filter-select w-full px-4 py-3 rounded-lg text-white">
+                <option value="service">Service</option>
+                <option value="kitchen">Kitchen</option>
+                <option value="management">Management</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Salary</label>
+              <input
+                type="number"
+                id="staffSalary"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Enter salary amount"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Hire Date</label>
+              <input
+                type="date"
+                id="staffHireDate"
+                class="search-input w-full px-4 py-3 rounded-lg text-white"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-effect p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-white mb-4">📋 Additional Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Emergency Contact</label>
+              <input
+                type="text"
+                id="staffEmergencyContact"
+                class="search-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400"
+                placeholder="Emergency contact number"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Status</label>
+              <select id="staffStatus" class="filter-select w-full px-4 py-3 rounded-lg text-white">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Permissions</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="permissionsContainer">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="view_orders" class="checkbox-custom">
+                <span class="text-sm text-gray-300">View Orders</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="edit_orders" class="checkbox-custom">
+                <span class="text-sm text-gray-300">Edit Orders</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="manage_menu" class="checkbox-custom">
+                <span class="text-sm text-gray-300">Manage Menu</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="view_analytics" class="checkbox-custom">
+                <span class="text-sm text-gray-300">View Analytics</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="manage_staff" class="checkbox-custom">
+                <span class="text-sm text-gray-300">Manage Staff</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" value="handle_payments" class="checkbox-custom">
+                <span class="text-sm text-gray-300">Handle Payments</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="staffError" class="hidden text-red-400 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button
+            type="button"
+            onclick="closeStaffModal()"
+            class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg font-medium hover:scale-105 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="flex-1 btn-primary text-white px-4 py-3 rounded-lg font-medium hover:scale-105 transition-all"
+          >
+            <span id="submitBtnText">Add Staff Member</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="staffDetailsModal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-content rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-2xl">
+            👤
+          </div>
+          <h2 class="text-2xl font-bold text-white">Staff Details & Performance</h2>
+        </div>
+        <button onclick="closeStaffDetailsModal()" class="text-gray-400 hover:text-white text-2xl">
+          ✕
+        </button>
+      </div>
+
+      <div id="staffDetailsContent">
+      </div>
+    </div>
+  </div>
+
+  <div id="activityLogsModal" class="modal fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="modal-content rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-2xl">
+            📊
+          </div>
+          <h2 class="text-2xl font-bold text-white">Activity Logs</h2>
+        </div>
+        <button onclick="closeActivityLogsModal()" class="text-gray-400 hover:text-white text-2xl">
+          ✕
+        </button>
+      </div>
+
+      <div id="activityLogsContent" class="space-y-2 max-h-[60vh] overflow-y-auto">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const secondaryApp = firebase.initializeApp(firebaseConfig, "SecondaryApp");
+
+    let restaurantId = null;
+    let currentEditingStaff = null;
+    let staffData = {};
+    let filteredStaffData = {};
+    let currentPage = 1;
+    const itemsPerPage = 12;
+    let selectedStaff = new Set();
+    let activityLogs = [];
+    let staffSessions = {};
+    let previousOnlineStatus = {};
+
+    document.addEventListener('DOMContentLoaded', function() {
+      restaurantId = localStorage.getItem('restaurantId');
+      if (!restaurantId) {
+        showNotification('Restaurant ID not found. Please login again.', 'error');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+        return;
+      }
+
+      setupEventListeners(); // Safe to run immediately
+
+      // FIX 2: Wait for Firebase Auth to confirm the user is logged in before asking for data
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          console.log("User verified, loading data...");
+          loadStaffData();
+          startRealTimeTracking();
+          monitorStaffSessions();
+          setupPresenceTracking();
+        } else {
+          console.error("User is not logged in!");
+          showNotification('Authentication required. Please log in.', 'error');
+          // Optional: redirect to login page here
+        }
+      });
+    });
+
+    function setupEventListeners() {
+      document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
+
+      ['roleFilter', 'statusFilter', 'activityFilter', 'sortBy', 'performanceFilter', 'departmentFilter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+      });
+
+      ['hireDateFrom', 'hireDateTo'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+      });
+
+      document.getElementById('staffForm').addEventListener('submit', handleStaffFormSubmit);
+      document.getElementById('staffRole').addEventListener('change', setWaiterDefaults);
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    function setupPresenceTracking() {
+      db.ref(`staff/${restaurantId}`).on('child_changed', (snapshot) => {
+        const staffId = snapshot.key;
+        const staffInfo = snapshot.val();
+
+        if (staffData[staffId]) {
+          const oldStatus = staffData[staffId].status;
+          const newStatus = staffInfo.status;
+
+          if (oldStatus === 'active' && (newStatus === 'inactive' || newStatus === 'suspended')) {
+            forceStaffLogout(staffId, staffInfo.name || staffInfo.username);
+            logActivity(`Staff ${staffInfo.name || staffInfo.username} was ${newStatus} and logged out`, 'status_change', staffId);
+            showNotification(`${staffInfo.name || staffInfo.username} has been ${newStatus}`, 'info');
+          }
+        }
+      });
+    }
+
+    function monitorStaffSessions() {
+      db.ref(`staff/${restaurantId}`).on('value', (snapshot) => {
+        const allStaff = snapshot.val() || {};
+
+        Object.entries(allStaff).forEach(([staffId, staff]) => {
+          const isOnline = staff.isOnline === true;
+          const wasOnline = previousOnlineStatus[staffId] === true;
+
+          if (isOnline && !wasOnline) {
+            showOnlineNotification(staff.name || staff.username, true);
+          } else if (!isOnline && wasOnline) {
+            showOnlineNotification(staff.name || staff.username, false);
+          }
+
+          previousOnlineStatus[staffId] = isOnline;
+
+          const status = staff.status || 'active';
+          if (status !== 'active' && isOnline) {
+            db.ref(`staff/${restaurantId}/${staffId}/isOnline`).set(false);
+            db.ref(`staff/${restaurantId}/${staffId}/lastActivity`).set(Date.now());
+          }
+        });
+      });
+
+      setInterval(() => {
+        Object.entries(staffData).forEach(([staffId, staff]) => {
+          const status = staff.status || 'active';
+          const isOnline = staff.isOnline === true;
+
+          if (status !== 'active' && isOnline) {
+            db.ref(`staff/${restaurantId}/${staffId}/isOnline`).set(false);
+            db.ref(`staff/${restaurantId}/${staffId}/lastActivity`).set(Date.now());
+            db.ref(`staff/${restaurantId}/${staffId}/forceLogout`).set(true);
+          }
+        });
+      }, 5000);
+    }
+
+    function showOnlineNotification(staffName, isOnline) {
+      const notification = document.createElement('div');
+      notification.className = `online-notification fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-sm`;
+
+      const color = isOnline ? 'from-green-500 to-green-600 border-green-400' : 'from-gray-500 to-gray-600 border-gray-400';
+      notification.className += ` bg-gradient-to-r ${color} text-white`;
+
+      notification.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <span class="text-xl">${isOnline ? '🟢' : '⚪'}</span>
+          </div>
+          <div>
+            <div class="font-bold">${staffName}</div>
+            <div class="text-sm">${isOnline ? 'is now online' : 'went offline'}</div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 4000);
+    }
+
+    function forceStaffLogout(staffId, staffName) {
+      const updates = {
+        [`staff/${restaurantId}/${staffId}/isOnline`]: false,
+        [`staff/${restaurantId}/${staffId}/lastActivity`]: Date.now(),
+        [`staff/${restaurantId}/${staffId}/forceLogout`]: true
+      };
+
+      db.ref().update(updates).then(() => {
+        showNotification(`${staffName} has been forced to logout`, 'success');
+      });
+    }
+
+    function loadStaffData() {
+      db.ref(`staff/${restaurantId}`).on('value', (snapshot) => {
+        staffData = snapshot.val() || {};
+        applyFilters();
+        updateAnalytics();
+      });
+    }
+
+    function startRealTimeTracking() {
+      db.ref(`restaurants/${restaurantId}/orders`).on('value', (snapshot) => {
+        updateOrderAnalytics(snapshot.val() || {});
+      });
+
+      db.ref(`activityLogs/${restaurantId}`).limitToLast(100).on('value', (snapshot) => {
+        const logs = snapshot.val() || {};
+        activityLogs = Object.entries(logs)
+          .map(([id, log]) => ({...log, id}))
+          .sort((a, b) => b.timestamp - a.timestamp);
+      });
+    }
+
+    function updateOrderAnalytics(orders) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayTimestamp = today.getTime();
+
+      let todayOrdersCount = 0;
+      let totalSales = 0;
+
+      Object.values(orders).forEach(order => {
+        if (order.timestamp >= todayTimestamp) {
+          todayOrdersCount++;
+        }
+        if (order.totalAmount) {
+          totalSales += order.totalAmount;
+        }
+      });
+
+      document.getElementById('todayOrders').textContent = todayOrdersCount;
+      document.getElementById('totalSales').textContent = formatRupee(totalSales);
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const roleFilter = document.getElementById('roleFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+      const activityFilter = document.getElementById('activityFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+      const hireDateFrom = document.getElementById('hireDateFrom').value;
+      const hireDateTo = document.getElementById('hireDateTo').value;
+      const performanceFilter = document.getElementById('performanceFilter').value;
+      const departmentFilter = document.getElementById('departmentFilter').value;
+
+      let filtered = Object.entries(staffData).filter(([staffId, staff]) => {
+        if (searchTerm && !(
+          staff.name.toLowerCase().includes(searchTerm) ||
+          staff.username.toLowerCase().includes(searchTerm) ||
+          (staff.email && staff.email.toLowerCase().includes(searchTerm)) ||
+          (staff.phone && staff.phone.includes(searchTerm))
+        )) {
+          return false;
+        }
+
+        if (roleFilter !== 'all' && staff.role !== roleFilter) {
+          return false;
+        }
+
+        if (statusFilter !== 'all' && (staff.status || 'active') !== statusFilter) {
+          return false;
+        }
+
+        if (departmentFilter !== 'all' && (staff.department || 'kitchen') !== departmentFilter) {
+          return false;
+        }
+
+        if (hireDateFrom || hireDateTo) {
+          const hireDate = new Date(staff.hireDate || staff.createdAt);
+          if (hireDateFrom && hireDate < new Date(hireDateFrom)) return false;
+          if (hireDateTo && hireDate > new Date(hireDateTo)) return false;
+        }
+
+        if (activityFilter !== 'all') {
+          const isOnline = staff.isOnline || false;
+          const lastActivity = staff.lastActivity || staff.lastLogin || 0;
+          const now = Date.now();
+          const oneDayAgo = now - (24 * 60 * 60 * 1000);
+          const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+          switch (activityFilter) {
+            case 'online':
+              if (!isOnline) return false;
+              break;
+            case 'offline':
+              if (isOnline) return false;
+              break;
+            case 'today':
+              if (lastActivity < oneDayAgo) return false;
+              break;
+            case 'week':
+              if (lastActivity < oneWeekAgo) return false;
+              break;
+          }
+        }
+
+        if (performanceFilter !== 'all') {
+          const totalOrders = staff.totalOrders || 0;
+          switch (performanceFilter) {
+            case 'excellent':
+              if (totalOrders < 50) return false;
+              break;
+            case 'good':
+              if (totalOrders < 20 || totalOrders >= 50) return false;
+              break;
+            case 'average':
+              if (totalOrders < 5 || totalOrders >= 20) return false;
+              break;
+            case 'new':
+              if (totalOrders >= 5) return false;
+              break;
+          }
+        }
+
+        return true;
+      });
+
+      filtered.sort(([aId, a], [bId, b]) => {
+        let aVal = a[sortBy] || '';
+        let bVal = b[sortBy] || '';
+
+        if (sortBy === 'performance') {
+          aVal = a.totalOrders || 0;
+          bVal = b.totalOrders || 0;
+          return bVal - aVal;
+        }
+
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+        return aVal > bVal ? 1 : -1;
+      });
+
+      filteredStaffData = Object.fromEntries(filtered);
+      currentPage = 1;
+      renderStaff();
+      updatePagination();
+      updateSearchCount();
+    }
+
+    function updateAnalytics() {
+      const staffArray = Object.values(staffData);
+      const total = staffArray.length;
+      const active = staffArray.filter(s => (s.status || 'active') === 'active').length;
+      const online = staffArray.filter(s => s.isOnline === true).length;
+      const waiters = staffArray.filter(s => s.role === 'waiter').length;
+
+      document.getElementById('totalStaff').textContent = total;
+      document.getElementById('activeStaff').textContent = active;
+      document.getElementById('onlineStaff').textContent = online;
+      document.getElementById('waiterCount').textContent = waiters;
+    }
+
+    function updateSearchCount() {
+      const count = Object.keys(filteredStaffData).length;
+      document.getElementById('searchCount').textContent = count ? `${count} found` : '';
+    }
+
+    function getPerformanceLevel(totalOrders) {
+      if (totalOrders >= 50) return { level: 'excellent', class: 'performance-excellent', text: 'Excellent' };
+      if (totalOrders >= 20) return { level: 'good', class: 'performance-good', text: 'Good' };
+      if (totalOrders >= 5) return { level: 'average', class: 'performance-average', text: 'Average' };
+      return { level: 'new', class: 'performance-poor', text: 'New' };
+    }
+
+    function formatRupee(amount) {
+      return '₹' + Number(amount).toLocaleString('en-IN');
+    }
+
+    function renderStaff() {
+      const container = document.getElementById('staffContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      container.innerHTML = '';
+
+      const staffEntries = Object.entries(filteredStaffData);
+      const totalItems = staffEntries.length;
+
+      if (totalItems === 0) {
+        emptyState.classList.remove('hidden');
+        document.getElementById('staffCount').textContent = '0 staff members';
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      document.getElementById('staffCount').textContent = `${totalItems} staff member${totalItems > 1 ? 's' : ''}`;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+      const paginatedEntries = staffEntries.slice(startIndex, endIndex);
+
+      paginatedEntries.forEach(([staffId, staff]) => {
+        const card = createStaffCard(staffId, staff);
+        container.appendChild(card);
+      });
+
+      document.getElementById('showingFrom').textContent = totalItems > 0 ? startIndex + 1 : 0;
+      document.getElementById('showingTo').textContent = endIndex;
+      document.getElementById('totalRecords').textContent = totalItems;
+    }
+
+    function createStaffCard(staffId, staff) {
+      const card = document.createElement('div');
+      card.className = 'staff-card rounded-xl p-4 shadow-lg fade-in';
+
+      const roleIcons = {
+        waiter: '👨‍🍳',
+        staff: '👨‍🍳',
+        chef: '👨‍🍳',
+        manager: '👔',
+        supervisor: '🎯'
+      };
+
+      const roleTitles = {
+        waiter: 'Waiter',
+        staff: 'Kitchen Staff',
+        chef: 'Head Chef',
+        manager: 'Manager',
+        supervisor: 'Supervisor'
+      };
+
+      const status = staff.status || 'active';
+      const isOnline = staff.isOnline === true;
+      const totalOrders = staff.totalOrders || 0;
+      const todayOrders = staff.todayOrders || 0;
+      const performance = getPerformanceLevel(totalOrders);
+      const activeSessions = staff.activeSessions || 0;
+
+      const statusColors = {
+        active: 'text-green-400',
+        inactive: 'text-yellow-400',
+        suspended: 'text-red-400'
+      };
+
+      const statusIcons = {
+        active: '✅',
+        inactive: '⏸️',
+        suspended: '🚫'
+      };
+
+      const lastActivity = staff.lastActivity || staff.lastLogin;
+      const lastSeen = lastActivity ?
+        `Last seen: ${formatTimeAgo(lastActivity)}` :
+        'Never logged in';
+
+      card.innerHTML = `
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" class="checkbox-custom staff-checkbox"
+                   data-staff-id="${staffId}" onchange="toggleStaffSelection('${staffId}')">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl">
+              ${roleIcons[staff.role] || '👤'}
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white">${staff.name}</h3>
+              <p class="text-blue-200 text-sm">${roleTitles[staff.role] || 'Staff'}</p>
+              <div class="flex items-center mt-1 gap-2">
+                <div class="flex items-center">
+                  <span class="activity-indicator ${isOnline ? 'activity-online' : 'activity-offline'}"></span>
+                  <span class="text-xs ${isOnline ? 'text-green-300 font-semibold' : 'text-gray-400'}">
+                    ${isOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+                ${activeSessions > 0 ? `<span class="session-badge">${activeSessions} session${activeSessions > 1 ? 's' : ''}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="${statusColors[status]}">${statusIcons[status]}</span>
+            </div>
+            <span class="performance-badge ${performance.class}">${performance.text}</span>
+          </div>
+        </div>
+
+        <div class="glass-effect p-3 rounded-lg mb-4">
+          <div class="grid grid-cols-1 gap-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-300">Username:</span>
+              <span class="text-white font-medium">${staff.username}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Role:</span>
+              <span class="text-white font-medium">${roleTitles[staff.role] || 'Staff'}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Department:</span>
+              <span class="text-white font-medium capitalize">${staff.department || 'Service'}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Total Orders:</span>
+              <span class="text-white font-medium">${totalOrders}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Today Orders:</span>
+              <span class="text-white font-medium">${todayOrders}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Status:</span>
+              <span class="${statusColors[status]} font-medium capitalize">${status}</span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1">${lastSeen}</div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 mb-2">
+          <button onclick="viewStaffDetails('${staffId}')"
+                  class="flex-1 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+            👁️ View
+          </button>
+          <button onclick="editStaff('${staffId}')"
+                  class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+            ✏️ Edit
+          </button>
+          ${status === 'active' ? `
+            <button onclick="toggleStaffStatus('${staffId}', 'inactive')"
+                    class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+              ⏸️ Block
+            </button>
+          ` : `
+            <button onclick="toggleStaffStatus('${staffId}', 'active')"
+                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+              ▶️ Activate
+            </button>
+          `}
+          <button onclick="deleteStaff('${staffId}')"
+                  class="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+            🗑️
+          </button>
+        </div>
+        ${isOnline ? `
+          <button onclick="forceStaffLogout('${staffId}', '${staff.name}')"
+                  class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg font-medium text-sm hover:scale-105 transition-all">
+            🚪 Force Logout
+          </button>
+        ` : ''}
+      `;
+
+      return card;
+    }
+
+    function formatTimeAgo(timestamp) {
+      const now = Date.now();
+      const diff = now - timestamp;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 5) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days < 7) return `${days}d ago`;
+      return new Date(timestamp).toLocaleDateString();
+    }
+
+    function viewStaffDetails(staffId) {
+      const staff = staffData[staffId];
+      if (!staff) return;
+
+      const status = staff.status || 'active';
+      const isOnline = staff.isOnline === true;
+      const lastActivity = staff.lastActivity || staff.lastLogin;
+      const lastSeen = lastActivity ? new Date(lastActivity).toLocaleString() : 'Never';
+      const hireDate = staff.hireDate ? new Date(staff.hireDate).toLocaleDateString() : 'N/A';
+      const createdDate = staff.createdAt ? new Date(staff.createdAt).toLocaleDateString() : 'N/A';
+
+      const totalOrders = staff.totalOrders || 0;
+      const todayOrders = staff.todayOrders || 0;
+      const totalSales = staff.totalSales || 0;
+      const avgOrderValue = totalOrders > 0 ? Math.round(totalSales / totalOrders) : 0;
+      const performance = getPerformanceLevel(totalOrders);
+
+      document.getElementById('staffDetailsContent').innerHTML = `
+        <div class="space-y-6">
+          <div class="glass-effect p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              👤 Personal Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-300">Full Name:</span>
+                <span class="text-white font-medium ml-2">${staff.name}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Email:</span>
+                <span class="text-white font-medium ml-2">${staff.email || 'N/A'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Phone:</span>
+                <span class="text-white font-medium ml-2">${staff.phone || 'N/A'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Address:</span>
+                <span class="text-white font-medium ml-2">${staff.address || 'N/A'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Emergency Contact:</span>
+                <span class="text-white font-medium ml-2">${staff.emergencyContact || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-effect p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              💼 Work Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-300">Username:</span>
+                <span class="text-white font-medium ml-2">${staff.username}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Role:</span>
+                <span class="text-white font-medium ml-2 capitalize">${staff.role || 'Staff'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Department:</span>
+                <span class="text-white font-medium ml-2 capitalize">${staff.department || 'Service'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Salary:</span>
+                <span class="text-white font-medium ml-2">${staff.salary ? formatRupee(staff.salary) : 'N/A'}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Status:</span>
+                <span class="text-white font-medium ml-2 capitalize">${status}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Hire Date:</span>
+                <span class="text-white font-medium ml-2">${hireDate}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-effect p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              📊 Activity & Performance
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-300">Current Status:</span>
+                <span class="text-white font-medium ml-2 flex items-center">
+                  <span class="activity-indicator ${isOnline ? 'activity-online' : 'activity-offline'} mr-2"></span>
+                  ${isOnline ? 'Online' : 'Offline'}
+                </span>
+              </div>
+              <div>
+                <span class="text-gray-300">Active Sessions:</span>
+                <span class="text-white font-medium ml-2">${staff.activeSessions || 0}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Performance:</span>
+                <span class="performance-badge ${performance.class} ml-2">${performance.text}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Total Orders:</span>
+                <span class="text-white font-medium ml-2">${totalOrders}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Today's Orders:</span>
+                <span class="text-white font-medium ml-2">${todayOrders}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Total Sales:</span>
+                <span class="text-white font-medium ml-2">${formatRupee(totalSales)}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Avg Order Value:</span>
+                <span class="text-white font-medium ml-2">${formatRupee(avgOrderValue)}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Last Activity:</span>
+                <span class="text-white font-medium ml-2">${lastSeen}</span>
+              </div>
+              <div>
+                <span class="text-gray-300">Account Created:</span>
+                <span class="text-white font-medium ml-2">${createdDate}</span>
+              </div>
+            </div>
+          </div>
+
+          ${staff.permissions && staff.permissions.length > 0 ? `
+            <div class="glass-effect p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                🔐 Permissions
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                ${staff.permissions.map(permission => `
+                  <span class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded text-sm">${permission.replace('_', ' ')}</span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      document.getElementById('staffDetailsModal').classList.remove('hidden');
+    }
+
+    function closeStaffDetailsModal() {
+      document.getElementById('staffDetailsModal').classList.add('hidden');
+    }
+
+    function setWaiterDefaults() {
+      const roleSelect = document.getElementById('staffRole');
+      const departmentSelect = document.getElementById('staffDepartment');
+
+      if (roleSelect.value === 'waiter') {
+        departmentSelect.value = 'service';
+
+        const permissions = ['view_orders', 'edit_orders'];
+        document.querySelectorAll('#permissionsContainer input[type="checkbox"]').forEach(cb => {
+          cb.checked = permissions.includes(cb.value);
+        });
+      }
+    }
+
+    function updatePagination() {
+      const totalItems = Object.keys(filteredStaffData).length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const container = document.getElementById('paginationButtons');
+
+      container.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      const prevBtn = document.createElement('button');
+      prevBtn.className = `pagination-btn px-3 py-1 rounded ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
+      prevBtn.textContent = '‹';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderStaff();
+          updatePagination();
+        }
+      };
+      container.appendChild(prevBtn);
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + 4);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn px-3 py-1 rounded ${i === currentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+          currentPage = i;
+          renderStaff();
+          updatePagination();
+        };
+        container.appendChild(pageBtn);
+      }
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = `pagination-btn px-3 py-1 rounded ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`;
+      nextBtn.textContent = '›';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderStaff();
+          updatePagination();
+        }
+      };
+      container.appendChild(nextBtn);
+    }
+
+    function toggleStaffSelection(staffId) {
+      if (selectedStaff.has(staffId)) {
+        selectedStaff.delete(staffId);
+      } else {
+        selectedStaff.add(staffId);
+      }
+      updateBulkActionBar();
+    }
+
+    function toggleSelectAll() {
+      const checkbox = document.getElementById('selectAll');
+      const staffCheckboxes = document.querySelectorAll('.staff-checkbox');
+
+      if (checkbox.checked) {
+        staffCheckboxes.forEach(cb => {
+          cb.checked = true;
+          selectedStaff.add(cb.dataset.staffId);
+        });
+      } else {
+        staffCheckboxes.forEach(cb => {
+          cb.checked = false;
+          selectedStaff.delete(cb.dataset.staffId);
+        });
+      }
+      updateBulkActionBar();
+    }
+
+    function clearSelection() {
+      selectedStaff.clear();
+      document.querySelectorAll('.staff-checkbox').forEach(cb => cb.checked = false);
+      document.getElementById('selectAll').checked = false;
+      updateBulkActionBar();
+    }
+
+    function updateBulkActionBar() {
+      const bar = document.getElementById('bulkActionBar');
+      const count = selectedStaff.size;
+
+      document.getElementById('selectedCount').textContent = `${count} selected`;
+
+      if (count > 0) {
+        bar.classList.add('active');
+      } else {
+        bar.classList.remove('active');
+      }
+    }
+
+    function executeBulkAction() {
+      const action = document.getElementById('bulkActionSelect').value;
+      if (!action || selectedStaff.size === 0) return;
+
+      const confirmMessage = `Are you sure you want to ${action} ${selectedStaff.size} staff member${selectedStaff.size > 1 ? 's' : ''}?`;
+      if (!confirm(confirmMessage)) return;
+
+      switch (action) {
+        case 'activate':
+        case 'deactivate':
+        case 'suspend':
+          bulkUpdateStatus(action === 'deactivate' ? 'inactive' : action === 'suspend' ? 'suspended' : 'active');
+          break;
+        case 'forceLogout':
+          bulkForceLogout();
+          break;
+        case 'delete':
+          bulkDeleteStaff();
+          break;
+        case 'export':
+          exportSelectedStaff();
+          break;
+      }
+    }
+
+    async function bulkUpdateStatus(newStatus) {
+      const updates = {};
+      selectedStaff.forEach(staffId => {
+        updates[`staff/${restaurantId}/${staffId}/status`] = newStatus;
+        updates[`staff/${restaurantId}/${staffId}/updatedAt`] = Date.now();
+
+        if (newStatus !== 'active') {
+          updates[`staff/${restaurantId}/${staffId}/isOnline`] = false;
+          updates[`staff/${restaurantId}/${staffId}/forceLogout`] = true;
+        }
+      });
+
+      try {
+        await db.ref().update(updates);
+        logActivity(`Bulk ${newStatus} ${selectedStaff.size} staff members`, 'bulk_action');
+        showNotification(`Successfully updated ${selectedStaff.size} staff member${selectedStaff.size > 1 ? 's' : ''}`, 'success');
+        clearSelection();
+      } catch (error) {
+        console.error('Bulk update error:', error);
+        showNotification('Failed to update staff members', 'error');
+      }
+    }
+
+    async function bulkForceLogout() {
+      const updates = {};
+      selectedStaff.forEach(staffId => {
+        updates[`staff/${restaurantId}/${staffId}/isOnline`] = false;
+        updates[`staff/${restaurantId}/${staffId}/lastActivity`] = Date.now();
+        updates[`staff/${restaurantId}/${staffId}/forceLogout`] = true;
+      });
+
+      try {
+        await db.ref().update(updates);
+        logActivity(`Force logged out ${selectedStaff.size} staff members`, 'bulk_logout');
+        showNotification(`Successfully logged out ${selectedStaff.size} staff member${selectedStaff.size > 1 ? 's' : ''}`, 'success');
+        clearSelection();
+      } catch (error) {
+        console.error('Bulk logout error:', error);
+        showNotification('Failed to logout staff members', 'error');
+      }
+    }
+
+    async function bulkDeleteStaff() {
+      const updates = {};
+      selectedStaff.forEach(staffId => {
+        updates[`staff/${restaurantId}/${staffId}`] = null;
+      });
+
+      try {
+        await db.ref().update(updates);
+        logActivity(`Deleted ${selectedStaff.size} staff members`, 'bulk_delete');
+        showNotification(`Successfully deleted ${selectedStaff.size} staff member${selectedStaff.size > 1 ? 's' : ''}`, 'success');
+        clearSelection();
+      } catch (error) {
+        console.error('Bulk delete error:', error);
+        showNotification('Failed to delete staff members', 'error');
+      }
+    }
+
+    function exportSelectedStaff() {
+      const selectedData = Array.from(selectedStaff).map(staffId => staffData[staffId]);
+      exportStaffData(selectedData);
+      clearSelection();
+    }
+
+    function openAddStaffModal() {
+      currentEditingStaff = null;
+      document.getElementById('modalTitle').textContent = 'Add Staff Member';
+      document.getElementById('submitBtnText').textContent = 'Add Staff Member';
+      document.getElementById('staffForm').reset();
+      document.getElementById('staffHireDate').value = new Date().toISOString().split('T')[0];
+
+      document.getElementById('staffRole').value = 'waiter';
+      setWaiterDefaults();
+
+      document.getElementById('staffModal').classList.remove('hidden');
+    }
+
+    function closeStaffModal() {
+      document.getElementById('staffModal').classList.add('hidden');
+      document.getElementById('staffError').classList.add('hidden');
+      currentEditingStaff = null;
+    }
+
+    function editStaff(staffId) {
+      const staff = staffData[staffId];
+      if (!staff) return;
+
+      currentEditingStaff = staffId;
+      document.getElementById('modalTitle').textContent = 'Edit Staff Member';
+      document.getElementById('submitBtnText').textContent = 'Update Staff Member';
+
+      document.getElementById('staffName').value = staff.name || '';
+      document.getElementById('staffUsername').value = staff.username || '';
+      document.getElementById('staffEmail').value = staff.email || '';
+      document.getElementById('staffPhone').value = staff.phone || '';
+      document.getElementById('staffAddress').value = staff.address || '';
+      document.getElementById('staffPassword').value = staff.password || '';
+      document.getElementById('staffRole').value = staff.role || 'waiter';
+      document.getElementById('staffDepartment').value = staff.department || 'service';
+      document.getElementById('staffSalary').value = staff.salary || '';
+      document.getElementById('staffHireDate').value = staff.hireDate || new Date().toISOString().split('T')[0];
+      document.getElementById('staffEmergencyContact').value = staff.emergencyContact || '';
+      document.getElementById('staffStatus').value = staff.status || 'active';
+
+      const permissions = staff.permissions || [];
+      document.querySelectorAll('#permissionsContainer input[type="checkbox"]').forEach(cb => {
+        cb.checked = permissions.includes(cb.value);
+      });
+
+      document.getElementById('staffModal').classList.remove('hidden');
+    }
+
+    async function handleStaffFormSubmit(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('staffName').value.trim();
+      const username = document.getElementById('staffUsername').value.trim();
+      const email = document.getElementById('staffEmail').value.trim();
+      const phone = document.getElementById('staffPhone').value.trim();
+      const password = document.getElementById('staffPassword').value.trim();
+
+      if (!name || !username || !email || !phone || !password) {
+        showError('Please fill in all required fields');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showError('Please enter a valid email address');
+        return;
+      }
+
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(phone.replace(/\D/g, '').slice(-10))) {
+        showError('Please enter a valid 10-digit phone number');
+        return;
+      }
+
+    try {
+        // FIX 1: Only look inside THIS restaurant's staff folder
+        const allStaffSnapshot = await db.ref(`staff/${restaurantId}`).once('value');
+        const restaurantStaff = allStaffSnapshot.val() || {};
+
+        let usernameExists = false;
+        for (const staffId in restaurantStaff) {
+          const staff = restaurantStaff[staffId];
+          if (staff.username === username && staffId !== currentEditingStaff) {
+            usernameExists = true;
+            break;
+          }
+        }
+
+        if (usernameExists) {
+          showError('Username already exists. Please choose a different username.');
+          return;
+        }
+
+        const existingEmail = Object.entries(staffData).find(([id, staff]) =>
+          staff.email === email && id !== currentEditingStaff
+        );
+
+        if (existingEmail) {
+          showError('Email already exists in this restaurant. Please use a different email address.');
+          return;
+        }
+
+        const permissions = [];
+        document.querySelectorAll('#permissionsContainer input[type="checkbox"]:checked').forEach(cb => {
+          permissions.push(cb.value);
+        });
+
+        const staffInfo = {
+          name,
+          username,
+          email,
+          phone,
+          address: document.getElementById('staffAddress').value.trim(),
+          password,
+          role: document.getElementById('staffRole').value,
+          department: document.getElementById('staffDepartment').value,
+          salary: parseFloat(document.getElementById('staffSalary').value) || 0,
+          hireDate: document.getElementById('staffHireDate').value,
+          emergencyContact: document.getElementById('staffEmergencyContact').value.trim(),
+          status: document.getElementById('staffStatus').value,
+          permissions,
+          totalOrders: currentEditingStaff ? staffData[currentEditingStaff].totalOrders || 0 : 0,
+          todayOrders: currentEditingStaff ? staffData[currentEditingStaff].todayOrders || 0 : 0,
+          totalSales: currentEditingStaff ? staffData[currentEditingStaff].totalSales || 0 : 0,
+          isOnline: currentEditingStaff ? staffData[currentEditingStaff].isOnline || false : false,
+          createdAt: currentEditingStaff ? staffData[currentEditingStaff].createdAt : Date.now(),
+          updatedAt: Date.now()
+        };
+
+        let staffIdToSave = currentEditingStaff;
+
+        if (!currentEditingStaff) {
+          // NAYA CODE: Creating real Firebase Auth account for new staff
+          try {
+            const userCred = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
+            staffIdToSave = userCred.user.uid; // Unka unique secure ID
+          } catch (authErr) {
+            showError("Authentication Error: " + authErr.message);
+            return;
+          }
+        }
+
+        const staffRef = db.ref(`staff/${restaurantId}/${staffIdToSave}`);
+        await staffRef.set(staffInfo);
+
+        logActivity(
+          currentEditingStaff ? `Updated staff: ${name}` : `Added new staff: ${name}`,
+          currentEditingStaff ? 'staff_update' : 'staff_create',
+          currentEditingStaff || staffRef.key
+        );
+
+        showNotification(
+          currentEditingStaff ? 'Staff updated successfully!' : 'Staff added successfully!',
+          'success'
+        );
+
+        closeStaffModal();
+
+      } catch (error) {
+        console.error('Error saving staff:', error);
+        showError('Failed to save staff. Please try again.');
+      }
+    }
+
+    async function toggleStaffStatus(staffId, newStatus) {
+      const staff = staffData[staffId];
+      if (!staff) return;
+
+      try {
+        const updates = {
+          [`staff/${restaurantId}/${staffId}/status`]: newStatus,
+          [`staff/${restaurantId}/${staffId}/updatedAt`]: Date.now()
+        };
+
+        if (newStatus !== 'active') {
+          updates[`staff/${restaurantId}/${staffId}/isOnline`] = false;
+          updates[`staff/${restaurantId}/${staffId}/lastActivity`] = Date.now();
+          updates[`staff/${restaurantId}/${staffId}/forceLogout`] = true;
+        }
+
+        await db.ref().update(updates);
+
+        logActivity(`Staff ${staff.name} status changed to ${newStatus}`, 'status_change', staffId);
+        showNotification(`Staff ${newStatus}!`, 'success');
+      } catch (error) {
+        console.error('Error updating staff status:', error);
+        showNotification('Failed to update staff status', 'error');
+      }
+    }
+
+    async function deleteStaff(staffId) {
+      const staff = staffData[staffId];
+      if (!staff) return;
+
+      if (!confirm(`Are you sure you want to delete ${staff.name}? This action cannot be undone.`)) return;
+
+      try {
+        await db.ref(`staff/${restaurantId}/${staffId}`).remove();
+
+        logActivity(`Deleted staff: ${staff.name}`, 'staff_delete', staffId);
+        showNotification('Staff deleted successfully!', 'success');
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+        showNotification('Failed to delete staff', 'error');
+      }
+    }
+
+    function logActivity(message, type, staffId = null) {
+      const logRef = db.ref(`activityLogs/${restaurantId}`).push();
+      logRef.set({
+        message,
+        type,
+        staffId,
+        timestamp: Date.now(),
+        user: 'admin'
+      });
+    }
+
+    function viewActivityLogs() {
+      const content = document.getElementById('activityLogsContent');
+
+      if (activityLogs.length === 0) {
+        content.innerHTML = '<p class="text-gray-400 text-center py-8">No activity logs available</p>';
+      } else {
+        content.innerHTML = activityLogs.slice(0, 50).map(log => {
+          const timestamp = new Date(log.timestamp).toLocaleString();
+          const iconMap = {
+            staff_create: '➕',
+            staff_update: '✏️',
+            staff_delete: '🗑️',
+            status_change: '🔄',
+            bulk_action: '📦',
+            bulk_logout: '🚪',
+            bulk_delete: '🗑️'
+          };
+
+          return `
+            <div class="log-entry">
+              <div class="flex items-start justify-between">
+                <div class="flex items-start gap-2 flex-1">
+                  <span class="text-xl">${iconMap[log.type] || '📝'}</span>
+                  <div class="flex-1">
+                    <p class="text-white text-sm">${log.message}</p>
+                    <p class="text-gray-400 text-xs mt-1">${timestamp}</p>
+                  </div>
+                </div>
+                ${log.staffId && staffData[log.staffId] ? `
+                  <button onclick="viewStaffDetails('${log.staffId}')" class="text-blue-400 hover:text-blue-300 text-xs">
+                    View Staff
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('activityLogsModal').classList.remove('hidden');
+    }
+
+    function closeActivityLogsModal() {
+      document.getElementById('activityLogsModal').classList.add('hidden');
+    }
+
+    function toggleAdvancedFilters() {
+      const advancedFilters = document.getElementById('advancedFilters');
+      const btn = document.getElementById('advancedFilterBtn');
+
+      if (advancedFilters.classList.contains('hidden')) {
+        advancedFilters.classList.remove('hidden');
+        btn.textContent = '⚙️ Hide Advanced';
+      } else {
+        advancedFilters.classList.add('hidden');
+        btn.textContent = '⚙️ Advanced';
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('roleFilter').value = 'all';
+      document.getElementById('statusFilter').value = 'all';
+      document.getElementById('activityFilter').value = 'all';
+      document.getElementById('sortBy').value = 'name';
+      document.getElementById('hireDateFrom').value = '';
+      document.getElementById('hireDateTo').value = '';
+      document.getElementById('performanceFilter').value = 'all';
+      document.getElementById('departmentFilter').value = 'all';
+
+      applyFilters();
+    }
+
+    function exportData() {
+      exportStaffData(Object.values(filteredStaffData));
+    }
+
+    function exportStaffData(data) {
+      const csvContent = [
+        ['Name', 'Username', 'Email', 'Phone', 'Role', 'Department', 'Status', 'Salary', 'Total Orders', 'Total Sales', 'Hire Date', 'Last Login', 'Online Status'],
+        ...data.map(staff => [
+          staff.name,
+          staff.username,
+          staff.email || '',
+          staff.phone || '',
+          staff.role || '',
+          staff.department || '',
+          staff.status || 'active',
+          staff.salary || '',
+          staff.totalOrders || 0,
+          staff.totalSales || 0,
+          staff.hireDate ? new Date(staff.hireDate).toLocaleDateString() : '',
+          staff.lastLogin ? new Date(staff.lastLogin).toLocaleDateString() : 'Never',
+          staff.isOnline ? 'Online' : 'Offline'
+        ])
+      ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `staff-export-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv';
+      input.onchange = handleFileImport;
+      input.click();
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const csv = e.target.result;
+          const lines = csv.split('\n');
+          const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+
+          let importedCount = 0;
+          const promises = [];
+
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const values = line.split(',').map(v => v.replace(/"/g, ''));
+            const staffDataImport = {};
+
+            headers.forEach((header, index) => {
+              staffDataImport[header.toLowerCase().replace(' ', '')] = values[index] || '';
+            });
+
+            if (staffDataImport.name && staffDataImport.username) {
+              const staffInfo = {
+                name: staffDataImport.name,
+                username: staffDataImport.username,
+                email: staffDataImport.email || '',
+                phone: staffDataImport.phone || '',
+                role: staffDataImport.role || 'waiter',
+                department: staffDataImport.department || 'service',
+                status: staffDataImport.status || 'active',
+                salary: parseFloat(staffDataImport.salary) || 0,
+                hireDate: staffDataImport.hiredate || new Date().toISOString().split('T')[0],
+                password: staffDataImport.password || 'password123',
+                permissions: [],
+                totalOrders: 0,
+                todayOrders: 0,
+                totalSales: 0,
+                isOnline: false,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+              };
+
+              promises.push(
+                db.ref(`staff/${restaurantId}`).push().set(staffInfo)
+                  .then(() => importedCount++)
+              );
+            }
+          }
+
+          Promise.all(promises).then(() => {
+            logActivity(`Imported ${importedCount} staff members`, 'bulk_import');
+            showNotification(`Successfully imported ${importedCount} staff members!`, 'success');
+          }).catch(error => {
+            console.error('Import error:', error);
+            showNotification('Error importing some staff members', 'error');
+          });
+
+        } catch (error) {
+          console.error('File parsing error:', error);
+          showNotification('Error parsing CSV file', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('staffError');
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+      setTimeout(() => {
+        errorEl.classList.add('hidden');
+      }, 5000);
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `slide-in fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-sm`;
+
+      const colors = {
+        success: 'bg-gradient-to-r from-green-500 to-green-600 border-green-400 text-white',
+        error: 'bg-gradient-to-r from-red-500 to-red-600 border-red-400 text-white',
+        info: 'bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white'
+      };
+
+      notification.className += ` ${colors[type]}`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span class="font-medium">${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 500);
+      }, 4000);
+    }
+
+    window.toggleStaffSelection = toggleStaffSelection;
+    window.toggleSelectAll = toggleSelectAll;
+    window.clearSelection = clearSelection;
+    window.executeBulkAction = executeBulkAction;
+    window.openAddStaffModal = openAddStaffModal;
+    window.closeStaffModal = closeStaffModal;
+    window.editStaff = editStaff;
+    window.viewStaffDetails = viewStaffDetails;
+    window.closeStaffDetailsModal = closeStaffDetailsModal;
+    window.toggleStaffStatus = toggleStaffStatus;
+    window.deleteStaff = deleteStaff;
+    window.toggleAdvancedFilters = toggleAdvancedFilters;
+    window.clearFilters = clearFilters;
+    window.exportData = exportData;
+    window.importData = importData;
+    window.forceStaffLogout = forceStaffLogout;
+    window.viewActivityLogs = viewActivityLogs;
+    window.closeActivityLogsModal = closeActivityLogsModal;
+  </script>
+</body>
+</html>

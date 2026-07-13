@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Professional Dynamic Sales Report System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a'
+            },
+            success: {
+              50: '#f0fdf4',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a'
+            },
+            warning: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706'
+            },
+            error: {
+              400: '#f87171',
+              500: '#ef4444',
+              600: '#dc2626'
+            }
+          },
+          fontFamily: {
+            'inter': ['Inter', 'sans-serif']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'pulse-soft': 'pulseSoft 2s infinite'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .metric-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient);
+      opacity: 0.8;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .order-card {
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+      border: 1px solid #e5e7eb;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .order-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .order-card:hover::before {
+      opacity: 1;
+    }
+
+    .order-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+      border-color: #3b82f6;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .status-completed {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .status-processing {
+      background: rgba(59, 130, 246, 0.1);
+      color: #2563eb;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-invoice {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-invoice:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    }
+
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .notification {
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .hot-item-card {
+      background: linear-gradient(135deg, #ffffff 0%, #fef7ff 100%);
+      border: 1px solid #e879f9;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hot-item-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444, #ec4899);
+      opacity: 0.8;
+    }
+
+    .hot-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(236, 72, 153, 0.15);
+      border-color: #ec4899;
+    }
+
+    .trend-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .real-time-indicator {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 50;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: pulseSoft 2s infinite;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+
+    .connection-status {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 50;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .connection-online {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+    }
+
+    .connection-offline {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    .empty-state {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 2px dashed #cbd5e1;
+      border-radius: 1rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      color: #64748b;
+    }
+
+    @media (max-width: 640px) {
+      .metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .order-card {
+        padding: 1rem;
+      }
+
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .order-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .order-meta {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen font-inter">
+  <div class="real-time-indicator">
+    <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+    <span>Live Updates</span>
+  </div>
+
+  <div id="connectionStatus" class="connection-status connection-online">
+    <div class="w-2 h-2 bg-white rounded-full"></div>
+    <span>Connected</span>
+  </div>
+
+  <header class="bg-white/95 backdrop-blur-lg shadow-lg border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text">
+              Sales Report Dashboard
+            </h1>
+            <p class="text-sm lg:text-base text-slate-600 mt-1">Real-time restaurant performance analytics</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:block text-right">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-wider">Last Updated</div>
+            <div id="lastUpdated" class="text-sm font-semibold text-slate-700">Loading...</div>
+          </div>
+          <button id="refreshBtn" onclick="manualRefresh()"
+                  class="btn-primary text-white px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6 lg:space-y-8">
+    <div class="glass-effect rounded-2xl shadow-xl p-4 lg:p-6 border">
+      <div class="control-grid grid grid-cols-1 md:grid-cols-4 gap-4 lg:gap-6">
+        <div class="md:col-span-1">
+          <label for="reportDate" class="block text-sm font-semibold text-slate-700 mb-2">Select Date</label>
+          <input type="date" id="reportDate"
+                 class="w-full border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-300 bg-white shadow-sm" />
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="searchInput" class="block text-sm font-semibold text-slate-700 mb-2">Search Orders</label>
+          <div class="relative">
+            <input type="text" id="searchInput"
+                   class="w-full border border-slate-300 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-300 bg-white shadow-sm"
+                   placeholder="Search by customer, table, or item..." />
+            <svg class="w-5 h-5 absolute left-4 top-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="md:col-span-1 flex flex-col sm:flex-row gap-2">
+          <button id="downloadExcelBtn"
+                  class="flex-1 btn-success text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="hidden sm:inline">Export Excel</span>
+            <span class="sm:hidden">Export</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loadingState" class="loading-state hidden">
+      <div class="loading-spinner w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full mb-4"></div>
+      <h3 class="text-lg font-semibold mb-2">Loading Report Data</h3>
+      <p class="text-sm">Fetching real-time sales information...</p>
+    </div>
+
+    <div id="reportSummary" class="metric-grid grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"></div>
+
+    <div class="glass-effect rounded-2xl shadow-xl p-4 lg:p-6 border">
+      <div class="flex items-center justify-between mb-4 lg:mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl lg:text-2xl font-bold text-slate-900">🔥 Top 3 Hot Selling Items</h2>
+            <p class="text-sm text-slate-600">Best performing menu items today</p>
+          </div>
+        </div>
+        <div class="text-right hidden sm:block">
+          <div id="hotItemsCount" class="text-2xl font-bold text-orange-600">0</div>
+          <div class="text-xs text-slate-500 uppercase tracking-wider">Trending Items</div>
+        </div>
+      </div>
+      <div id="hotSellingItems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+
+    <div class="glass-effect rounded-2xl shadow-xl p-4 lg:p-6 border">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 lg:mb-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-5 h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl lg:text-2xl font-bold text-slate-900">Orders Overview</h2>
+            <p class="text-sm text-slate-600">Complete order details and status</p>
+          </div>
+        </div>
+        <div id="orderStats" class="flex items-center gap-4 text-sm">
+          <div class="text-center">
+            <div id="totalOrdersCount" class="font-bold text-slate-900">0</div>
+            <div class="text-slate-500">Total</div>
+          </div>
+          <div class="text-center">
+            <div id="completedOrdersCount" class="font-bold text-success-600">0</div>
+            <div class="text-slate-500">Completed</div>
+          </div>
+        </div>
+      </div>
+      <div id="orderList" class="space-y-4"></div>
+    </div>
+  </main>
+
+  <div id="notificationContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+    authDomain: "menuswift-fe577.firebaseapp.com",
+    databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+    projectId: "menuswift-fe577",
+    storageBucket: "menuswift-fe577.appspot.com",
+    messagingSenderId: "417323386413",
+    appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const restaurantId = localStorage.getItem("restaurantId");
+  console.log("Restaurant ID:", restaurantId);
+
+  let allOrders = {};
+  let allHistoryOrders = {};
+  let activeOrders = {};
+  let filteredOrders = {};
+  let currentSearchTerm = '';
+  let currentDate = '';
+  let ordersRef = null;
+  let historyRef = null;
+  let refreshInterval = null;
+  let connectionState = true;
+  let lastDataUpdate = 0;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log('🔄 Initializing Fixed Report System for restaurant:', restaurantId);
+
+    if (!restaurantId) {
+      showNotification('❌ Restaurant ID not found. Please login again.', 'error');
+      setTimeout(() => window.location.href = 'admin-login.html', 2000);
+      return;
+    }
+
+    const dateInput = document.getElementById("reportDate");
+    dateInput.valueAsDate = new Date();
+    currentDate = new Date().toLocaleDateString("en-GB");
+
+    dateInput.addEventListener("change", handleDateChange);
+    document.getElementById("searchInput").addEventListener("input", handleSearch);
+    document.getElementById("downloadExcelBtn").addEventListener("click", downloadExcel);
+
+    initializeRealtimeListeners();
+    refreshInterval = setInterval(updateLastUpdated, 5000);
+    showLoadingState(true);
+
+    setTimeout(() => {
+      generateReportForDate(currentDate);
+      showNotification('✅ Report system initialized successfully', 'success');
+      showLoadingState(false);
+    }, 2000);
+
+    monitorConnection();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  });
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      console.log('📱 Page became visible - refreshing data');
+      setTimeout(() => {
+        cleanupListeners();
+        initializeRealtimeListeners();
+        generateReportForDate(currentDate);
+        showNotification('🔄 Data refreshed on page focus', 'info');
+      }, 500);
+    }
+  }
+
+  function cleanupListeners() {
+    if (ordersRef) {
+      console.log('🧹 Cleaning up orders listener');
+      ordersRef.off();
+      ordersRef = null;
+    }
+    if (historyRef) {
+      console.log('🧹 Cleaning up history listener');
+      historyRef.off();
+      historyRef = null;
+    }
+  }
+
+  function monitorConnection() {
+    const connectedRef = db.ref(".info/connected");
+    connectedRef.on("value", (snap) => {
+      const wasConnected = connectionState;
+      connectionState = snap.val() === true;
+      updateConnectionStatus();
+
+      if (connectionState && !wasConnected) {
+        console.log('🔄 Connection restored - reinitializing listeners...');
+        showNotification('🌐 Connection restored - syncing data', 'success');
+        setTimeout(() => {
+          cleanupListeners();
+          initializeRealtimeListeners();
+          generateReportForDate(currentDate);
+        }, 1000);
+      } else if (!connectionState && wasConnected) {
+        showNotification('🌐 Connection lost - report may not be current', 'error');
+      }
+    });
+  }
+
+  function updateConnectionStatus() {
+    const statusElement = document.getElementById('connectionStatus');
+    if (connectionState) {
+      statusElement.className = 'connection-status connection-online';
+      statusElement.innerHTML = '<div class="w-2 h-2 bg-white rounded-full"></div><span>Connected</span>';
+    } else {
+      statusElement.className = 'connection-status connection-offline';
+      statusElement.innerHTML = '<div class="w-2 h-2 bg-white rounded-full animate-pulse"></div><span>Reconnecting...</span>';
+    }
+  }
+
+  function initializeRealtimeListeners() {
+    console.log('🔄 Setting up FIXED real-time listeners for restaurant:', restaurantId);
+    cleanupListeners();
+
+    ordersRef = db.ref(`restaurants/${restaurantId}/orders`);
+    ordersRef.on('value', (snapshot) => {
+      try {
+        const orders = snapshot.val() || {};
+        const orderCount = Object.keys(orders).length;
+
+        console.log('📊 Real-time orders update:', {
+          total: orderCount,
+          completed: Object.keys(orders).filter(id => isOrderCompleted(orders[id])).length
+        });
+
+        activeOrders = orders;
+        allOrders = { ...allHistoryOrders, ...activeOrders };
+        lastDataUpdate = Date.now();
+
+        generateReportForDate(currentDate);
+        updateLastUpdated();
+
+      } catch (error) {
+        console.error('❌ Error processing orders data:', error);
+        showNotification('⚠️ Error processing orders data', 'error');
+      }
+    }, (error) => {
+      console.error('❌ Firebase orders listener error:', error);
+      showNotification('Connection error - retrying...', 'error');
+      connectionState = false;
+      updateConnectionStatus();
+
+      setTimeout(() => {
+        console.log('🔄 Attempting to reconnect orders listener...');
+        initializeRealtimeListeners();
+      }, 5000);
+    });
+
+    historyRef = db.ref(`restaurants/${restaurantId}/orderHistory`);
+    historyRef.on('value', (snapshot) => {
+      try {
+        const historyOrders = snapshot.val() || {};
+
+        console.log('📊 Order history updated:', {
+          count: Object.keys(historyOrders).length
+        });
+
+        allHistoryOrders = historyOrders;
+        allOrders = { ...allHistoryOrders, ...activeOrders };
+
+        console.log('📊 Merged orders:', {
+          historyCount: Object.keys(allHistoryOrders).length,
+          activeCount: Object.keys(activeOrders).length,
+          totalCount: Object.keys(allOrders).length
+        });
+
+        generateReportForDate(currentDate);
+
+      } catch (error) {
+        console.error('❌ Error processing history data:', error);
+      }
+    }, (error) => {
+      console.warn('⚠️ Order history listener error:', error);
+    });
+
+    console.log('✅ Real-time listeners initialized successfully');
+  }
+
+  function isOrderCompleted(order) {
+    if (!order) return false;
+    return (
+      order.status === "done" ||
+      order.kotStatus === "served"
+    );
+  }
+
+  function handleDateChange() {
+    const dateInput = document.getElementById("reportDate");
+    const selectedDate = new Date(dateInput.value);
+    const today = new Date();
+    const diffDays = Math.ceil((today - selectedDate) / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 30) {
+      showNotification('❌ You can only view reports from the last 30 days.', 'error');
+      dateInput.valueAsDate = today;
+      currentDate = today.toLocaleDateString("en-GB");
+    } else {
+      currentDate = selectedDate.toLocaleDateString("en-GB");
+      showNotification(`📅 Loading report for ${currentDate}`, 'info');
+    }
+
+    showLoadingState(true);
+    setTimeout(() => {
+      generateReportForDate(currentDate);
+      showLoadingState(false);
+    }, 800);
+  }
+
+  let searchTimeout;
+  function handleSearch(event) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentSearchTerm = event.target.value.toLowerCase();
+      generateReportForDate(currentDate);
+    }, 300);
+  }
+
+  function manualRefresh() {
+    const btn = document.getElementById('refreshBtn');
+    const originalContent = btn.innerHTML;
+
+    btn.innerHTML = `
+      <svg class="w-4 h-4 loading-spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      <span>Refreshing...</span>
+    `;
+    btn.disabled = true;
+
+    showLoadingState(true);
+    cleanupListeners();
+
+    setTimeout(() => {
+      initializeRealtimeListeners();
+      generateReportForDate(currentDate);
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+      showNotification('✅ Data refreshed successfully', 'success');
+      showLoadingState(false);
+    }, 2000);
+  }
+
+  function generateReportForDate(dateStr) {
+    console.log('📋 Generating report for date:', dateStr);
+    console.log('📊 Processing', Object.keys(allOrders).length, 'total orders');
+
+    let totalOrderCount = 0, completedCount = 0, totalRevenue = 0;
+    const hotSellingMap = {};
+    filteredOrders = {};
+
+    Object.entries(allOrders).forEach(([orderId, order]) => {
+      const isCompleted = isOrderCompleted(order);
+      const orderDate = getOrderDate(order);
+
+      const selectedDateObj = new Date(dateStr.split('/').reverse().join('-'));
+      const orderDateObj = new Date(
+        typeof order.timestamp === "number"
+          ? order.timestamp
+          : Date.parse(order.timestamp)
+      );
+
+      if (
+        orderDateObj.getDate() !== selectedDateObj.getDate() ||
+        orderDateObj.getMonth() !== selectedDateObj.getMonth() ||
+        orderDateObj.getFullYear() !== selectedDateObj.getFullYear()
+      ) {
+        return;
+      }
+
+      totalOrderCount++;
+
+      if (currentSearchTerm && !matchesSearchTerm(order, currentSearchTerm)) return;
+
+      const isHistoryOrder = allHistoryOrders.hasOwnProperty(orderId);
+
+      if (isCompleted || isHistoryOrder) {
+        filteredOrders[orderId] = order;
+
+        let subtotal = 0;
+        let items = [];
+
+        if (Array.isArray(order.cartItems)) {
+          items = order.cartItems;
+        } else if (Array.isArray(order.items)) {
+          items = order.items;
+        } else if (typeof order.items === "object") {
+          items = Object.values(order.items);
+        }
+
+        items.forEach(item => {
+          const unitPrice = Number(item.unitPrice || item.price || item.pricePerPlate || item.finalPrice || item.amount || 0);
+          const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+          subtotal += itemTotal;
+
+          const hotKey = item.name;
+          if (!hotSellingMap[hotKey]) {
+            hotSellingMap[hotKey] = {
+              name: item.name,
+              totalQuantity: 0,
+              totalRevenue: 0,
+              orderCount: 0,
+              veg: item.veg,
+              orders: new Set()
+            };
+          }
+          hotSellingMap[hotKey].totalQuantity += item.quantity;
+          hotSellingMap[hotKey].totalRevenue += itemTotal;
+          hotSellingMap[hotKey].orders.add(orderId);
+          hotSellingMap[hotKey].orderCount = hotSellingMap[hotKey].orders.size;
+        });
+
+        totalRevenue += subtotal;
+        completedCount++;
+      }
+    });
+
+    console.log('📊 Report stats:', {
+      totalOrderCount,
+      completedCount,
+      totalRevenue: totalRevenue.toFixed(2),
+      hotItemsCount: Object.keys(hotSellingMap).length,
+      filteredOrdersCount: Object.keys(filteredOrders).length
+    });
+
+    updateSummaryCards(totalOrderCount, completedCount, totalRevenue);
+    updateHotSellingItems(hotSellingMap);
+    updateOrdersList(filteredOrders);
+    updateOrderStats(totalOrderCount, completedCount);
+  }
+
+  function getOrderDate(order) {
+    try {
+      let timestamp;
+
+      if (typeof order.timestamp === "number") {
+        timestamp = order.timestamp;
+      } else if (typeof order.timestamp === "string") {
+        timestamp = new Date(order.timestamp).getTime();
+      } else {
+        return null;
+      }
+
+      const date = new Date(timestamp);
+      return date.toLocaleDateString("en-GB");
+    } catch (error) {
+      console.warn("Date error:", error);
+      return null;
+    }
+  }
+
+  function matchesSearchTerm(order, searchTerm) {
+    const customer = (order.customerName || '').toLowerCase();
+    const table = (order.tableNumber || '').toString().toLowerCase();
+
+    const nameMatch = customer.includes(searchTerm);
+    const tableMatch = table.includes(searchTerm);
+    const itemMatch = (order.cartItems || []).some(item =>
+      item.name.toLowerCase().includes(searchTerm)
+    );
+
+    return nameMatch || tableMatch || itemMatch;
+  }
+
+  function updateSummaryCards(totalOrders, completedOrders, revenue) {
+    const avgOrder = completedOrders > 0 ? (revenue / completedOrders) : 0;
+    const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
+
+    document.getElementById("reportSummary").innerHTML = `
+      <div class="metric-card rounded-2xl p-4 lg:p-6 shadow-lg card-hover" style="--gradient: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-600 text-sm font-semibold mb-1">Total Orders</p>
+            <p class="text-2xl lg:text-3xl font-bold text-slate-900 animate-fade-in">${totalOrders}</p>
+            <p class="text-xs text-slate-500 mt-1">${completedOrders} completed</p>
+          </div>
+          <div class="w-12 h-12 bg-primary-500 bg-opacity-10 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card rounded-2xl p-4 lg:p-6 shadow-lg card-hover" style="--gradient: linear-gradient(135deg, #22c55e, #16a34a);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-600 text-sm font-semibold mb-1">Total Revenue</p>
+            <p class="text-2xl lg:text-3xl font-bold text-slate-900 animate-fade-in">₹${revenue.toFixed(0)}</p>
+            <p class="text-xs text-slate-500 mt-1">From completed orders</p>
+          </div>
+          <div class="w-12 h-12 bg-success-500 bg-opacity-10 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card rounded-2xl p-4 lg:p-6 shadow-lg card-hover" style="--gradient: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-600 text-sm font-semibold mb-1">Average Order</p>
+            <p class="text-2xl lg:text-3xl font-bold text-slate-900 animate-fade-in">₹${avgOrder.toFixed(0)}</p>
+            <p class="text-xs text-slate-500 mt-1">Per completed order</p>
+          </div>
+          <div class="w-12 h-12 bg-purple-500 bg-opacity-10 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card rounded-2xl p-4 lg:p-6 shadow-lg card-hover" style="--gradient: linear-gradient(135deg, #f59e0b, #d97706);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-slate-600 text-sm font-semibold mb-1">Completion Rate</p>
+            <p class="text-2xl lg:text-3xl font-bold text-slate-900 animate-fade-in">${completionRate}%</p>
+            <p class="text-xs text-slate-500 mt-1">Orders completed</p>
+          </div>
+          <div class="w-12 h-12 bg-warning-500 bg-opacity-10 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateHotSellingItems(hotSellingMap) {
+    const hotSellingContainer = document.getElementById("hotSellingItems");
+
+    let hotItems = Object.values(hotSellingMap)
+      .filter(item => item.totalQuantity > 0)
+      .sort((a, b) => b.totalQuantity - a.totalQuantity)
+      .slice(0, 3);
+
+    document.getElementById("hotItemsCount").textContent = hotItems.length;
+
+    if (hotItems.length === 0) {
+      hotSellingContainer.innerHTML = `
+        <div class="col-span-full empty-state animate-fade-in">
+          <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-slate-600 mb-2">No hot items found</h3>
+          <p class="text-sm">Hot selling items will appear here based on order frequency</p>
+        </div>
+      `;
+      return;
+    }
+
+    hotSellingContainer.innerHTML = hotItems.map((item, index) => {
+      const avgPrice = item.totalRevenue / item.totalQuantity;
+      const trendIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+
+      return `
+        <div class="hot-item-card rounded-xl p-4 shadow-lg card-hover animate-fade-in" style="animation-delay: ${index * 0.1}s">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                ${trendIcon}
+              </div>
+              <div class="trend-indicator">
+                <span>🔥</span>
+                <span>Hot</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-slate-900">₹${item.totalRevenue.toFixed(0)}</div>
+              <div class="text-xs text-slate-500">Revenue</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <h3 class="font-bold text-slate-900 text-base mb-1">${item.name}</h3>
+            <div class="flex items-center gap-2">
+              ${item.veg ? `<span class="text-xs px-2 py-1 rounded-full ${item.veg === 'Veg' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.veg}</span>` : ''}
+              <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">#${index + 1} Best Seller</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="text-center p-2 bg-slate-50 rounded-lg">
+              <div class="font-bold text-slate-900">${item.totalQuantity}</div>
+              <div class="text-xs text-slate-500">Units Sold</div>
+            </div>
+            <div class="text-center p-2 bg-slate-50 rounded-lg">
+              <div class="font-bold text-slate-900">${item.orderCount}</div>
+              <div class="text-xs text-slate-500">Orders</div>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-200">
+            <div class="flex justify-between items-center text-xs text-slate-600">
+              <span>Avg Price:</span>
+              <span class="font-semibold">₹${avgPrice.toFixed(0)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateOrdersList(orders) {
+    const orderList = document.getElementById("orderList");
+    const orderEntries = Object.entries(orders);
+
+    if (orderEntries.length === 0) {
+      orderList.innerHTML = `
+        <div class="empty-state animate-fade-in">
+          <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-slate-600 mb-2">No completed orders found</h3>
+          <p class="text-sm">Completed orders for the selected date will appear here</p>
+        </div>
+      `;
+      return;
+    }
+
+    orderEntries.sort(([,a], [,b]) => {
+      const aTime = typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime();
+      const bTime = typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime();
+      return bTime - aTime;
+    });
+
+    orderList.innerHTML = orderEntries.map(([orderId, order], index) => {
+      return createOrderCard(orderId, order, index);
+    }).join('');
+  }
+
+  function createOrderCard(orderId, order, index) {
+    let subtotal = 0;
+    const itemsHTML = (order.cartItems || []).map(item => {
+      const unitPrice = Number(item.unitPrice || item.price || item.pricePerPlate || item.finalPrice || item.amount || 0);
+      const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+      subtotal += itemTotal;
+
+      return `
+        <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-b-0">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-900 truncate">${item.name}</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600">${item.plateType || 'Full'}</span>
+              ${item.veg ? `<span class="text-xs px-1.5 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.veg}</span>` : ''}
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-slate-600">Qty: ${item.quantity}</div>
+            <div class="font-semibold text-slate-900">₹${itemTotal.toFixed(0)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const orderTime = (() => {
+      try {
+        if (typeof order.timestamp === "string") {
+          return order.timestamp.split(",")[1]?.trim() || 'N/A';
+        }
+        const timestamp = typeof order.timestamp === 'number' ? order.timestamp : new Date(order.timestamp).getTime();
+        return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch (error) {
+        return 'N/A';
+      }
+    })();
+
+    let statusBadge = '';
+    let statusClass = 'status-processing';
+    let statusText = 'Processing';
+    let statusIcon = '🔄';
+    let completionSource = 'Unknown';
+
+    if (order.status === 'done') {
+      statusClass = 'status-completed';
+      statusText = 'Completed (Admin)';
+      statusIcon = '✅';
+      completionSource = 'Owner Dashboard';
+    } else if (order.kotStatus === 'served') {
+      statusClass = 'status-completed';
+      statusText = 'Served (Kitchen)';
+      statusIcon = '✅';
+      completionSource = 'Kitchen Staff';
+    } else if (order.kotStatus === 'ready') {
+      statusClass = 'status-completed';
+      statusText = 'Ready to Serve';
+      statusIcon = '🍽️';
+      completionSource = 'Kitchen Staff';
+    } else if (order.kotStatus === 'preparing') {
+      statusClass = 'status-completed';
+      statusText = 'In Kitchen';
+      statusIcon = '👨‍🍳';
+      completionSource = 'Kitchen Staff';
+    } else if (order.kotStatus === 'accepted') {
+      statusClass = 'status-completed';
+      statusText = 'Kitchen Accepted';
+      statusIcon = '✅';
+      completionSource = 'Kitchen Staff';
+    } else if (order.status === 'accepted') {
+      statusClass = 'status-completed';
+      statusText = 'Order Accepted';
+      statusIcon = '✅';
+      completionSource = 'Owner Dashboard';
+    }
+
+    const orderJsonEscaped = JSON.stringify(order).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+    return `
+      <div class="order-card rounded-2xl p-4 lg:p-6 shadow-lg animate-fade-in" style="animation-delay: ${index * 0.05}s">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
+          <div class="flex items-center space-x-3 min-w-0 flex-1">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-lg font-bold text-slate-900 truncate">${order.customerName || 'Walk-in Customer'}</h3>
+              <div class="flex flex-wrap items-center gap-4 text-sm text-slate-600 mt-1">
+                <span class="flex items-center space-x-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span>${orderTime}</span>
+                </span>
+                ${order.tableNumber ? `
+                  <span class="flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                    </svg>
+                    <span>Table ${order.tableNumber}</span>
+                  </span>
+                ` : ''}
+                <span class="status-badge ${statusClass}">
+                  <span>${statusIcon}</span>
+                  <span>${statusText}</span>
+                </span>
+                <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">Source: ${completionSource}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+            <div class="text-right">
+              <div class="text-2xl font-bold text-slate-900">₹${subtotal.toFixed(0)}</div>
+              <div class="text-sm text-slate-500">Order Total</div>
+            </div>
+            <button onclick='downloadProfessionalInvoice(${orderJsonEscaped}, "${orderId}")'
+                    class="btn-invoice text-white px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 whitespace-nowrap">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span>Download Invoice</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-4">
+          <h4 class="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V3m0 2v2"/>
+            </svg>
+            Order Items
+          </h4>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            ${itemsHTML}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateOrderStats(total, completed) {
+    document.getElementById('totalOrdersCount').textContent = total;
+    document.getElementById('completedOrdersCount').textContent = completed;
+  }
+
+  function showLoadingState(show) {
+    const loadingState = document.getElementById('loadingState');
+    const mainContent = ['reportSummary', 'hotSellingItems', 'orderList'];
+
+    if (show) {
+      loadingState.classList.remove('hidden');
+      mainContent.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.style.opacity = '0.5';
+      });
+    } else {
+      loadingState.classList.add('hidden');
+      mainContent.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.style.opacity = '1';
+      });
+    }
+  }
+
+  function updateLastUpdated() {
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    const notification = document.createElement('div');
+
+    const colors = {
+      success: 'bg-gradient-to-r from-success-500 to-success-600 border-success-400 text-white',
+      error: 'bg-gradient-to-r from-error-500 to-error-600 border-error-400 text-white',
+      info: 'bg-gradient-to-r from-primary-500 to-primary-600 border-primary-400 text-white'
+    };
+
+    const icons = {
+      success: '✅',
+      error: '❌',
+      info: 'ℹ️'
+    };
+
+    notification.className = `notification p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-sm ${colors[type]}`;
+    notification.innerHTML = `
+      <div class="flex items-center gap-3">
+        <span class="text-lg">${icons[type]}</span>
+        <span class="font-medium text-sm">${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto opacity-70 hover:opacity-100">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    container.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 500);
+    }, 5000);
+  }
+
+  function downloadExcel() {
+    const orders = Object.entries(filteredOrders);
+    if (orders.length === 0) {
+      showNotification('No completed orders available to export', 'error');
+      return;
+    }
+
+    const data = [];
+    orders.forEach(([orderId, order], index) => {
+      let subtotal = 0;
+      const items = (order.cartItems || []).map(item => {
+        const unitPrice = Number(item.unitPrice || item.price || item.pricePerPlate || item.finalPrice || item.amount || 0);
+        const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+        subtotal += itemTotal;
+        return `${item.name} (${item.plateType || 'Full'}) x${item.quantity}`;
+      }).join(', ');
+
+      const orderTime = (() => {
+        try {
+          if (typeof order.timestamp === "string") {
+            return order.timestamp;
+          }
+          const timestamp = typeof order.timestamp === 'number' ? order.timestamp : new Date(order.timestamp).getTime();
+          return new Date(timestamp).toLocaleString();
+        } catch (error) {
+          return 'N/A';
+        }
+      })();
+
+      let status = 'Completed';
+      let completionSource = 'Unknown';
+
+      if (order.status === 'done') {
+        status = 'Completed';
+        completionSource = 'Owner Dashboard (Admin)';
+      } else if (order.kotStatus === 'served') {
+        status = 'Served';
+        completionSource = 'Kitchen Staff (KOT)';
+      } else if (order.kotStatus === 'ready') {
+        status = 'Ready to Serve';
+        completionSource = 'Kitchen Staff (KOT)';
+      } else if (order.kotStatus === 'preparing') {
+        status = 'Being Prepared';
+        completionSource = 'Kitchen Staff (KOT)';
+      } else if (order.kotStatus === 'accepted') {
+        status = 'Kitchen Accepted';
+        completionSource = 'Kitchen Staff (KOT)';
+      } else if (order.status === 'accepted' && order.kotStatus) {
+        status = 'Processed';
+        completionSource = 'Admin + Kitchen';
+      } else if (order.status === 'accepted') {
+        status = 'Admin Accepted';
+        completionSource = 'Owner Dashboard (Admin)';
+      }
+
+      data.push({
+        "S.No.": index + 1,
+        "Order ID": orderId.slice(-8),
+        "Customer": order.customerName || 'Walk-in',
+        "Table": order.tableNumber || 'N/A',
+        "Order Time": orderTime,
+        "Items": items,
+        "Total Amount": `₹${subtotal.toFixed(2)}`,
+        "Status": status,
+        "Completed By": completionSource,
+        "Order Type": order.type || 'Dine-in'
+      });
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+
+    const filename = `MenuSwift-Sales-Report-${currentDate.replace(/\//g, "-")}-${new Date().getTime()}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    showNotification(`✅ Report exported as ${filename}`, 'success');
+  }
+
+  function downloadProfessionalInvoice(order, orderId) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "normal");
+
+    const primaryColor = [59, 130, 246];
+    const darkColor = [33, 37, 41];
+    const lightGray = [120, 120, 120];
+
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bold');
+    doc.text("MenuSwift Invoice", 14, 20);
+
+    doc.setTextColor(...darkColor);
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+
+    const invoiceNumber = `INV-${orderId.slice(-6)}`;
+    const date = new Date().toLocaleDateString('en-IN');
+
+    doc.text(`Invoice No: ${invoiceNumber}`, 140, 15);
+    doc.text(`Date: ${date}`, 140, 22);
+
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text("Customer Details", 14, 40);
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+
+    doc.text(`Name: ${order.customerName || "Walk-in"}`, 14, 48);
+    doc.text(`Table: ${order.tableNumber || "-"}`, 14, 54);
+    doc.text(`Type: ${order.type || "Dine-in"}`, 14, 60);
+
+    let subtotal = 0;
+
+    const rows = (order.cartItems || []).map(item => {
+      const unitPrice = Number(item.unitPrice || item.price || item.pricePerPlate || item.finalPrice || item.amount || 0);
+      const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+      subtotal += itemTotal;
+
+      return [
+        item.name,
+        item.quantity,
+        `₹${unitPrice.toFixed(2)}`,
+        `₹${itemTotal.toFixed(2)}`
+      ];
+    });
+
+    doc.autoTable({
+      startY: 70,
+      head: [["Item", "Qty", "Price", "Total"]],
+      body: rows,
+      theme: "grid",
+
+      styles: {
+        font: "helvetica",
+        fontSize: 10,
+        cellPadding: 3
+      },
+
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: 255,
+        halign: "center"
+      },
+
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { halign: "center", cellWidth: 20 },
+        2: { halign: "right", cellWidth: 40 },
+        3: { halign: "right", cellWidth: 40 }
+      }
+    });
+
+    const gstAmount = Number(order.gstAmount || 0);
+    const grandTotal = Number(order.totalAmount || subtotal);
+
+    let y = doc.lastAutoTable.finalY + 10;
+
+    doc.setFontSize(11);
+
+    doc.text("Subtotal:", 140, y);
+    doc.text(`₹${subtotal.toFixed(2)}`, 200, y, { align: "right" });
+
+    if (gstAmount > 0) {
+      y += 7;
+      doc.text(`GST (${order.gstPercent || 0}%):`, 140, y);
+      doc.text(`₹${gstAmount.toFixed(2)}`, 200, y, { align: "right" });
+    }
+
+    y += 10;
+    doc.setFont(undefined, "bold");
+    doc.setFontSize(13);
+
+    doc.text("Total:", 140, y);
+    doc.text(`₹${grandTotal.toFixed(2)}`, 200, y, { align: "right" });
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, "normal");
+    doc.setTextColor(...lightGray);
+
+    doc.text("Thank you for your visit!", 105, y + 20, { align: "center" });
+
+    const fileName = `Invoice-${orderId.slice(-6)}.pdf`;
+    doc.save(fileName);
+
+    showNotification(`✅ Invoice downloaded: ${fileName}`, 'success');
+  }
+
+  window.addEventListener('beforeunload', () => {
+    cleanupListeners();
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+  });
+
+  window.addEventListener('error', (event) => {
+    console.error('Application error:', event.error);
+    showNotification('⚠️ An unexpected error occurred', 'error');
+  });
+
+  window.addEventListener('online', () => {
+    showNotification('🌐 Connection restored - syncing data', 'success');
+    connectionState = true;
+    updateConnectionStatus();
+    if (!ordersRef) {
+      initializeRealtimeListeners();
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    showNotification('🌐 Connection lost - report may not be current', 'error');
+    connectionState = false;
+    updateConnectionStatus();
+  });
+</script>
+</body>
+</html>

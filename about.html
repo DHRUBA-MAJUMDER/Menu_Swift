@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Us — MenuSwift</title>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e1320;
+      --card: #141b2d;
+      --muted: #98a0b3;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --radius: 18px;
+      --glass: rgba(255, 255, 255, 0.04);
+    }
+    * {box-sizing: border-box; margin:0; padding:0;}
+    body {
+      background: linear-gradient(180deg, var(--bg), #070b16);
+      color: #e5ecf6;
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .header h1 {
+      font-size: 42px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 17px;
+      margin-top: 10px;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .about-card {
+      background: var(--card);
+      padding: 32px;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+    }
+    .about-card h2 {
+      margin-bottom: 12px;
+      font-size: 26px;
+      color: #fff;
+    }
+    .about-card p {
+      color: var(--muted);
+      margin-bottom: 18px;
+      font-size: 15px;
+    }
+    .points {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .point {
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 18px;
+      transition: all 0.3s ease;
+    }
+    .point:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .point h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .point p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .side-box {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: var(--radius);
+      color: #fff;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+    }
+    .side-box h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .side-box p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+    .cta {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+    .btn {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s ease;
+    }
+    .btn-primary {
+      background: #fff;
+      color: var(--accent);
+    }
+    .btn-primary:hover {
+      background: #f1f1f1;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #fff;
+      color: #fff;
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    @media (max-width: 900px) {
+      .about-grid {grid-template-columns: 1fr;}
+      .points {grid-template-columns: 1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>About MenuSwift</h1>
+      <p>Smart restaurant ordering and management made simple, fast, and modern.</p>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <h2>Who We Are</h2>
+        <p>Hum ek passionate team hain jo restaurant operations ko digital, fast aur error-free banane ke mission par kaam kar rahe hain. Hamara goal hai aapka workload kam karna aur revenue badhana.</p>
+
+        <div class="points">
+          <div class="point">
+            <h3>QR Ordering</h3>
+            <p>Customers apne phone se scan karke direct order kar sakte hain.</p>
+          </div>
+          <div class="point">
+            <h3>Live Dashboard</h3>
+            <p>Real-time track kar sakte hain kaunse table se orders aa rahe hain.</p>
+          </div>
+          <div class="point">
+            <h3>Automated Reports</h3>
+            <p>Daily sales, items performance aur invoices auto-generate ho jaate hain.</p>
+          </div>
+          <div class="point">
+            <h3>Affordable Plans</h3>
+            <p>20 tables tak sirf ₹299/month — chhoti restaurants ke liye best.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h3>Why Choose MenuSwift</h3>
+        <p>Easy to use | Secure Firebase Backend | 24/7 Support</p>
+        <!-- <div class="cta">
+          <button class="btn btn-primary">Request Demo</button>
+          <button class="btn btn-outline">Contact Sales</button>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

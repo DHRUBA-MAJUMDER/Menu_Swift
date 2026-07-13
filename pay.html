@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Payment System</title>
+     <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            box-shadow: 0 0 40px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4rem;
+            width: 45px;
+            height: 45px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .back-button.show {
+            display: flex;
+        }
+
+        .content {
+            padding: 2rem 1.5rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+
+        .plan-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .plan-card {
+            background: white;
+            border: 3px solid #e9ecef;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .plan-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+        }
+
+        .plan-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .plan-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-seats {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .plan-period {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .billing-toggle {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 1rem;
+            padding: 0.5rem;
+            margin: 1.5rem 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .billing-option {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .billing-option.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .payment-method {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .payment-method:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .payment-method.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .payment-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        .payment-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+            border: 2px solid #667eea;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 1.5rem;
+            border: 3px dashed #dee2e6;
+        }
+
+        .qr-code {
+            margin: 1rem 0;
+            display: inline-block;
+            padding: 1rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .upi-id {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2d5a2d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .payment-status {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .status-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-pending { color: #ffc107; }
+        .status-success { color: #28a745; }
+        .status-failed { color: #dc3545; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { background: #28a745; }
+        .notification.error { background: #dc3545; }
+        .notification.info { background: #17a2b8; }
+
+        .admin-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            text-decoration: none;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .plan-price {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .billing-toggle {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .billing-option {
+                border-radius: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 0.75rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .plan-card {
+                padding: 1rem;
+            }
+
+            .btn {
+                padding: 0.875rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" id="back-button" onclick="goBack()">←</button>
+            <h1>🍽️ Restaurant Payment</h1>
+            <p>Secure Subscription Management</p>
+        </div>
+
+        <div class="content">
+            <!-- Restaurant Details Section -->
+            <div id="restaurant-details" class="section active">
+                <div class="card">
+                    <h2>Restaurant Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="restaurant-id">Restaurant ID *</label>
+                        <input type="text" id="restaurant-id" placeholder="Enter Restaurant ID" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="restaurant-name">Restaurant Name *</label>
+                        <input type="text" id="restaurant-name" placeholder="Enter Restaurant Name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="seat-count">Number of Seats *</label>
+                        <input type="number" id="seat-count" placeholder="Enter total seats" min="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="owner-name">Owner Name *</label>
+                        <input type="text" id="owner-name" placeholder="Enter owner name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="owner-phone">Mobile Number *</label>
+                        <input type="tel" id="owner-phone" placeholder="+91 9876543210" required>
+                    </div>
+                    
+                    <button class="btn" onclick="proceedToPlans()">
+                        <span id="proceed-btn-text">Continue to Plans</span>
+                        <span id="proceed-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+
+                <div class="secure-badge">
+                    🔒 100% Secure & Encrypted Payment
+                </div>
+            </div>
+
+            <!-- Plan Selection Section -->
+            <div id="plan-selection" class="section">
+                <div class="card">
+                    <h2>Choose Your Plan</h2>
+                    
+                    <div class="billing-toggle">
+                        <div class="billing-option active" onclick="toggleBilling('monthly')">
+                            Monthly
+                        </div>
+                        <div class="billing-option" onclick="toggleBilling('yearly')">
+                            <span>Yearly</span>
+                            <div class="discount-badge">15% OFF</div>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-grid" id="plan-grid">
+                        <!-- Plans will be populated by JavaScript -->
+                    </div>
+
+                    <div id="recommended-plan" style="text-align: center; margin: 1rem 0; color: #28a745; font-weight: 600;">
+                        <!-- Recommended plan will be shown here -->
+                    </div>
+                    
+                    <button class="btn" id="select-plan-btn" onclick="proceedToPayment()" disabled>
+                        Continue to Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Summary Section -->
+            <div id="payment-summary" class="section">
+                <div class="card">
+                    <h2>Payment Summary</h2>
+                    
+                    <div class="summary-card" id="order-summary">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                    
+                    <button class="btn" onclick="proceedToPaymentMethod()">
+                        Proceed to Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Methods Section -->
+            <div id="payment-methods" class="section">
+                <div class="card">
+                    <h2>Choose Payment Method</h2>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-method" onclick="selectPaymentMethod('upi')">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-title">UPI Payment</div>
+                            <div class="payment-desc">Pay using any UPI app</div>
+                        </div>
+                        
+                        <div class="payment-method" onclick="selectPaymentMethod('qr')">
+                            <div class="payment-icon">📷</div>
+                            <div class="payment-title">Scan QR Code</div>
+                            <div class="payment-desc">Scan with any UPI app</div>
+                        </div>
+                        
+                        <div class="payment-method" onclick="selectPaymentMethod('card')">
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-title">Debit/Credit Card</div>
+                            <div class="payment-desc">Visa, Mastercard, RuPay</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPI Payment Section -->
+            <div id="upi-payment" class="section">
+                <div class="card">
+                    <h2>UPI Payment</h2>
+                    
+                    <div class="summary-card" id="upi-summary">
+                        <!-- Summary will be populated -->
+                    </div>
+                    
+                    <div class="upi-id">
+                        <span>paytmqr16rldimnbx@paytm</span>
+                        <button class="copy-btn" onclick="copyUpiId()">Copy</button>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="openUpiApp()">
+                        Open UPI App & Pay
+                    </button>
+                    
+                    <div style="text-align: center; margin: 1rem 0; color: #6c757d;">
+                        <p>— OR —</p>
+                    </div>
+                    
+                    <button class="btn" onclick="showPaymentRefModal()">
+                        I Have Completed Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR Payment Section -->
+            <div id="qr-payment" class="section">
+                <div class="card">
+                    <h2>Scan QR Code</h2>
+                    
+                    <div class="summary-card" id="qr-summary">
+                        <!-- Summary will be populated -->
+                    </div>
+                    
+                    <div class="qr-section">
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem;">Scan with any UPI App</h3>
+                        <div class="qr-code" id="payment-qr-code"></div>
+                        <div class="upi-id">
+                            <span>paytmqr16rldimnbx@paytm</span>
+                            <button class="copy-btn" onclick="copyUpiId()">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="showPaymentRefModal()">
+                        I Have Completed Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Payment Section -->
+            <div id="card-payment" class="section">
+                <div class="card">
+                    <h2>Card Payment</h2>
+                    
+                    <div class="summary-card" id="card-summary">
+                        <!-- Summary will be populated -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card-number">Card Number</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="card-name">Cardholder Name</label>
+                        <input type="text" id="card-name" placeholder="Name as on card">
+                    </div>
+                    
+                    <button class="btn" onclick="processCardPayment()">
+                        <span id="card-btn-text">Proceed to Bank</span>
+                        <span id="card-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Status Section -->
+            <div id="payment-status" class="section">
+                <div class="payment-status">
+                    <div class="status-icon" id="status-icon">⏳</div>
+                    <h2 id="status-title">Payment Pending</h2>
+                    <p id="status-message">Waiting for admin approval...</p>
+                    <div class="summary-card" id="final-payment-summary"></div>
+                    <button class="btn btn-secondary" onclick="startNewPayment()">Make Another Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Reference Modal -->
+    <div id="payment-ref-modal" class="modal">
+        <div class="modal-content">
+            <h3>Enter Payment Reference</h3>
+            <div class="form-group">
+                <label for="payment-ref">Payment Reference Number</label>
+                <input type="text" id="payment-ref" placeholder="Enter transaction reference" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label for="payment-note">Additional Note (Optional)</label>
+                <textarea id="payment-note" placeholder="Any additional information" rows="2"></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closePaymentRefModal()">Cancel</button>
+                <button class="btn" onclick="submitPaymentWithRef()">Submit Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <a href="contact-us.html" class="admin-link" title="Admin Panel">📞</a>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Global variables
+        let currentSection = 'restaurant-details';
+        let sectionHistory = [];
+        let currentPayment = null;
+        let selectedPlan = null;
+        let billingCycle = 'monthly';
+
+        // Subscription plans
+        const plans = [
+            { id: 'starter', name: 'Starter', seats: '1-20 seats', price: 299, features: ['Basic POS', 'Inventory Management', 'Basic Reports'] },
+            { id: 'professional', name: 'Professional', seats: '21-50 seats', price: 399, features: ['Advanced POS', 'Inventory + Supply Chain', 'Advanced Analytics', 'Customer Management'] },
+            { id: 'business', name: 'Business', seats: '51-100 seats', price: 499, features: ['Enterprise POS', 'Multi-location Support', 'Advanced Reports', 'Staff Management', 'API Access'] },
+            { id: 'enterprise', name: 'Enterprise', seats: '101+ seats', price: 999, features: ['Custom Solutions', 'Dedicated Support', 'White-label Options', 'Advanced Integrations', 'Priority Support'] }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            populatePlans();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Card number formatting
+            document.getElementById('card-number').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                e.target.value = formattedValue;
+            });
+
+            // Expiry date formatting
+            document.getElementById('expiry').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
+
+            // CVV formatting
+            document.getElementById('cvv').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+
+            // Seat count change listener
+            document.getElementById('seat-count').addEventListener('input', function(e) {
+                if (currentSection === 'plan-selection') {
+                    highlightRecommendedPlan();
+                }
+            });
+
+            // Modal close on outside click
+            document.getElementById('payment-ref-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePaymentRefModal();
+                }
+            });
+
+            // Listen for storage changes (admin panel updates)
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'restaurant-payments' && currentPayment) {
+                    checkPaymentStatus();
+                }
+            });
+        }
+
+        function populatePlans() {
+            const planGrid = document.getElementById('plan-grid');
+            planGrid.innerHTML = '';
+
+            plans.forEach(plan => {
+                const planCard = createPlanCard(plan);
+                planGrid.appendChild(planCard);
+            });
+
+            highlightRecommendedPlan();
+        }
+
+        function createPlanCard(plan) {
+            const card = document.createElement('div');
+            card.className = 'plan-card';
+            card.onclick = () => selectPlan(plan.id);
+
+            const price = billingCycle === 'yearly' ? Math.round(plan.price * 12 * 0.85) : plan.price;
+            const originalPrice = billingCycle === 'yearly' ? plan.price * 12 : plan.price;
+            const period = billingCycle === 'yearly' ? '/year' : '/month';
+
+            card.innerHTML = `
+                <div class="plan-header">
+                    <div class="plan-name">${plan.name}</div>
+                    <div class="plan-seats">${plan.seats}</div>
+                    <div class="plan-price">₹${price}</div>
+                    <div class="plan-period">${period}</div>
+                    ${billingCycle === 'yearly' ? `<div style="text-decoration: line-through; color: #6c757d; font-size: 0.9rem;">₹${originalPrice}</div>` : ''}
+                </div>
+                <div class="plan-features">
+                    ${plan.features.map(feature => `<div style="margin-bottom: 0.5rem; color: #6c757d;">✓ ${feature}</div>`).join('')}
+                </div>
+            `;
+
+            return card;
+        }
+
+        function toggleBilling(cycle) {
+            billingCycle = cycle;
+            
+            // Update toggle UI
+            document.querySelectorAll('.billing-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Repopulate plans with new pricing
+            populatePlans();
+        }
+
+        function selectPlan(planId) {
+            selectedPlan = planId;
+            
+            // Update UI
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.plan-card').classList.add('selected');
+
+            // Enable continue button
+            document.getElementById('select-plan-btn').disabled = false;
+        }
+
+        function highlightRecommendedPlan() {
+            const seatCount = parseInt(document.getElementById('seat-count').value) || 0;
+            const recommendedDiv = document.getElementById('recommended-plan');
+            
+            let recommendedPlan = null;
+            
+            if (seatCount >= 1 && seatCount <= 20) {
+                recommendedPlan = 'Starter';
+            } else if (seatCount >= 21 && seatCount <= 50) {
+                recommendedPlan = 'Professional';
+            } else if (seatCount >= 51 && seatCount <= 100) {
+                recommendedPlan = 'Business';
+            } else if (seatCount > 100) {
+                recommendedPlan = 'Enterprise';
+            }
+            
+            if (recommendedPlan) {
+                recommendedDiv.innerHTML = `💡 Recommended: <strong>${recommendedPlan} Plan</strong> for ${seatCount} seats`;
+            } else {
+                recommendedDiv.innerHTML = '';
+            }
+        }
+
+        function proceedToPlans() {
+            const restaurantId = document.getElementById('restaurant-id').value.trim();
+            const restaurantName = document.getElementById('restaurant-name').value.trim();
+            const seatCount = document.getElementById('seat-count').value;
+            const ownerName = document.getElementById('owner-name').value.trim();
+            const ownerPhone = document.getElementById('owner-phone').value.trim();
+
+            if (!restaurantId || !restaurantName || !seatCount || !ownerName || !ownerPhone) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (parseInt(seatCount) < 1) {
+                showNotification('Seat count must be at least 1', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('proceed-btn-text').style.display = 'none';
+            document.getElementById('proceed-loading').style.display = 'inline-block';
+
+            setTimeout(() => {
+                showSection('plan-selection');
+                highlightRecommendedPlan();
+                
+                // Hide loading
+                document.getElementById('proceed-btn-text').style.display = 'inline';
+                document.getElementById('proceed-loading').style.display = 'none';
+            }, 1000);
+        }
+
+        function proceedToPayment() {
+            if (!selectedPlan) {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+
+            showSection('payment-summary');
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const plan = plans.find(p => p.id === selectedPlan);
+            const seatCount = document.getElementById('seat-count').value;
+            const restaurantName = document.getElementById('restaurant-name').value;
+            
+            const monthlyPrice = plan.price;
+            const yearlyPrice = Math.round(plan.price * 12 * 0.85);
+            const originalYearlyPrice = plan.price * 12;
+            
+            const finalPrice = billingCycle === 'yearly' ? yearlyPrice : monthlyPrice;
+            const savings = billingCycle === 'yearly' ? (originalYearlyPrice - yearlyPrice) : 0;
+
+            const summaryHTML = `
+                <div class="summary-row">
+                    <span class="summary-label">Restaurant:</span>
+                    <span class="summary-value">${restaurantName}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Plan:</span>
+                    <span class="summary-value">${plan.name} (${plan.seats})</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Billing:</span>
+                    <span class="summary-value">${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}</span>
+                </div>
+                ${savings > 0 ? `
+                <div class="summary-row">
+                    <span class="summary-label">You Save:</span>
+                    <span class="summary-value" style="color: #28a745;">₹${savings}</span>
+                </div>
+                ` : ''}
+                <div class="summary-row">
+                    <span class="summary-label">Total Amount:</span>
+                    <span class="summary-value">₹${finalPrice}</span>
+                </div>
+            `;
+
+            document.getElementById('order-summary').innerHTML = summaryHTML;
+        }
+
+        function proceedToPaymentMethod() {
+            // Create payment object
+            const plan = plans.find(p => p.id === selectedPlan);
+            const monthlyPrice = plan.price;
+            const yearlyPrice = Math.round(plan.price * 12 * 0.85);
+            const finalPrice = billingCycle === 'yearly' ? yearlyPrice : monthlyPrice;
+            
+            currentPayment = {
+                id: generatePaymentId(),
+                restaurantId: document.getElementById('restaurant-id').value.trim(),
+                restaurantName: document.getElementById('restaurant-name').value.trim(),
+                seatCount: document.getElementById('seat-count').value,
+                ownerName: document.getElementById('owner-name').value.trim(),
+                ownerPhone: document.getElementById('owner-phone').value.trim(),
+                planId: selectedPlan,
+                planName: plan.name,
+                billingCycle: billingCycle,
+                amount: finalPrice,
+                originalAmount: billingCycle === 'yearly' ? plan.price * 12 : plan.price,
+                discount: billingCycle === 'yearly' ? 15 : 0,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                method: null
+            };
+
+            showSection('payment-methods');
+        }
+
+        function selectPaymentMethod(method) {
+            currentPayment.method = method;
+            
+            // Update UI
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.closest('.payment-method').classList.add('selected');
+
+            setTimeout(() => {
+                if (method === 'upi') {
+                    showUpiPayment();
+                } else if (method === 'qr') {
+                    showQrPayment();
+                } else if (method === 'card') {
+                    showCardPayment();
+                }
+            }, 500);
+        }
+
+        function showUpiPayment() {
+            updatePaymentSummary('upi-summary');
+            showSection('upi-payment');
+        }
+
+        function showQrPayment() {
+            updatePaymentSummary('qr-summary');
+            generateQRCode();
+            showSection('qr-payment');
+        }
+
+        function showCardPayment() {
+            updatePaymentSummary('card-summary');
+            showSection('card-payment');
+        }
+
+        function updatePaymentSummary(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="summary-row">
+                    <span class="summary-label">Payment ID:</span>
+                    <span class="summary-value">${currentPayment.id}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Restaurant:</span>
+                    <span class="summary-value">${currentPayment.restaurantName}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Plan:</span>
+                    <span class="summary-value">${currentPayment.planName} (${billingCycle})</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Total Amount:</span>
+                    <span class="summary-value">₹${currentPayment.amount}</span>
+                </div>
+            `;
+        }
+
+        function generateQRCode() {
+            try {
+                const upiString = `upi://pay?pa=paytmqr16rldimnbx@paytm&pn=RestaurantPay&am=${currentPayment.amount}&cu=INR&tn=${encodeURIComponent(currentPayment.planName + ' - ' + currentPayment.restaurantName)}`;
+                
+                const container = document.getElementById('payment-qr-code');
+                container.innerHTML = '';
+                
+                const canvas = document.createElement('canvas');
+                container.appendChild(canvas);
+                
+                QRCode.toCanvas(canvas, upiString, {
+                    width: 200,
+                    height: 200,
+                    color: {
+                        dark: '#2c3e50',
+                        light: '#ffffff'
+                    },
+                    margin: 2,
+                    scale: 8
+                }, function (error) {
+                    if (error) {
+                        console.error('QR Code generation error:', error);
+                        container.innerHTML = `
+                            <div style="padding: 2rem; background: #f8d7da; color: #721c24; border-radius: 1rem;">
+                                <p><strong>QR Code Error</strong></p>
+                                <p>Unable to generate QR code. Please use UPI ID instead.</p>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error('QR Code library error:', error);
+                const container = document.getElementById('payment-qr-code');
+                container.innerHTML = `
+                    <div style="padding: 2rem; background: #f8d7da; color: #721c24; border-radius: 1rem;">
+                        <p><strong>QR Code Unavailable</strong></p>
+                        <p>Please copy the UPI ID and pay manually through your UPI app.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function copyUpiId() {
+            const upiId = 'paytmqr16rldimnbx@paytm';
+            navigator.clipboard.writeText(upiId).then(() => {
+                showNotification('UPI ID copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = upiId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('UPI ID copied to clipboard!', 'success');
+            });
+        }
+
+        function openUpiApp() {
+            const upiString = `upi://pay?pa=paytmqr16rldimnbx@paytm&pn=RestaurantPay&am=${currentPayment.amount}&cu=INR&tn=${encodeURIComponent(currentPayment.planName + ' - ' + currentPayment.restaurantName)}`;
+            
+            try {
+                window.open(upiString, '_blank');
+            } catch (error) {
+                console.log('UPI app redirect failed:', error);
+            }
+            
+            setTimeout(() => {
+                showNotification('If UPI app didn\'t open, please copy the UPI ID and pay manually', 'info');
+            }, 2000);
+        }
+
+        function processCardPayment() {
+            const cardNumber = document.getElementById('card-number').value;
+            const expiry = document.getElementById('expiry').value;
+            const cvv = document.getElementById('cvv').value;
+            const cardName = document.getElementById('card-name').value;
+
+            if (!cardNumber || !expiry || !cvv || !cardName) {
+                showNotification('Please fill in all card details', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('card-btn-text').style.display = 'none';
+            document.getElementById('card-loading').style.display = 'inline-block';
+
+            setTimeout(() => {
+                currentPayment.cardDetails = {
+                    last4: cardNumber.slice(-4),
+                    cardName: cardName
+                };
+                
+                showNotification('Redirecting to bank...', 'info');
+                
+                setTimeout(() => {
+                    document.getElementById('card-btn-text').style.display = 'inline';
+                    document.getElementById('card-loading').style.display = 'none';
+                    showPaymentRefModal();
+                }, 2000);
+                
+            }, 1500);
+        }
+
+        function showPaymentRefModal() {
+            document.getElementById('payment-ref-modal').classList.add('show');
+        }
+
+        function closePaymentRefModal() {
+            document.getElementById('payment-ref-modal').classList.remove('show');
+        }
+
+        function submitPaymentWithRef() {
+            const paymentRef = document.getElementById('payment-ref').value.trim();
+            const paymentNote = document.getElementById('payment-note').value.trim();
+
+            if (!paymentRef) {
+                showNotification('Please enter payment reference number', 'error');
+                return;
+            }
+
+            currentPayment.paymentReference = paymentRef;
+            currentPayment.paymentNote = paymentNote;
+            currentPayment.submittedAt = new Date().toISOString();
+
+            markAsPaid();
+            closePaymentRefModal();
+        }
+
+        function markAsPaid() {
+            if (!currentPayment) return;
+
+            // Save payment to localStorage
+            const payments = JSON.parse(localStorage.getItem('restaurant-payments') || '[]');
+            payments.unshift(currentPayment);
+            localStorage.setItem('restaurant-payments', JSON.stringify(payments));
+
+            // Show payment status
+            showPaymentStatus();
+            showNotification('Payment submitted for verification!', 'success');
+
+            // Start checking for status updates
+            checkPaymentStatus();
+        }
+
+        function showPaymentStatus() {
+            updateFinalSummary();
+            showSection('payment-status');
+        }
+
+        function updateFinalSummary() {
+            const element = document.getElementById('final-payment-summary');
+            let summaryHTML = `
+                <div class="summary-row">
+                    <span class="summary-label">Payment ID:</span>
+                    <span class="summary-value">${currentPayment.id}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Restaurant:</span>
+                    <span class="summary-value">${currentPayment.restaurantName}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Plan:</span>
+                    <span class="summary-value">${currentPayment.planName}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Billing:</span>
+                    <span class="summary-value">${currentPayment.billingCycle}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Method:</span>
+                    <span class="summary-value">${currentPayment.method.toUpperCase()}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Status:</span>
+                    <span class="summary-value">${currentPayment.status.toUpperCase()}</span>
+                </div>
+            `;
+
+            if (currentPayment.paymentReference) {
+                summaryHTML += `
+                    <div class="summary-row">
+                        <span class="summary-label">Reference:</span>
+                        <span class="summary-value">${currentPayment.paymentReference}</span>
+                    </div>
+                `;
+            }
+
+            summaryHTML += `
+                <div class="summary-row">
+                    <span class="summary-label">Total Amount:</span>
+                    <span class="summary-value">₹${currentPayment.amount}</span>
+                </div>
+            `;
+
+            element.innerHTML = summaryHTML;
+        }
+
+        function checkPaymentStatus() {
+            if (!currentPayment) return;
+
+            const payments = JSON.parse(localStorage.getItem('restaurant-payments') || '[]');
+            const updatedPayment = payments.find(p => p.id === currentPayment.id);
+
+            if (updatedPayment && updatedPayment.status !== currentPayment.status) {
+                currentPayment = updatedPayment;
+                
+                const statusIcon = document.getElementById('status-icon');
+                const statusTitle = document.getElementById('status-title');
+                const statusMessage = document.getElementById('status-message');
+
+                if (currentPayment.status === 'approved') {
+                    statusIcon.textContent = '✅';
+                    statusIcon.className = 'status-icon status-success';
+                    statusTitle.textContent = 'Payment Successful!';
+                    statusMessage.textContent = 'Your subscription has been activated successfully. please contact 6003252577 for further assistance.';
+                    showNotification('Payment approved successfully!', 'success');
+                } else if (currentPayment.status === 'declined') {
+                    statusIcon.textContent = '❌';
+                    statusIcon.className = 'status-icon status-failed';
+                    statusTitle.textContent = 'Payment Failed';
+                    statusMessage.textContent = 'Your payment was declined. Please try again or contact support.';
+                    showNotification('Payment was declined', 'error');
+                }
+
+                updateFinalSummary();
+            }
+
+            // Continue checking if still pending
+            if (currentPayment.status === 'pending') {
+                setTimeout(checkPaymentStatus, 3000);
+            }
+        }
+
+        function showSection(sectionName) {
+            // Add current section to history
+            if (currentSection !== sectionName) {
+                sectionHistory.push(currentSection);
+            }
+
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show target section
+            document.getElementById(sectionName).classList.add('active');
+            currentSection = sectionName;
+
+            // Show/hide back button
+            const backButton = document.getElementById('back-button');
+            if (sectionName !== 'restaurant-details') {
+                backButton.classList.add('show');
+            } else {
+                backButton.classList.remove('show');
+                sectionHistory = [];
+            }
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            if (sectionHistory.length > 0) {
+                const previousSection = sectionHistory.pop();
+                
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                // Show previous section
+                document.getElementById(previousSection).classList.add('active');
+                currentSection = previousSection;
+
+                // Hide back button if we're back to the first section
+                if (previousSection === 'restaurant-details') {
+                    document.getElementById('back-button').classList.remove('show');
+                    sectionHistory = [];
+                }
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function startNewPayment() {
+            currentPayment = null;
+            selectedPlan = null;
+            billingCycle = 'monthly';
+            sectionHistory = [];
+            
+            // Clear all form fields
+            document.getElementById('restaurant-id').value = '';
+            document.getElementById('restaurant-name').value = '';
+            document.getElementById('seat-count').value = '';
+            document.getElementById('owner-name').value = '';
+            document.getElementById('owner-phone').value = '';
+            document.getElementById('payment-ref').value = '';
+            document.getElementById('payment-note').value = '';
+            document.getElementById('card-number').value = '';
+            document.getElementById('expiry').value = '';
+            document.getElementById('cvv').value = '';
+            document.getElementById('card-name').value = '';
+            
+            // Reset billing toggle
+            document.querySelectorAll('.billing-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector('.billing-option').classList.add('active');
+            
+            // Disable select plan button
+            document.getElementById('select-plan-btn').disabled = true;
+            
+            // Reset plan selection
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Reset payment method selection
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            
+            populatePlans();
+            showSection('restaurant-details');
+        }
+
+        function generatePaymentId() {
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substr(2, 6);
+            return `RP${timestamp}${random}`.toUpperCase();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

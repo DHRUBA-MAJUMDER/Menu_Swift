@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title >QR Code Generator — MenuSwift</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+
+  <style>
+    body { background: linear-gradient(180deg,#f8fafc,#eef2ff); }
+    .card { backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); border-radius: 16px; box-shadow: 0 10px 35px rgba(15,23,42,0.08); }
+    .qr-preview { width: 100%; max-width: 360px; height: auto; display:block; margin: 0 auto; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .ghost { background: transparent; border: 1px solid rgba(15,23,42,0.08); transition: all .2s; }
+    .ghost:hover { background: rgba(15,23,42,0.03); }
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+    button { transition: all .25s; }
+    button:hover { transform: scale(1.03); }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+  <div class="w-full max-w-3xl card p-8 fade-in">
+    <header class="mb-6 text-center">
+      <h1 class="text-3xl font-extrabold text-slate-800">QR Code Generator by MenuSwift</h1>
+      <p class="text-sm text-slate-600 mt-1">Paste a URL or text, generate a stylish QR code and download it.</p>
+    </header>
+
+    <div class="grid gap-4 sm:grid-cols-3 items-end">
+      <div class="sm:col-span-2">
+        <label class="text-sm font-medium text-slate-700">URL or text</label>
+        <input id="inputText" type="url" placeholder="https://example.com or any text"
+          class="mt-2 w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        />
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-slate-700">Size (px)</label>
+        <input id="sizeInput" type="number" min="128" max="1200" value="360"
+          class="mt-2 w-full p-3 rounded-lg border border-slate-200 focus:outline-none" />
+      </div>
+
+      <div class="sm:col-span-1">
+        <label class="text-sm font-medium text-slate-700">Error Correction</label>
+        <select id="ecLevel" class="mt-2 w-full p-3 rounded-lg border border-slate-200">
+          <option value="M" selected>M (Medium)</option>
+          <option value="L">L (Low)</option>
+          <option value="Q">Q (Quartile)</option>
+          <option value="H">H (High)</option>
+        </select>
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="text-sm font-medium text-slate-700">Filename</label>
+        <input id="fileName" type="text" value="qrcode.png"
+          class="mt-2 w-full p-3 rounded-lg border border-slate-200" />
+      </div>
+
+      <div class="flex gap-2 sm:col-span-1">
+        <button id="generateBtn" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold shadow hover:bg-indigo-700">Generate</button>
+        <button id="clearBtn" class="w-full py-3 border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50">Clear</button>
+      </div>
+    </div>
+
+    <section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <div class="p-6 rounded-xl border border-slate-100 bg-white text-center">
+        <div id="qrContainer" class="mx-auto">
+          <canvas id="qrCanvas" class="qr-preview mx-auto hidden"></canvas>
+          <img id="qrImg" class="qr-preview hidden" alt="QR preview" />
+        </div>
+
+        <div id="infoText" class="text-sm text-slate-600 mt-4">No QR code yet — paste a URL and click <strong>Generate</strong>.</div>
+
+        <div class="mt-4 flex gap-2 justify-center">
+          <button id="downloadBtn" class="ghost px-4 py-2 rounded-lg text-slate-700" disabled>⬇ Download PNG</button>
+          <button id="copyBtn" class="ghost px-4 py-2 rounded-lg text-slate-700" disabled>📋 Copy Image URL</button>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-xl border border-slate-100 bg-white">
+        <h3 class="font-semibold text-slate-800">Preview Options</h3>
+        <ul class="mt-3 text-sm text-slate-600 space-y-2">
+          <li>• Use any URL or short text.</li>
+          <li>• Increase size for printing (300–1200 px).</li>
+          <li>• Higher error correction (H) makes QR resilient but larger.</li>
+        </ul>
+
+        <hr class="my-4" />
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Advanced: Fill color</label>
+          <div class="flex gap-2">
+            <input id="fgColor" type="color" value="#000000" class="w-14 h-10 p-0 border rounded" />
+            <input id="bgColor" type="color" value="#ffffff" class="w-14 h-10 p-0 border rounded" />
+            <button id="regenColors" class="ml-2 px-3 py-2 bg-slate-50 border rounded hover:bg-slate-100">Apply</button>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Quick actions</label>
+          <div class="flex flex-col gap-2">
+            <button id="openInNew" class="w-full py-2 rounded-lg border border-slate-200 hover:bg-slate-50">Open URL in new tab</button>
+            <button id="downloadSVG" class="w-full py-2 rounded-lg border border-slate-200 hover:bg-slate-50">Download SVG</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-xs text-slate-500 text-center">Built with ❤ —menuswift.</footer>
+  </div>
+
+  <script>
+    const inputText = document.getElementById('inputText');
+    const sizeInput = document.getElementById('sizeInput');
+    const ecLevel = document.getElementById('ecLevel');
+    const fileName = document.getElementById('fileName');
+    const fgColor = document.getElementById('fgColor');
+    const bgColor = document.getElementById('bgColor');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const regenColors = document.getElementById('regenColors');
+    const qrCanvas = document.getElementById('qrCanvas');
+    const qrImg = document.getElementById('qrImg');
+    const infoText = document.getElementById('infoText');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const openInNew = document.getElementById('openInNew');
+    const downloadSVG = document.getElementById('downloadSVG');
+
+    let lastDataURL = null;
+    let lastSVG = null;
+    let lastInput = '';
+
+    function setInfo(text) { infoText.textContent = text; }
+
+    async function generateQRCode() {
+      const text = inputText.value.trim();
+      if (!text) { alert('Please enter a URL or text to convert.'); return; }
+      const size = Math.min(Math.max(parseInt(sizeInput.value) || 360, 128), 1200);
+      const level = ecLevel.value || 'M';
+      const colorDark = fgColor.value || '#000000';
+      const colorLight = bgColor.value || '#ffffff';
+
+      setInfo('Generating QR code...');
+
+      qrCanvas.style.display = 'block';
+      qrImg.style.display = 'none';
+
+      try {
+        await QRCode.toCanvas(qrCanvas, text, {
+          width: size,
+          errorCorrectionLevel: level,
+          color: { dark: colorDark, light: colorLight }
+        });
+
+        lastDataURL = qrCanvas.toDataURL('image/png');
+        qrImg.src = lastDataURL;
+        qrImg.style.display = 'block';
+
+        lastSVG = await QRCode.toString(text, { type: 'svg', errorCorrectionLevel: level, width: size });
+
+        lastInput = text;
+        setInfo('QR code ready. You can download or copy it.');
+        downloadBtn.disabled = false;
+        copyBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        setInfo('Failed to generate QR. Check console.');
+      }
+    }
+
+    generateBtn.addEventListener('click', generateQRCode);
+
+    clearBtn.addEventListener('click', () => {
+      inputText.value = '';
+      qrCanvas.style.display = 'none';
+      qrImg.style.display = 'none';
+      downloadBtn.disabled = true;
+      copyBtn.disabled = true;
+      setInfo('Cleared. Paste a URL and click Generate.');
+    });
+
+    regenColors.addEventListener('click', () => { if (lastInput) generateQRCode(); });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!lastDataURL) return;
+      const a = document.createElement('a');
+      a.href = lastDataURL;
+      a.download = (fileName.value && fileName.value.trim()) || 'qrcode.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastDataURL) return;
+      try { await navigator.clipboard.writeText(lastDataURL); setInfo('Image data URL copied.'); }
+      catch { alert('Copy failed — download instead.'); }
+    });
+
+    openInNew.addEventListener('click', () => {
+      const t = inputText.value.trim();
+      if (!t) return alert('Enter a URL first');
+      try { window.open(new URL(t).href, '_blank'); }
+      catch { if (confirm('Not a valid URL. Open as text?')) window.open('about:blank').document.write(encodeURIComponent(t)); }
+    });
+
+    downloadSVG.addEventListener('click', () => {
+      if (!lastSVG) return alert('Generate a QR first.');
+      const blob = new Blob([lastSVG], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (fileName.value?.trim().replace(/\.(png|jpg|jpeg)$/i, '') || 'qrcode') + '.svg';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    inputText.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); generateQRCode(); } });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waiter Panel - MenuSwift</title>
+   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Enhanced Animations */
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInFromLeft {
+      0% { opacity: 0; transform: translateX(-30px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes scaleIn {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+
+    @keyframes slideDown {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      0% { opacity: 0; transform: translateY(100%); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInFromBottom {
+      0% { transform: translateY(100%); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideOutToBottom {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100%); opacity: 0; }
+    }
+
+    /* Animation Classes */
+    .fade-in-up { animation: fadeInUp 0.6s ease-out; }
+    .slide-in-left { animation: slideInFromLeft 0.5s ease-out; }
+    .scale-in { animation: scaleIn 0.4s ease-out; }
+    .pulse-anim { animation: pulse 2s ease-in-out infinite; }
+    .slide-down { animation: slideDown 0.3s ease-out; }
+    .slide-up { animation: slideUp 0.4s ease-out; }
+    .slide-in-bottom { animation: slideInFromBottom 0.3s ease-out; }
+    .slide-out-bottom { animation: slideOutToBottom 0.3s ease-out; }
+
+    /* Loading Spinner */
+    .loading-spinner { 
+      border: 3px solid rgba(59, 130, 246, 0.1);
+      border-top: 3px solid #3B82F6; 
+      border-radius: 50%; 
+      width: 32px; 
+      height: 32px; 
+      animation: spin 1s linear infinite; 
+    }
+
+    /* Modern Glass Effect */
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Professional Waiter Interface Colors */
+    .waiter-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      min-height: 100vh;
+    }
+
+    .waiter-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .waiter-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .waiter-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .waiter-card:hover::before {
+      opacity: 1;
+    }
+
+    /* Menu Item Cards */
+    .menu-item-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .menu-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .menu-item-card:hover::before {
+      opacity: 1;
+    }
+
+    /* Professional Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      min-height: 44px; /* Touch-friendly size */
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      min-height: 44px; /* Touch-friendly size */
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+      min-height: 44px; /* Touch-friendly size */
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Form Elements */
+    .waiter-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      color: white;
+      min-height: 44px; /* Touch-friendly size */
+    }
+
+    .waiter-input:focus {
+      background: rgba(15, 23, 42, 0.8);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+
+    .waiter-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Cart Summary Sidebar */
+    .cart-sidebar {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: calc(100vh - 140px);
+      position: sticky;
+      top: 20px;
+    }
+
+    /* Veg/Non-veg indicators */
+    .veg-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .veg-label.veg {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .veg-label.nonveg {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    .veg-label.drinks {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+
+    /* Price badges */
+    .price-badge {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Responsive Grid */
+    .menu-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+
+    /* Cart Item Styling */
+    .cart-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .cart-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateX(4px);
+    }
+
+    /* Order Type Toggle */
+    .order-type-toggle {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 6px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .order-type-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid transparent;
+      min-height: 44px; /* Touch-friendly size */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .order-type-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .mobile-order-type-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid transparent;
+      min-height: 44px; /* Touch-friendly size */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-order-type-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Success Animation */
+    @keyframes successPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .success-pulse {
+      animation: successPulse 0.6s ease-out;
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1000;
+      max-width: 400px;
+      transform: translateX(120%);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    /* Activity Status */
+    .activity-status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      z-index: 50;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Category Filter Buttons */
+    .cat-btn {
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-height: 44px; /* Touch-friendly size */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cat-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .cat-btn.active {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border-color: #3b82f6;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+    }
+
+    /* Better Login Modal Styling */
+    .login-modal {
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+    }
+
+    .login-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      color: white;
+      transition: all 0.3s ease;
+      min-height: 48px; /* Touch-friendly size */
+    }
+
+    .login-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      outline: none;
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .login-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Enhanced Search Bar */
+    .search-container {
+      position: relative;
+    }
+
+    .search-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      padding: 2px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 12px;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .search-container:focus-within::before {
+      opacity: 1;
+    }
+
+    /* MOBILE RESPONSIVE STYLES */
+    @media (max-width: 768px) {
+      /* Base mobile layout adjustments */
+      body {
+        padding-bottom: 100px; /* Space for mobile cart button */
+        overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+      
+      /* Hide desktop cart sidebar on mobile */
+      .cart-sidebar {
+        display: none !important;
+      }
+      
+      /* Hide desktop-only elements */
+      .desktop-only {
+        display: none !important;
+      }
+
+      /* Mobile header adjustments */
+      .max-w-7xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      /* Mobile card adjustments */
+      .waiter-card {
+        margin: 0;
+        border-radius: 1rem;
+        padding: 1rem;
+      }
+
+      .menu-item-card {
+        border-radius: 1rem;
+      }
+
+      /* Mobile button sizing */
+      .btn-primary, .btn-success, .btn-danger {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        min-height: 48px;
+        border-radius: 12px;
+      }
+
+      /* Mobile form inputs */
+      .waiter-input {
+        padding: 12px 16px;
+        font-size: 16px; /* Prevent zoom on iOS */
+        border-radius: 12px;
+        min-height: 48px;
+      }
+
+      /* Mobile category buttons */
+      .cat-btn {
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        border-radius: 10px;
+        min-height: 44px;
+      }
+
+      /* Mobile search container */
+      .search-container input {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px 12px 12px 40px;
+        border-radius: 12px;
+      }
+
+      /* Mobile order type toggle */
+      .order-type-toggle {
+        padding: 4px;
+        border-radius: 10px;
+      }
+
+      .order-type-btn, .mobile-order-type-btn {
+        padding: 10px 12px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        min-height: 44px;
+      }
+
+      /* Mobile cart button styling */
+      .mobile-cart-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 50;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        animation: none; /* Remove auto-pulse */
+      }
+
+      /* Mobile cart badge */
+      .mobile-cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 50px;
+        min-width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #1e293b;
+      }
+
+      /* Mobile modal styling - FIXED */
+      .mobile-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+        visibility: hidden;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .mobile-modal.show {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .mobile-modal-content {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: 85vh;
+        overflow-y: auto;
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .mobile-modal.show .mobile-modal-content {
+        transform: translateY(0);
+      }
+
+      /* Mobile cart items */
+      .cart-item {
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+      }
+
+      /* Mobile notification positioning */
+      .notification {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        max-width: none;
+        transform: translateY(-120%);
+      }
+
+      .notification.show {
+        transform: translateY(0);
+      }
+
+      /* Mobile activity status */
+      .activity-status {
+        bottom: 100px;
+        left: 20px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+      }
+
+      /* IMPROVED MOBILE MENU ITEM IMAGE SIZING */
+      .menu-item-card img {
+        width: 80px !important;
+        height: 80px !important;
+        object-fit: cover;
+        border-radius: 12px;
+        flex-shrink: 0;
+      }
+
+      /* Mobile menu item layout improvements */
+      .menu-item-card .flex {
+        gap: 1rem;
+      }
+
+      /* Mobile price badge */
+      .price-badge {
+        padding: 6px 10px;
+        font-size: 0.875rem;
+        border-radius: 8px;
+      }
+
+      /* Mobile veg label */
+      .veg-label {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        border-radius: 6px;
+      }
+
+      /* Mobile login modal */
+      .login-modal {
+        padding: 1rem;
+      }
+
+      .login-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .login-input {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevent zoom on iOS */
+        border-radius: 12px;
+        min-height: 50px;
+      }
+
+      /* Mobile header */
+      #mainHeader .flex {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      #mainHeader .flex > div:first-child {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      #mainHeader .flex > div:last-child {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      /* Mobile main content */
+      #mainContent {
+        padding: 1rem;
+        margin-bottom: 80px; /* Space for mobile cart button */
+      }
+
+      /* Mobile grid layout adjustments */
+      .grid.grid-cols-1.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      /* Ensure touch targets are large enough */
+      button, input, select, textarea {
+        min-height: 44px;
+      }
+
+      /* Mobile quantity and plate selectors */
+      .menu-item-card select {
+        padding: 10px 12px;
+        font-size: 14px;
+        border-radius: 10px;
+        min-height: 44px;
+        min-width: 80px;
+      }
+
+      /* Mobile add to cart button */
+      .menu-item-card .btn-success {
+        padding: 10px 16px;
+        font-size: 0.875rem;
+        min-height: 44px;
+        border-radius: 10px;
+        white-space: nowrap;
+      }
+
+      /* Mobile controls layout improvement */
+      .menu-item-card .flex.items-center.justify-between {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .menu-item-card .flex.items-center.gap-2 {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Mobile spacing improvements */
+      .space-y-6 > * + * {
+        margin-top: 1rem !important;
+      }
+
+      .space-y-4 > * + * {
+        margin-top: 0.75rem !important;
+      }
+
+      .space-y-3 > * + * {
+        margin-top: 0.5rem !important;
+      }
+
+      /* Mobile modal backdrop click fix */
+      .mobile-modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+      }
+    }
+
+    /* Extra small mobile devices */
+    @media (max-width: 480px) {
+      /* Further mobile optimizations for very small screens */
+      .mobile-modal-content {
+        padding: 1rem;
+        max-height: 90vh;
+      }
+
+      .login-card {
+        padding: 1.5rem 1rem;
+      }
+
+      .menu-item-card {
+        margin: 0;
+      }
+
+      .menu-item-card img {
+        width: 70px !important;
+        height: 70px !important;
+      }
+
+      .waiter-card {
+        margin: 0;
+        padding: 0.75rem;
+      }
+
+      /* Smaller mobile cart button */
+      .mobile-cart-btn {
+        width: 56px;
+        height: 56px;
+        bottom: 16px;
+        right: 16px;
+      }
+
+      .mobile-cart-badge {
+        top: -6px;
+        right: -6px;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        min-width: 20px;
+        height: 20px;
+      }
+
+      /* Smaller activity status */
+      .activity-status {
+        bottom: 90px;
+        left: 16px;
+        padding: 4px 8px;
+        font-size: 0.7rem;
+      }
+
+      /* Smaller notification */
+      .notification {
+        top: 8px;
+        right: 8px;
+        left: 8px;
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      /* Mobile controls for very small screens */
+      .menu-item-card select {
+        min-width: 70px;
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+
+      .menu-item-card .btn-success {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Show mobile-only elements on mobile */
+    @media (max-width: 768px) {
+      .mobile-only {
+        display: block !important;
+      }
+
+      .mobile-cart-btn {
+        display: flex !important;
+      }
+    }
+
+    /* Hide mobile elements on desktop */
+    @media (min-width: 769px) {
+      .mobile-only {
+        display: none !important;
+      }
+
+      .mobile-cart-btn {
+        display: none !important;
+      }
+
+      .mobile-modal {
+        display: none !important;
+      }
+
+      /* Desktop menu item images */
+      .menu-item-card img {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+    }
+
+    /* Tablet responsive adjustments */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .menu-item-card img {
+        width: 72px;
+        height: 72px;
+      }
+
+      .menu-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body class="waiter-bg text-white">
+  
+  <!-- Waiter Login Modal -->
+  <div id="waiterLoginModal" class="login-modal fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="login-card p-8 rounded-3xl shadow-2xl max-w-md w-full">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <h2 class="text-3xl font-bold mb-4 text-white">Waiter Login</h2>
+        <p class="text-gray-300 leading-relaxed">Enter your credentials to access the waiter panel</p>
+      </div>
+      
+      <div id="loginForm" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+          <input 
+            id="usernameInput" 
+            type="text" 
+            placeholder="Enter your username"
+            class="login-input w-full px-4 py-3 rounded-xl"
+            required
+          >
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+          <input 
+            id="passwordInput" 
+            type="password" 
+            placeholder="Enter your password"
+            class="login-input w-full px-4 py-3 rounded-xl"
+            required
+          >
+        </div>
+        
+        <button 
+          id="loginBtn" 
+          onclick="authenticateWaiter()"
+          class="btn-primary w-full text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg"
+        >
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+            </svg>
+            Login to Panel
+          </span>
+        </button>
+        
+        <div id="loginError" class="text-red-400 text-sm text-center hidden bg-red-500/10 border border-red-500/30 rounded-lg p-3"></div>
+      </div>
+      
+      <div id="loginLoading" class="text-center hidden">
+        <div class="loading-spinner mx-auto mb-4"></div>
+        <p class="text-gray-300">Verifying credentials...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Status Indicator -->
+  <div id="activityStatus" class="activity-status hidden">
+    <span class="flex items-center gap-2">
+      <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+      Online - Active
+    </span>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div id="toastContainer" class="fixed top-6 right-6 z-50 space-y-4"></div>
+
+  <!-- Header (Hidden until login) -->
+  <header class="glass-effect border-b border-white/10 sticky top-0 z-30 shadow-lg hidden" id="mainHeader">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h1 id="restaurantName" class="text-lg sm:text-xl font-bold text-white truncate">Waiter Panel</h1>
+            <div class="text-sm text-blue-200">
+              <span class="inline-flex items-center gap-1">
+                <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
+                </svg>
+                <span id="waiterNameDisplay" class="truncate">Order Management System</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Mobile Cart Button -->
+          <button id="mobileCartToggle" class="mobile-only btn-primary text-white px-3 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5-5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
+            </svg>
+            <span>Cart</span>
+            <span id="mobileCartCount" class="mobile-cart-badge">0</span>
+          </button>
+          
+          <button id="clearAllBtn" class="btn-danger text-white px-3 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            <span class="hidden sm:inline">Clear All</span>
+          </button>
+          
+          <!-- Logout Button -->
+          <button id="logoutBtn" onclick="logoutWaiter()" class="btn-danger text-white px-3 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span class="hidden sm:inline">Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="mainContent" class="max-w-7xl mx-auto p-4 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Menu Items Section (Left 2/3) -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Search and Filters -->
+        <div class="waiter-card p-4 sm:p-6 rounded-2xl shadow-lg">
+          <div class="flex flex-col gap-4">
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+                <input 
+                  id="searchInput" 
+                  type="text" 
+                  placeholder="🔍 Search dishes, categories..." 
+                  class="waiter-input w-full pl-10 pr-4 py-3 rounded-xl"
+                  oninput="applyFilters()"
+                >
+              </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="flex flex-wrap gap-2" id="categoriesContainer">
+              <button data-cat="all" class="cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white shadow-md active">All Items</button>
+              <button data-cat="drinks" class="cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-600 text-white">🥤 Drinks</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu Items Grid -->
+        <div id="menuGrid" class="menu-grid"></div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+          <div class="waiter-card p-8 max-w-md mx-auto shadow-lg">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <h3 class="text-xl font-semibold text-white mb-2">Loading Menu</h3>
+            <p class="text-gray-300">Preparing menu items...</p>
+          </div>
+        </div>
+
+        <!-- Empty Menu State -->
+        <div id="emptyMenu" class="text-center py-12 hidden">
+          <div class="waiter-card p-8 max-w-md mx-auto shadow-lg">
+            <div class="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-white mb-2">Menu Loading</h3>
+            <p class="text-gray-300">Menu items will appear here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Summary Sidebar (Right 1/3) -->
+      <div class="lg:col-span-1 desktop-only">
+        <div class="cart-sidebar p-6 rounded-2xl shadow-lg">
+          
+          <!-- Customer Details Form -->
+          <div class="mb-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Customer Details
+            </h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Customer Name</label>
+                <input 
+                  id="customerName" 
+                  type="text" 
+                  placeholder="Enter customer name..."
+                  class="waiter-input w-full px-4 py-3 rounded-xl"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Table Number</label>
+                <input 
+                  id="tableNumber" 
+                  type="text" 
+                  placeholder="e.g., T-1, Table 5..."
+                  class="waiter-input w-full px-4 py-3 rounded-xl"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Order Type</label>
+                <div class="order-type-toggle">
+                  <button class="order-type-btn active" data-type="dine-in">🏪 Dine-In</button>
+                  <button class="order-type-btn" data-type="takeaway">📦 Takeaway</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cart Items -->
+          <div class="mb-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5-5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
+                </svg>
+                Order Summary
+              </span>
+              <span id="cartCount" class="bg-blue-500 text-white text-sm font-bold px-2 py-1 rounded-full min-w-[24px] h-6 flex items-center justify-center">0</span>
+            </h3>
+            
+            <div id="cartItems" class="space-y-3 max-h-96 overflow-y-auto">
+              <div class="text-center py-8 text-gray-400">
+                <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5-5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
+                </svg>
+                <p>No items in cart</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cart Total and Actions -->
+          <div class="border-t border-gray-600 pt-4">
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-lg font-bold text-white">Total:</span>
+              <span id="cartTotal" class="text-2xl font-bold text-green-400">₹0</span>
+            </div>
+            
+            <button 
+              id="placeOrderBtn" 
+              class="btn-success w-full text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg"
+              onclick="placeOrder()"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                Place Order
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Cart Button -->
+  <button id="mobileCartBtn" class="mobile-cart-btn mobile-only btn-primary hidden">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5-5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
+    </svg>
+    <span id="mobileCartBadge" class="mobile-cart-badge hidden">0</span>
+  </button>
+
+  <!-- Mobile Order Summary Modal -->
+  <div id="mobileOrderModal" class="mobile-only mobile-modal">
+    <div class="mobile-modal-backdrop" onclick="closeMobileCart()"></div>
+    <div class="mobile-modal-content">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-white">Order Details</h3>
+        <button id="closeMobileModal" class="text-gray-400 hover:text-white p-2 -m-2 rounded-lg transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Mobile Customer Details -->
+      <div class="mb-6">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Customer Name</label>
+            <input 
+              id="mobileCustomerName" 
+              type="text" 
+              placeholder="Enter customer name..."
+              class="waiter-input w-full px-4 py-3 rounded-xl"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Table Number</label>
+            <input 
+              id="mobileTableNumber" 
+              type="text" 
+              placeholder="e.g., T-1, Table 5..."
+              class="waiter-input w-full px-4 py-3 rounded-xl"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Order Type</label>
+            <div class="order-type-toggle">
+              <button class="mobile-order-type-btn active" data-type="dine-in">🏪 Dine-In</button>
+              <button class="mobile-order-type-btn" data-type="takeaway">📦 Takeaway</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile Cart Items -->
+      <div class="mb-6">
+        <h4 class="font-semibold text-white mb-3 flex items-center justify-between">
+          <span>Order Items</span>
+          <span id="mobileCartItemCount" class="bg-blue-500 text-white text-sm font-bold px-2 py-1 rounded-full min-w-[24px] h-6 flex items-center justify-center">0</span>
+        </h4>
+        <div id="mobileCartItems" class="space-y-2 max-h-64 overflow-y-auto">
+          <p class="text-center text-gray-400 py-4">No items in cart</p>
+        </div>
+      </div>
+      
+      <!-- Mobile Total and Place Order -->
+      <div class="border-t border-gray-600 pt-4 mt-4">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-lg font-bold text-white">Total:</span>
+          <span id="mobileCartTotal" class="text-xl font-bold text-green-400">₹0</span>
+        </div>
+        
+        <button 
+          id="mobilePlaceOrderBtn" 
+          class="btn-success w-full text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg"
+          onclick="placeOrder()"
+        >
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            Place Order
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+      authDomain: "menuswift-fe577.firebaseapp.com",
+      databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+      projectId: "menuswift-fe577",
+      storageBucket: "menuswift-fe577.appspot.com",
+      messagingSenderId: "417323386413",
+      appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Anonymous authentication
+    firebase.auth().signInAnonymously()
+      .then(() => {
+        console.log("Signed in anonymously");
+      })
+      .catch((error) => {
+        console.error("Auth error:", error);
+      });
+
+    // Application State
+    let waiterAuthenticated = false;
+    let waiterInfo = null;
+    let restaurantData = null;
+    let originalItems = [];
+    let cart = {};
+    let orderType = 'dine-in';
+    let activityUpdateInterval = null;
+
+    // Mobile Modal Management - FIXED
+    function showMobileCart() {
+      const modal = document.getElementById('mobileOrderModal');
+      
+      // Sync customer details from desktop to mobile
+      document.getElementById('mobileCustomerName').value = document.getElementById('customerName').value;
+      document.getElementById('mobileTableNumber').value = document.getElementById('tableNumber').value;
+      
+      // Show modal with animation
+      modal.style.display = 'flex';
+      requestAnimationFrame(() => {
+        modal.classList.add('show');
+      });
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileCart() {
+      const modal = document.getElementById('mobileOrderModal');
+      
+      // Sync customer details from mobile back to desktop
+      document.getElementById('customerName').value = document.getElementById('mobileCustomerName').value;
+      document.getElementById('tableNumber').value = document.getElementById('mobileTableNumber').value;
+      
+      // Hide modal with animation
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+
+    // Authentication Functions
+    function authenticateWaiter() {
+      const usernameInput = document.getElementById('usernameInput');
+      const passwordInput = document.getElementById('passwordInput');
+      const loginError = document.getElementById('loginError');
+      const loginForm = document.getElementById('loginForm');
+      const loginLoading = document.getElementById('loginLoading');
+      
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      // Reset error state
+      loginError.classList.add('hidden');
+      
+      // Validation
+      if (!username) {
+        showLoginError('Please enter your username');
+        usernameInput.focus();
+        return;
+      }
+      
+      if (!password) {
+        showLoginError('Please enter your password');
+        passwordInput.focus();
+        return;
+      }
+      
+      // Show loading state
+      loginForm.classList.add('hidden');
+      loginLoading.classList.remove('hidden');
+      
+      // Search for waiter across all restaurants
+      db.ref('staff').once('value').then(staffSnapshot => {
+        const allStaff = staffSnapshot.val() || {};
+        let foundWaiter = null;
+        let foundRestaurantId = null;
+        
+        // Search through all restaurants for the waiter
+        for (const restaurantId in allStaff) {
+          const restaurantStaff = allStaff[restaurantId] || {};
+          for (const staffId in restaurantStaff) {
+            const staff = restaurantStaff[staffId];
+            if (staff.username === username && staff.password === password && 
+                (staff.role === 'waiter' || staff.role === 'staff')) {
+              foundWaiter = { ...staff, id: staffId };
+              foundRestaurantId = restaurantId;
+              break;
+            }
+          }
+          if (foundWaiter) break;
+        }
+        
+        if (!foundWaiter) {
+          showLoginError('Invalid username or password. Please check your credentials.');
+          resetLoginForm();
+          return;
+        }
+        
+        if (foundWaiter.status === 'suspended') {
+          showLoginError('Your account has been suspended. Please contact management.');
+          resetLoginForm();
+          return;
+        }
+        
+        if (foundWaiter.status === 'inactive') {
+          showLoginError('Your account is inactive. Please contact management.');
+          resetLoginForm();
+          return;
+        }
+        
+        // Get restaurant data
+        return db.ref(`restaurants/${foundRestaurantId}`).once('value').then(restaurantSnapshot => {
+          const restaurant = restaurantSnapshot.val();
+          if (!restaurant) {
+            showLoginError('Restaurant not found. Please contact support.');
+            resetLoginForm();
+            return;
+          }
+          
+          // Authentication successful
+          waiterAuthenticated = true;
+          waiterInfo = foundWaiter;
+          waiterInfo.restaurantId = foundRestaurantId;
+          restaurantData = restaurant;
+          
+          // Update last login
+          const loginTime = Date.now();
+          db.ref(`staff/${foundRestaurantId}/${foundWaiter.id}/lastLogin`).set(loginTime);
+          db.ref(`staff/${foundRestaurantId}/${foundWaiter.id}/isOnline`).set(true);
+          
+          // Store authentication in sessionStorage
+          sessionStorage.setItem('waiter_auth', JSON.stringify({
+            authenticated: true,
+            waiterInfo: waiterInfo,
+            restaurantId: foundRestaurantId,
+            timestamp: loginTime
+          }));
+          
+          // Hide login modal and show main content
+          document.getElementById('waiterLoginModal').style.display = 'none';
+          document.getElementById('mainContent').classList.remove('hidden');
+          document.getElementById('mainHeader').classList.remove('hidden');
+          document.getElementById('activityStatus').classList.remove('hidden');
+          
+          // Show mobile cart button only on mobile
+          if (window.innerWidth <= 768) {
+            document.getElementById('mobileCartBtn').classList.remove('hidden');
+          }
+          
+          // Update UI with waiter info
+          document.getElementById('restaurantName').textContent = `${restaurant.name || 'Restaurant'} - Waiter Panel`;
+          document.getElementById('waiterNameDisplay').textContent = `Waiter: ${foundWaiter.name}`;
+          
+          // Start activity tracking
+          startActivityTracking();
+          
+          // Initialize the app
+          initializeApp();
+          
+          showToast(`Welcome ${foundWaiter.name}! You're now logged in to ${restaurant.name}`, 'success');
+        });
+      }).catch(error => {
+        console.error('Authentication error:', error);
+        showLoginError('Connection error. Please check your internet connection and try again.');
+        resetLoginForm();
+      });
+    }
+    
+    function showLoginError(message) {
+      const loginError = document.getElementById('loginError');
+      loginError.textContent = message;
+      loginError.classList.remove('hidden');
+    }
+    
+    function resetLoginForm() {
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('loginLoading').classList.add('hidden');
+    }
+    
+    function logoutWaiter() {
+      if (confirm('Are you sure you want to logout?')) {
+        // Stop activity tracking
+        stopActivityTracking();
+        
+        // Update online status
+        if (waiterInfo && waiterInfo.restaurantId) {
+          db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/isOnline`).set(false);
+          
+          // Log waiter activity
+          db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/sessions`).push({
+            loginTime: waiterInfo.lastLogin || Date.now(),
+            logoutTime: Date.now(),
+            duration: Date.now() - (waiterInfo.lastLogin || Date.now())
+          });
+        }
+        
+        // Clear authentication
+        waiterAuthenticated = false;
+        waiterInfo = null;
+        restaurantData = null;
+        
+        // Clear session storage
+        sessionStorage.removeItem('waiter_auth');
+        
+        // Clear cart
+        cart = {};
+        updateCartDisplay();
+        
+        // Close mobile modal if open
+        closeMobileCart();
+        
+        // Show login modal and hide main content
+        document.getElementById('waiterLoginModal').style.display = 'flex';
+        document.getElementById('mainContent').classList.add('hidden');
+        document.getElementById('mainHeader').classList.add('hidden');
+        document.getElementById('activityStatus').classList.add('hidden');
+        document.getElementById('mobileCartBtn').classList.add('hidden');
+        
+        // Reset form
+        document.getElementById('usernameInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('loginError').classList.add('hidden');
+        resetLoginForm();
+        
+        showToast('Logged out successfully', 'info');
+      }
+    }
+    
+    function checkExistingAuth() {
+      try {
+        const authData = sessionStorage.getItem('waiter_auth');
+        if (authData) {
+          const parsed = JSON.parse(authData);
+          const now = Date.now();
+          const eightHours = 8 * 60 * 60 * 1000; // 8 hours session timeout
+          
+          // Check if authentication is still valid
+          if (parsed.authenticated && (now - parsed.timestamp < eightHours)) {
+            waiterAuthenticated = true;
+            waiterInfo = parsed.waiterInfo;
+            
+            // Verify the waiter still exists and is active
+            db.ref(`staff/${parsed.restaurantId}/${waiterInfo.id}`).once('value').then(waiterSnapshot => {
+              const waiter = waiterSnapshot.val();
+              if (waiter && waiter.status !== 'suspended' && waiter.status !== 'inactive') {
+                // Get restaurant data
+                return db.ref(`restaurants/${parsed.restaurantId}`).once('value').then(restaurantSnapshot => {
+                  restaurantData = restaurantSnapshot.val();
+                  if (!restaurantData) {
+                    throw new Error('Restaurant not found');
+                  }
+                  
+                  // Update online status
+                  db.ref(`staff/${parsed.restaurantId}/${waiterInfo.id}/isOnline`).set(true);
+                  
+                  // Hide login modal and show main content
+                  document.getElementById('waiterLoginModal').style.display = 'none';
+                  document.getElementById('mainContent').classList.remove('hidden');
+                  document.getElementById('mainHeader').classList.remove('hidden');
+                  document.getElementById('activityStatus').classList.remove('hidden');
+                  
+                  // Show mobile cart button only on mobile
+                  if (window.innerWidth <= 768) {
+                    document.getElementById('mobileCartBtn').classList.remove('hidden');
+                  }
+                  
+                  // Update UI
+                  document.getElementById('restaurantName').textContent = `${restaurantData.name || 'Restaurant'} - Waiter Panel`;
+                  document.getElementById('waiterNameDisplay').textContent = `Waiter: ${waiterInfo.name}`;
+                  
+                  // Start activity tracking
+                  startActivityTracking();
+                  
+                  // Initialize the app
+                  initializeApp();
+                  
+                  showToast(`Welcome back ${waiterInfo.name}!`, 'success');
+                });
+              } else {
+                throw new Error('Waiter account not available');
+              }
+            }).catch(error => {
+              console.error('Auth verification error:', error);
+              sessionStorage.removeItem('waiter_auth');
+              showLoginError('Your session has expired. Please login again.');
+            });
+            
+            return true;
+          } else {
+            // Authentication expired
+            sessionStorage.removeItem('waiter_auth');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing auth:', error);
+        sessionStorage.removeItem('waiter_auth');
+      }
+      return false;
+    }
+    
+    // Activity Tracking
+    function startActivityTracking() {
+      if (activityUpdateInterval) {
+        clearInterval(activityUpdateInterval);
+      }
+      
+      // Update activity every 30 seconds
+      activityUpdateInterval = setInterval(() => {
+        if (waiterInfo && waiterInfo.restaurantId) {
+          db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/lastActivity`).set(Date.now());
+        }
+      }, 30000);
+      
+      // Update activity on page interactions
+      ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+        document.addEventListener(event, updateActivity, { passive: true });
+      });
+    }
+    
+    function stopActivityTracking() {
+      if (activityUpdateInterval) {
+        clearInterval(activityUpdateInterval);
+        activityUpdateInterval = null;
+      }
+      
+      ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+        document.removeEventListener(event, updateActivity);
+      });
+    }
+    
+    function updateActivity() {
+      if (waiterInfo && waiterInfo.restaurantId) {
+        db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/lastActivity`).set(Date.now());
+      }
+    }
+
+    // Utility Functions
+    function formatRupee(amount) {
+      return '₹' + Number(amount).toLocaleString('en-IN');
+    }
+
+    // Get individual prices for plate types
+    function getItemPrice(item, plateType) {
+      if (!item.hasPlateType) {
+        return parseFloat(item.price || 0);
+      }
+      
+      if (plateType === 'Half') {
+        return parseFloat(item.halfPlatePrice || (item.price / 2) || 0);
+      } else {
+        return parseFloat(item.fullPlatePrice || item.price || 0);
+      }
+    }
+
+    // Notification System
+    function showToast(message, type = 'info') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const configs = {
+        success: { bg: 'from-green-500 to-emerald-600', icon: '✅' },
+        error: { bg: 'from-red-500 to-pink-600', icon: '❌' },
+        warning: { bg: 'from-yellow-500 to-orange-600', icon: '⚠️' },
+        info: { bg: 'from-blue-500 to-indigo-600', icon: 'ℹ️' }
+      };
+      
+      const config = configs[type] || configs.info;
+      
+      toast.className = `notification bg-gradient-to-r ${config.bg} text-white rounded-xl shadow-lg flex items-center gap-3 p-4`;
+      toast.innerHTML = `
+        <span class="text-lg">${config.icon}</span>
+        <div class="flex-1 font-medium">${message}</div>
+        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white p-1 rounded hover:bg-white/10 transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      `;
+      
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 100);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 5000);
+    }
+
+    // Menu Functions
+    function fetchMenuItems() {
+      if (!waiterInfo || !waiterInfo.restaurantId) return;
+
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('emptyMenu').classList.add('hidden');
+
+      db.ref(`restaurants/${waiterInfo.restaurantId}/menuItems`).once('value').then(snapshot => {
+        const data = snapshot.val();
+        document.getElementById('loadingState').classList.add('hidden');
+        
+        if (data) {
+          originalItems = Object.entries(data)
+            .filter(([_, item]) => item.active !== false)
+            .map(([key, item]) => ({ ...item, id: key }));
+          
+          generateCategories();
+          applyFilters();
+        } else {
+          document.getElementById('emptyMenu').classList.remove('hidden');
+        }
+      }).catch(error => {
+        console.error('Error fetching menu:', error);
+        document.getElementById('loadingState').classList.add('hidden');
+        showToast('Failed to load menu items. Please refresh the page.', 'error');
+      });
+    }
+
+    function generateCategories() {
+      const categories = [...new Set(originalItems.map(item => item.category).filter(Boolean))];
+      const container = document.getElementById('categoriesContainer');
+      
+      // Always include "All" and "Drinks" buttons
+      container.innerHTML = `
+        <button data-cat="all" class="cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white shadow-md active">All Items</button>
+        <button data-cat="drinks" class="cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-600 text-white">🥤 Drinks</button>
+      `;
+
+      // Add other categories
+      categories.forEach(category => {
+        if (category.toLowerCase() !== 'drinks') {
+          const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+          
+          const button = document.createElement('button');
+          button.setAttribute('data-cat', category);
+          button.className = 'cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-600 text-white';
+          button.textContent = `${getCategoryIcon(category)} ${categoryName}`;
+          container.appendChild(button);
+        }
+      });
+
+      // Add event listeners
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.cat-btn').forEach(b => {
+            b.className = 'cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-600 text-white';
+          });
+          
+          e.currentTarget.className = 'cat-btn px-4 py-2 rounded-lg text-sm font-semibold bg-blue-500 text-white shadow-md active';
+          applyFilters();
+        });
+      });
+    }
+
+    function getCategoryIcon(category) {
+      const icons = {
+        'appetizers': '🥗',
+        'main course': '🍽️',
+        'desserts': '🍰',
+        'beverages': '🥤',
+        'snacks': '🍿',
+        'pizza': '🍕',
+        'pasta': '🍝',
+        'burgers': '🍔',
+        'chinese': '🥢',
+        'indian': '🍛'
+      };
+      return icons[category.toLowerCase()] || '🍴';
+    }
+
+    function renderMenuItems(items) {
+      const menuGrid = document.getElementById('menuGrid');
+      
+      if (items.length === 0) {
+        menuGrid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <div class="waiter-card p-8 max-w-md mx-auto shadow-lg">
+              <div class="w-16 h-16 bg-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m-6-4h6"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-white mb-2">No items found</h3>
+              <p class="text-gray-300">Try adjusting your search or category filter</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      menuGrid.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = "menu-item-card rounded-2xl overflow-hidden shadow-lg fade-in-up";
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        // Veg/non-veg detection
+        let vegIndicator = '';
+        const itemType = (item.vegType || item.type || '').toLowerCase();
+        
+        if (itemType === 'veg' || itemType === 'vegetarian') {
+          vegIndicator = '<span class="veg-label veg">🌱 Veg</span>';
+        } else if (itemType === 'non-veg' || itemType === 'nonveg' || itemType === 'non-vegetarian') {
+          vegIndicator = '<span class="veg-label nonveg">🥩 Non-Veg</span>';
+        } else if (itemType === 'drinks' || itemType === 'drink') {
+          vegIndicator = '<span class="veg-label drinks">🥤 Drinks</span>';
+        } else {
+          vegIndicator = '<span class="veg-label veg">🌱 Veg</span>';
+        }
+
+        card.innerHTML = `
+          <div class="relative overflow-hidden">
+            <!-- Enhanced Mobile-Friendly Layout -->
+            <div class="flex items-center gap-4 p-4">
+              <!-- Larger Image for Mobile -->
+              <img src="${item.imageUrl || 'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg'}" 
+                   class="w-20 h-20 md:w-16 md:h-16 object-cover rounded-lg flex-shrink-0" 
+                   alt="${item.name}" 
+                   loading="lazy">
+              
+              <!-- Item Details -->
+              <div class="flex-1 min-w-0">
+                ${vegIndicator}
+                <h3 class="text-lg font-bold text-white mb-1 truncate">${item.name}</h3>
+                ${item.description ? `<p class="text-sm text-gray-300 line-clamp-2 mb-2">${item.description}</p>` : ''}
+                
+                <!-- Mobile-Optimized Controls -->
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div class="price-badge text-sm">
+                    ${formatRupee(item.fullPlatePrice || item.price || 0)}
+                  </div>
+                  
+                  <!-- Controls Row -->
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Plate Type Selection -->
+                    <select id="plate-${item.id}" class="waiter-input text-xs px-2 py-2 rounded flex-1 min-w-[80px]">
+                      <option value="">Type</option>
+                      ${item.hasPlateType ? `
+                        <option value="Half">Half</option>
+                        <option value="Full">Full</option>
+                      ` : `
+                        <option value="Standard">Std</option>
+                      `}
+                    </select>
+                    
+                    <!-- Quantity -->
+                    <select id="qty-${item.id}" class="waiter-input text-xs px-2 py-2 rounded flex-1 min-w-[70px]">
+                      <option value="">Qty</option>
+                      ${[...Array(10)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                    </select>
+                    
+                    <!-- Add Button -->
+                    <button 
+                      onclick="addToCart('${item.id}', '${item.name.replace(/'/g, "\\'")}', '${encodeURIComponent(JSON.stringify(item))}')"
+                      class="btn-success text-white px-4 py-2 rounded text-xs font-semibold flex items-center gap-1 flex-shrink-0"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      </svg>
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        menuGrid.appendChild(card);
+      });
+    }
+
+    function applyFilters() {
+      let filtered = [...originalItems];
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const activeCat = document.querySelector('.cat-btn.active')?.dataset?.cat || 'all';
+
+      // Search filter
+      if (searchText) {
+        filtered = filtered.filter(item => 
+          item.name.toLowerCase().includes(searchText) ||
+          (item.description || '').toLowerCase().includes(searchText) ||
+          (item.category || '').toLowerCase().includes(searchText)
+        );
+      }
+
+      // Category filter
+      if (activeCat !== 'all') {
+        if (activeCat === 'drinks') {
+          filtered = filtered.filter(item => {
+            const itemType = (item.vegType || item.type || '').toLowerCase();
+            return itemType === 'drinks' || itemType === 'drink';
+          });
+        } else {
+          filtered = filtered.filter(item => {
+            const itemCategory = (item.category || '').toLowerCase();
+            return itemCategory === activeCat.toLowerCase();
+          });
+        }
+      }
+
+      renderMenuItems(filtered);
+    }
+
+    // Cart Functions
+    function addToCart(id, name, encodedItemData) {
+      try {
+        const item = JSON.parse(decodeURIComponent(encodedItemData));
+        const qtyEl = document.getElementById(`qty-${id}`);
+        const plateEl = document.getElementById(`plate-${id}`);
+        
+        if (!qtyEl || !plateEl) {
+          showToast("Unable to find quantity or plate type selector", 'error');
+          return;
+        }
+
+        const quantity = qtyEl.value;
+        const plateType = plateEl.value;
+
+        if (!plateType) {
+          showToast("Please select plate type", 'warning');
+          plateEl.focus();
+          return;
+        }
+        
+        if (!quantity || quantity === '') {
+          showToast("Please select quantity", 'warning');
+          qtyEl.focus();
+          return;
+        }
+
+        const cartKey = `${id}_${plateType}`;
+        const quantityNumber = parseInt(quantity);
+
+        if (isNaN(quantityNumber) || quantityNumber <= 0) {
+          showToast("Please select a valid quantity", 'warning');
+          return;
+        }
+
+        // Calculate price based on plate type
+        let itemPrice;
+        if (plateType === 'Standard') {
+          itemPrice = parseFloat(item.price || 0);
+        } else {
+          itemPrice = getItemPrice(item, plateType);
+        }
+
+        if (!cart[cartKey]) {
+          cart[cartKey] = { 
+            id, 
+            name, 
+            price: itemPrice,
+            quantity: 0, 
+            plateType: plateType,
+            hasPlateType: item.hasPlateType || false,
+            vegType: item.vegType || item.type || 'veg'
+          };
+        }
+        
+        cart[cartKey].quantity += quantityNumber;
+        
+        updateCartDisplay();
+        
+        let successMessage = `${name}`;
+        if (plateType && plateType !== 'Standard') {
+          successMessage += ` (${plateType})`;
+        }
+        successMessage += ` x${quantity} added to cart!`;
+        
+        showToast(successMessage, 'success');
+        
+        // Reset form
+        qtyEl.value = '';
+        plateEl.value = '';
+      } catch (error) {
+        console.error('Error adding item to cart:', error);
+        showToast('Error adding item to cart. Please try again.', 'error');
+      }
+    }
+
+    function updateCartDisplay() {
+      const entries = Object.values(cart);
+      const totalItems = entries.reduce((sum, item) => sum + item.quantity, 0);
+      const totalPrice = entries.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      // Update cart counts
+      document.getElementById('cartCount').textContent = totalItems;
+      document.getElementById('mobileCartCount').textContent = totalItems;
+      document.getElementById('mobileCartBadge').textContent = totalItems;
+      document.getElementById('mobileCartItemCount').textContent = totalItems;
+      
+      // Show/hide mobile cart badge
+      if (totalItems > 0) {
+        document.getElementById('mobileCartBadge').classList.remove('hidden');
+      } else {
+        document.getElementById('mobileCartBadge').classList.add('hidden');
+      }
+      
+      // Update cart totals
+      document.getElementById('cartTotal').textContent = formatRupee(totalPrice);
+      document.getElementById('mobileCartTotal').textContent = formatRupee(totalPrice);
+      
+      // Update desktop cart items
+      const cartItemsContainer = document.getElementById('cartItems');
+      const mobileCartItemsContainer = document.getElementById('mobileCartItems');
+      
+      if (entries.length === 0) {
+        const emptyState = `
+          <div class="text-center py-8 text-gray-400">
+            <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5-5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"></path>
+            </svg>
+            <p>No items in cart</p>
+          </div>
+        `;
+        cartItemsContainer.innerHTML = emptyState;
+        mobileCartItemsContainer.innerHTML = '<p class="text-center text-gray-400 py-4">No items in cart</p>';
+        return;
+      }
+
+      // Populate cart items
+      const cartHTML = entries.map(item => `
+        <div class="cart-item p-3 rounded-lg flex justify-between items-center">
+          <div class="flex-1 min-w-0">
+            <h4 class="font-semibold text-white text-sm truncate">${item.name}</h4>
+            <div class="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
+              <span class="px-2 py-1 bg-gray-700 rounded">${item.plateType || 'Standard'}</span>
+              <span class="px-2 py-1 ${item.vegType === 'veg' ? 'bg-green-600' : 'bg-red-600'} rounded text-white">
+                ${item.vegType === 'veg' ? '🌱 Veg' : '🥩 Non-Veg'}
+              </span>
+            </div>
+            <p class="text-sm text-gray-300">₹${item.price} × ${item.quantity} = ${formatRupee(item.price * item.quantity)}</p>
+          </div>
+          <button onclick="removeFromCart('${item.id}_${item.plateType}')" class="text-red-400 hover:text-red-300 ml-2 p-2 -m-2 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+
+      cartItemsContainer.innerHTML = cartHTML;
+      mobileCartItemsContainer.innerHTML = cartHTML;
+    }
+
+    function removeFromCart(cartKey) {
+      delete cart[cartKey];
+      updateCartDisplay();
+      showToast('Item removed from cart', 'info');
+    }
+
+    function clearCart() {
+      cart = {};
+      updateCartDisplay();
+      
+      // Clear customer details
+      document.getElementById('customerName').value = '';
+      document.getElementById('tableNumber').value = '';
+      document.getElementById('mobileCustomerName').value = '';
+      document.getElementById('mobileTableNumber').value = '';
+      
+      showToast('Cart cleared successfully', 'info');
+    }
+
+    // Order Management
+    function placeOrder() {
+      const entries = Object.values(cart);
+      
+      if (entries.length === 0) {
+        showToast('Cart is empty! Please add items first.', 'warning');
+        return;
+      }
+
+      // Get customer details from both desktop and mobile forms
+      const customerName = document.getElementById('customerName').value.trim() || 
+                          document.getElementById('mobileCustomerName').value.trim();
+      const tableNumber = document.getElementById('tableNumber').value.trim() || 
+                         document.getElementById('mobileTableNumber').value.trim();
+
+      if (!customerName) {
+        showToast('Please enter customer name', 'warning');
+        return;
+      }
+
+      if (!tableNumber) {
+        showToast('Please enter table number', 'warning');
+        return;
+      }
+
+      // Calculate total amount for tracking
+      const totalAmount = entries.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      // Prepare order data
+      const orderData = {
+        customerName: customerName,
+        tableNumber: tableNumber,
+        type: orderType,
+        cartItems: entries,
+        timestamp: Date.now(),
+        status: 'new',
+        waiterOrder: true,
+        placedBy: 'waiter',
+        waiterInfo: {
+          id: waiterInfo.id,
+          name: waiterInfo.name,
+          username: waiterInfo.username
+        },
+        totalAmount: totalAmount,
+        totalItems: entries.reduce((sum, item) => sum + item.quantity, 0)
+      };
+
+      // Generate unique order ID
+      const orderId = Date.now();
+
+      // Submit order to Firebase
+      db.ref(`restaurants/${waiterInfo.restaurantId}/orders/${orderId}`).set(orderData)
+        .then(() => {
+          // Update waiter's order statistics
+          const waiterStatsRef = db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}`);
+          waiterStatsRef.child('totalOrders').transaction((current) => (current || 0) + 1);
+          waiterStatsRef.child('totalSales').transaction((current) => (current || 0) + totalAmount);
+          waiterStatsRef.child('todayOrders').transaction((current) => (current || 0) + 1);
+          
+          // Log the order in waiter's order history
+          db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/orderHistory`).push({
+            orderId: orderId,
+            timestamp: Date.now(),
+            customerName: customerName,
+            tableNumber: tableNumber,
+            totalAmount: totalAmount,
+            itemCount: entries.length
+          });
+          
+          showToast(`Order #${orderId} placed successfully!`, 'success');
+          
+          // Clear the cart and form
+          clearCart();
+          
+          // Show success animation
+          document.getElementById('placeOrderBtn').classList.add('success-pulse');
+          document.getElementById('mobilePlaceOrderBtn').classList.add('success-pulse');
+          
+          setTimeout(() => {
+            document.getElementById('placeOrderBtn').classList.remove('success-pulse');
+            document.getElementById('mobilePlaceOrderBtn').classList.remove('success-pulse');
+          }, 600);
+
+          // Close mobile modal if open
+          closeMobileCart();
+        })
+        .catch(error => {
+          console.error('Error placing order:', error);
+          showToast('Failed to place order. Please try again.', 'error');
+        });
+    }
+
+    // Event Listeners
+    function initializeEventListeners() {
+      // Search functionality
+      let searchTimeout;
+      document.getElementById('searchInput').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 300);
+      });
+
+      // Order type toggle - Desktop
+      document.querySelectorAll('.order-type-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.order-type-btn').forEach(b => {
+            b.classList.remove('active');
+          });
+          e.currentTarget.classList.add('active');
+          orderType = e.currentTarget.dataset.type;
+        });
+      });
+
+      // Order type toggle - Mobile
+      document.querySelectorAll('.mobile-order-type-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.mobile-order-type-btn').forEach(b => {
+            b.classList.remove('active');
+          });
+          e.currentTarget.classList.add('active');
+          orderType = e.currentTarget.dataset.type;
+          
+          // Sync with desktop
+          document.querySelectorAll('.order-type-btn').forEach(b => {
+            b.classList.remove('active');
+          });
+          document.querySelector(`.order-type-btn[data-type="${orderType}"]`).classList.add('active');
+        });
+      });
+
+      // Clear all button
+      document.getElementById('clearAllBtn').addEventListener('click', () => {
+        if (Object.keys(cart).length === 0) {
+          showToast('Cart is already empty', 'info');
+          return;
+        }
+        
+        if (confirm('Are you sure you want to clear all items and customer details?')) {
+          clearCart();
+        }
+      });
+
+      // Mobile modal controls - FIXED EVENT LISTENERS
+      document.getElementById('mobileCartToggle').addEventListener('click', showMobileCart);
+      document.getElementById('mobileCartBtn').addEventListener('click', showMobileCart);
+      document.getElementById('closeMobileModal').addEventListener('click', closeMobileCart);
+      
+      // Handle window resize to show/hide mobile elements properly
+      window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+          // Mobile view
+          if (waiterAuthenticated) {
+            document.getElementById('mobileCartBtn').classList.remove('hidden');
+          }
+        } else {
+          // Desktop view - close mobile modal and hide mobile cart button
+          closeMobileCart();
+          document.getElementById('mobileCartBtn').classList.add('hidden');
+        }
+      });
+    }
+
+    // Global function exposure
+    window.addToCart = addToCart;
+    window.removeFromCart = removeFromCart;
+    window.placeOrder = placeOrder;
+    window.authenticateWaiter = authenticateWaiter;
+    window.logoutWaiter = logoutWaiter;
+    window.showMobileCart = showMobileCart;
+    window.closeMobileCart = closeMobileCart;
+
+    // Initialize Application
+    function initializeApp() {
+      if (!waiterInfo || !waiterInfo.restaurantId) {
+        showToast('No waiter information found. Please login again.', 'error');
+        return;
+      }
+
+      initializeEventListeners();
+      fetchMenuItems();
+      updateCartDisplay();
+    }
+
+    // Start the application
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check for existing authentication first
+      if (!checkExistingAuth()) {
+        // No existing auth, show login modal
+        document.getElementById('waiterLoginModal').style.display = 'flex';
+        document.getElementById('mainContent').classList.add('hidden');
+        document.getElementById('mainHeader').classList.add('hidden');
+        
+        // Focus on username input
+        setTimeout(() => {
+          document.getElementById('usernameInput').focus();
+        }, 500);
+      }
+      
+      // Add Enter key support for login form
+      document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('passwordInput').focus();
+        }
+      });
+      
+      document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          authenticateWaiter();
+        }
+      });
+      
+      // Handle page unload to update offline status
+      window.addEventListener('beforeunload', () => {
+        if (waiterInfo && waiterInfo.restaurantId) {
+          db.ref(`staff/${waiterInfo.restaurantId}/${waiterInfo.id}/isOnline`).set(false);
+        }
+      });
+
+      // Prevent scrolling on body when mobile modal is open
+      document.getElementById('mobileOrderModal').addEventListener('touchmove', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+    });
+  </script>
+</body>
+</html>
