@@ -95,7 +95,8 @@ app.post("/razorpay-webhook", (req, res) => {
 });
 
 // 4. Cloudinary Image Delete Route
-app.post('/delete-image', async (req, res) => {
+// 4. Cloudinary Image Delete Route
+app.post('/api/delete-image', async (req, res) => {
   try {
     const { public_id } = req.body;
     
