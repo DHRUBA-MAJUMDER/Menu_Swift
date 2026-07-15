@@ -627,7 +627,7 @@
         // 1. DELETE IMAGE FROM CLOUDINARY VIA BACKEND
         if (item.imagePublicId) {
            try {
-    const response = await fetch('https://menu-swift.vercel.app/delete-image', {
+    const response = await fetch('https://menu-swift.vercel.app/api/delete-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ public_id: item.imagePublicId })
@@ -882,7 +882,7 @@
           // Delete image from Cloudinary if public_id exists
           if (item && item.imagePublicId) {
              try {
-    const response = await fetch('https://menu-swift.vercel.app/delete-image', {
+   const response = await fetch('https://menu-swift.vercel.app/api/delete-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ public_id: item.imagePublicId })
