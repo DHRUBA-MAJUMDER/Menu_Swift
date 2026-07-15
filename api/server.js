@@ -5,29 +5,17 @@ const cloudinary = require('cloudinary').v2;
 
 const app = express();
 
-// --- 🚀 BULLETPROOF CORS & PREFLIGHT FIX ---
-app.use((req, res, next) => {
-  // Aapke frontend domains ko allow karna
-  const allowedOrigins = ['https://menuswift.in', 'https://www.menuswift.in', 'http://127.0.0.1:5500', 'http://localhost:5500'];
-  const origin = req.headers.origin;
-  
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
+// --- 🚀 SIMPLE & EFFECTIVE CORS SETUP FOR VERCEL ---
+app.use(cors({
+  origin: '*', // Sabhi domains ko allow karega
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  credentials: true
+}));
 
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  // 🔥 YAHAN PREFLIGHT (OPTIONS) FIX HAI
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  next();
-});
+// 🔥 YAHAN PREFLIGHT (OPTIONS) FIX HAI
+// Yeh ensure karega ki Vercel par browser ki preflight request 200 OK status ke sath pass ho
+app.options('*', cors()); 
 
 app.use(express.json());
 
@@ -49,7 +37,7 @@ cloudinary.config({
 
 // --- ROUTES ---
 
-// 1. Create Razorpay Order
+// 1. Create Razorpay Orders
 app.post('/create-order', async (req, res) => {
   try {
     const options = {
