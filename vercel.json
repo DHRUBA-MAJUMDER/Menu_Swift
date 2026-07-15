@@ -1,33 +1,22 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/create-order", "destination": "/server.js" },
-    { "source": "/create-subscription", "destination": "/server.js" },
-    { "source": "/razorpay-webhook", "destination": "/server.js" },
-    { "source": "/delete-image", "destination": "/server.js" }
+    {
+      "source": "/(.*)",
+      "destination": "/server.js"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
-        },
-        {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET, OPTIONS, PATCH, DELETE, POST, PUT"
+          "value": "GET, POST, OPTIONS, PUT, DELETE"
         },
         {
           "key": "Access-Control-Allow-Headers",
