@@ -1,30 +1,24 @@
 {
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/delete-image", "destination": "/server.js" },
-    { "source": "/create-order", "destination": "/server.js" },
-    { "source": "/create-subscription", "destination": "/server.js" },
-    { "source": "/razorpay-webhook", "destination": "/server.js" }
-  ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/api/:path*",
       "headers": [
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS, PUT, DELETE"
+          "value": "GET, POST, OPTIONS, PUT, DELETE, PATCH"
         },
         {
           "key": "Access-Control-Allow-Headers",
           "value": "X-Requested-With, Content-Type, Accept, Origin, Authorization"
-        },
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
         }
       ]
     }
