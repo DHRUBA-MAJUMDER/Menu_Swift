@@ -626,17 +626,24 @@
         
         // 1. DELETE IMAGE FROM CLOUDINARY VIA BACKEND
         if (item.imagePublicId) {
-            try {
-                // IMPORTANT: Replace with your actual backend URL (e.g., https://your-api.com/delete-image)
-                await fetch('https://menu-swift.vercel.app/delete-image', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ public_id: item.imagePublicId })
-                });
-                console.log("Image deleted from Cloudinary");
-            } catch (err) {
-                console.error("Failed to delete image from Cloudinary:", err);
-            }
+           try {
+    const response = await fetch('https://menu-swift.vercel.app/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_id: item.imagePublicId })
+    });
+    const data = await response.json(); // Backend ka asli jawab
+    
+    console.log("Cloudinary Delete Response:", data);
+    
+    if (!data.success || data.result === 'not found') {
+       console.warn("Backend failed to delete image from Cloudinary. Reason:", data);
+    } else {
+       console.log("Image successfully deleted from Cloudinary!");
+    }
+} catch (err) {
+    console.error("Network request failed:", err);
+}
         }
         
         // 2. Remove the menu item from Firebase
@@ -874,15 +881,24 @@
           
           // Delete image from Cloudinary if public_id exists
           if (item && item.imagePublicId) {
-              try {
-                  await fetch('https://menu-swift.vercel.app/delete-image', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ public_id: item.imagePublicId })
-                  });
-              } catch (err) {
-                  console.error("Failed to delete bulk image from Cloudinary:", err);
-              }
+             try {
+    const response = await fetch('https://menu-swift.vercel.app/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_id: item.imagePublicId })
+    });
+    const data = await response.json(); // Backend ka asli jawab
+    
+    console.log("Cloudinary Delete Response:", data);
+    
+    if (!data.success || data.result === 'not found') {
+       console.warn("Backend failed to delete image from Cloudinary. Reason:", data);
+    } else {
+       console.log("Image successfully deleted from Cloudinary!");
+    }
+} catch (err) {
+    console.error("Network request failed:", err);
+}
           }
           
           // Mark for Firebase deletion
