@@ -8,10 +8,10 @@
   ],
   "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/server.js"
-    }
+    { "source": "/create-order", "destination": "/server.js" },
+    { "source": "/create-subscription", "destination": "/server.js" },
+    { "source": "/razorpay-webhook", "destination": "/server.js" },
+    { "source": "/delete-image", "destination": "/server.js" }
   ],
   "headers": [
     {
