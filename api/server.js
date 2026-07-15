@@ -1,22 +1,35 @@
-
 const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
-const cloudinary = require('cloudinary').v2; // Top par import
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 
-// --- CORS & MIDDLEWARE ---
-app.use(cors({
-  origin: [
-    "https://menuswift.in",
-    "https://www.menuswift.in"
-  ],
-  methods: ["GET", "POST", "OPTIONS"], // OPTIONS zaroori hai fetch API ke liye
-  credentials: true
-})); 
-app.use(express.json());
+// --- 🚀 BULLETPROOF CORS & PREFLIGHT FIX ---
+app.use((req, res, next) => {
+  // Aapke frontend domains ko allow karna
+  const allowedOrigins = ['https://menuswift.in', 'https://www.menuswift.in', 'http://127.0.0.1:5500', 'http://localhost:5500'];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
 
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // 🔥 YAHAN PREFLIGHT (OPTIONS) FIX HAI
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+app.use(express.json());
 
 // --- CONFIGURATIONS ---
 
@@ -65,7 +78,6 @@ app.post('/create-subscription', async (req, res) => {
         });
     }
 
-    // Duplicate create() method ko remove karke clean kar diya
     const subscription = await razorpay.subscriptions.create({
         plan_id,
         total_count: 120, // 120 monthly renewals
@@ -114,9 +126,11 @@ app.post('/delete-image', async (req, res) => {
 });
 
 
-// --- START SERVER --- (Hamesha end mein hona chahiye)
+// --- START SERVER --- 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// Vercel Export (Very Important)
 module.exports = app;
