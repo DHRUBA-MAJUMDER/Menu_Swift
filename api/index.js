@@ -96,7 +96,7 @@ app.post("/razorpay-webhook", (req, res) => {
 
 // 4. Cloudinary Image Delete Route
 // 4. Cloudinary Image Delete Route
-app.post('/api/delete-image', async (req, res) => {
+app.post('/delete-image', async (req, res) => {
   try {
     const { public_id } = req.body;
     
@@ -116,10 +116,7 @@ app.post('/api/delete-image', async (req, res) => {
 
 
 // --- START SERVER --- 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
 
 // Vercel Export (Very Important)
 module.exports = app;
