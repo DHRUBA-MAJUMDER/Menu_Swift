@@ -1,8 +1,26 @@
 {
   "cleanUrls": true,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/delete-image",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/create-order",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/create-subscription",
+      "destination": "/server.js"
+    },
+    {
+      "source": "/razorpay-webhook",
       "destination": "/server.js"
     }
   ],
