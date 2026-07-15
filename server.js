@@ -1,0 +1,136 @@
+const express = require('express');
+const cors = require('cors');
+const Razorpay = require('razorpay');
+const cloudinary = require('cloudinary').v2;
+
+const app = express();
+
+// --- 🚀 BULLETPROOF CORS & PREFLIGHT FIX ---
+app.use((req, res, next) => {
+  // Aapke frontend domains ko allow karna
+  const allowedOrigins = ['https://menuswift.in', 'https://www.menuswift.in', 'http://127.0.0.1:5500', 'http://localhost:5500'];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // 🔥 YAHAN PREFLIGHT (OPTIONS) FIX HAI
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+app.use(express.json());
+
+// --- CONFIGURATIONS ---
+
+// 1. Razorpay Setup
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+// 2. Cloudinary Setup
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+
+// --- ROUTES ---
+
+// 1. Create Razorpay Order
+app.post('/create-order', async (req, res) => {
+  try {
+    const options = {
+      amount: req.body.amount * 100, // Paise mein convert kiya
+      currency: "INR",
+      receipt: "receipt_" + Date.now(),
+    };
+    
+    const order = await razorpay.orders.create(options);
+    res.json(order); // Frontend ko securely order ID wapas bhej diya
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating order");
+  }
+});
+
+// 2. Create Razorpay Subscription
+app.post('/create-subscription', async (req, res) => {
+  try {
+    const { plan_id } = req.body;
+
+    if (!plan_id) {
+        return res.status(400).json({
+            success: false,
+            error: "Plan ID is required"
+        });
+    }
+
+    const subscription = await razorpay.subscriptions.create({
+        plan_id,
+        total_count: 120, // 120 monthly renewals
+        quantity: 1,
+        customer_notify: 1,
+        notes: {
+            source: "MenuSwift"
+        }
+    });
+
+    res.json(subscription);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      error: err.error?.description || err.message
+    });
+  }
+});
+
+// 3. Razorpay Webhook
+app.post("/razorpay-webhook", (req, res) => {
+    console.log(req.body);
+    res.json({
+        status: "ok"
+    });
+});
+
+// 4. Cloudinary Image Delete Route
+app.post('/delete-image', async (req, res) => {
+  try {
+    const { public_id } = req.body;
+    
+    if (!public_id) {
+      return res.status(400).json({ success: false, error: "Public ID is required" });
+    }
+
+    // Cloudinary se image delete karna
+    const result = await cloudinary.uploader.destroy(public_id);
+    res.json({ success: true, result });
+    
+  } catch (error) {
+    console.error("Cloudinary delete error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+// --- START SERVER --- 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Vercel Export (Very Important)
+module.exports = app;
