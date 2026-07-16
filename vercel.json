@@ -1,21 +1,21 @@
 {
   "cleanUrls": true,
-  
-
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/delete-image.js"
-    }
-  ],
   "headers": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, PUT, DELETE, PATCH" },
-        { "key": "Access-Control-Allow-Headers", "value": "X-Requested-With, Content-Type, Accept, Origin, Authorization" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://www.menuswift.in"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,POST,OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
       ]
     }
   ]
