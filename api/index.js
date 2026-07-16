@@ -7,15 +7,14 @@ const app = express();
 
 // --- 🚀 SIMPLE & EFFECTIVE CORS SETUP FOR VERCEL ---
 app.use(cors({
-  origin: '*', // Sabhi domains ko allow karega
+  origin: ['https://www.menuswift.in', 'https://menuswift.in'],
   methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // 🔥 YAHAN PREFLIGHT (OPTIONS) FIX HAI
 // Yeh ensure karega ki Vercel par browser ki preflight request 200 OK status ke sath pass ho
-app.options('*', cors()); 
+//app.options(/.*/, cors());
 
 app.use(express.json());
 
