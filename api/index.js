@@ -19,7 +19,9 @@ app.use(cors({
 app.use(express.json());
 
 app.use((req, res, next) => {
-  console.log("REQUEST:", req.method, req.originalUrl);
+  console.log("METHOD:", req.method);
+  console.log("URL:", req.originalUrl);
+  console.log("BODY:", req.body);
   next();
 });
 
@@ -105,24 +107,39 @@ app.post("/razorpay-webhook", (req, res) => {
 
 // 4. Cloudinary Image Delete Route
 // 4. Cloudinary Image Delete Route
-app.post('/delete-image', async (req, res) => {
+app.post("/delete-image", async (req, res) => {
+  console.log("DELETE ROUTE HIT");
+
   try {
     const { public_id } = req.body;
-    
+
+    console.log("Public ID:", public_id);
+
     if (!public_id) {
-      return res.status(400).json({ success: false, error: "Public ID is required" });
+      return res.status(400).json({
+        success: false,
+        error: "public_id missing"
+      });
     }
 
-    // Cloudinary se image delete karna
     const result = await cloudinary.uploader.destroy(public_id);
-    res.json({ success: true, result });
-    
-  } catch (error) {
-    console.error("Cloudinary delete error:", error);
-    res.status(500).json({ success: false, error: error.message });
+
+    console.log("Cloudinary Result:", result);
+
+    return res.json({
+      success: true,
+      result: result.result
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    });
   }
 });
-
 
 // --- START SERVER --- 
 
