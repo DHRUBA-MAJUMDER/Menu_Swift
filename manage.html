@@ -633,7 +633,8 @@
         body: JSON.stringify({ public_id: item.imagePublicId })
     });
     const data = await response.json(); // Backend ka asli jawab
-    
+    console.log("Image URL:", item.imageUrl);
+    console.log("Image Public ID:", item.imagePublicId);
     console.log("Cloudinary Delete Response:", data);
     
     if (!data.success || data.result === 'not found') {
@@ -888,7 +889,8 @@
         body: JSON.stringify({ public_id: item.imagePublicId })
     });
     const data = await response.json(); // Backend ka asli jawab
-    
+    console.log("Image URL:", item.imageUrl);
+console.log("Image Public ID:", item.imagePublicId);
     console.log("Cloudinary Delete Response:", data);
     
     if (!data.success || data.result === 'not found') {
