@@ -1890,37 +1890,43 @@ html, body {
         <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" id="billRestaurantName">RESTAURANT NAME
         </div>
         <!-- <div style="font-size: 12px; margin-bottom: 5px;" id="billRestaurantAddress">Restaurant Address</div> -->
-        <div style="font-size: 12px; margin-bottom: 10px;">Email: <span id="billRestaurantPhone">abc@gmal.com</span>
+        <div style="font-size: 12px; margin-bottom: 10px;"><span id="billRestaurantPhone">abc@gmal.com</span>
         </div>
         <div style="font-size: 14px; font-weight: bold;">CUSTOMER BILL</div>
       </div>
 
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between;">
-          <span>Order #:</span>
-          <span id="billOrderId"></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Customer:</span>
-          <span id="billCustomerName"></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Table:</span>
-          <span id="billTableNumber"></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Type:</span>
-          <span id="billOrderType"></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Date:</span>
-          <span id="billDate"></span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Time:</span>
-          <span id="billTime"></span>
-        </div>
-      </div>
+      <!-- Is section ke andar add karein -->
+<div style="margin-bottom: 10px;">
+  <div style="display: flex; justify-content: space-between;">
+    <span>Order #:</span>
+    <span id="billOrderId"></span>
+  </div>
+  <div style="display: flex; justify-content: space-between;">
+    <span>Customer:</span>
+    <span id="billCustomerName"></span>
+  </div>
+  <div style="display: flex; justify-content: space-between;">
+    <span>Table:</span>
+    <span id="billTableNumber"></span>
+  </div>
+  <div style="display: flex; justify-content: space-between;">
+    <span>Type:</span>
+    <span id="billOrderType"></span>
+  </div>
+  <!-- NAYA PAYMENT MODE ROW YAHAN ADD KAREIN -->
+  <div style="display: flex; justify-content: space-between;">
+    <span>Payment:</span>
+    <span id="billPaymentMode"></span>
+  </div>
+  <div style="display: flex; justify-content: space-between;">
+    <span>Date:</span>
+    <span id="billDate"></span>
+  </div>
+  <div style="display: flex; justify-content: space-between;">
+    <span>Time:</span>
+    <span id="billTime"></span>
+  </div>
+</div>
 
       <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;">
         <div style="display: flex; font-weight: bold;">
@@ -2695,121 +2701,98 @@ console.log("Launching for Restaurant ID:", restaurantId);
 
     // Print Bill Function
     
-    window.printBill = (orderId) => {
-      const order = ordersData[orderId];
-      if (!order) {
-        showNotification("Order not found", "error");
-        return;
-      }
+   window.printBill = (orderId) => {
+  const order = ordersData[orderId];
+  if (!order) {
+    showNotification("Order not found", "error");
+    return;
+  }
 
-      // Populate bill template
-      
-const orderType = order.orderType || order.type || "N/A";
-document.getElementById("billOrderType").textContent = orderType.toUpperCase();
-      document.getElementById("billRestaurantName").textContent = restaurantData?.name || "RESTAURANT NAME";
-      // document.getElementById("billRestaurantAddress").textContent = restaurantData?.address || "Restaurant Address";
-      document.getElementById("billRestaurantPhone").textContent = "Email: " + (restaurantData?.ownerEmail || "N/A");
-      document.getElementById("billOrderId").textContent = orderId;
-      document.getElementById("billCustomerName").textContent = order.customerName || "N/A";
-      document.getElementById("billTableNumber").textContent = order.tableNumber || "N/A";
-      document.getElementById("billOrderType").textContent = order.type || "N/A";
-
-      const orderDate = new Date(order.timestamp || Date.now());
-      document.getElementById("billDate").textContent = orderDate.toLocaleDateString();
-      document.getElementById("billTime").textContent = orderDate.toLocaleTimeString();
-
-      // Populate items
-      const itemsContainer = document.getElementById("billItems");
-      itemsContainer.innerHTML = "";
-     let subtotal = 0;
-
-(order.cartItems || []).forEach(item => {
-  const unitPrice = Number(item.unitPrice || 0);
-  const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+  // Set Restaurant Details
+  document.getElementById("billRestaurantName").textContent = restaurantData?.name || "RESTAURANT NAME";
+  document.getElementById("billRestaurantPhone").textContent = "Email: " + (restaurantData?.ownerEmail || "N/A");
   
-  subtotal += itemTotal;
+  // Set Order Details
+  document.getElementById("billOrderId").textContent = orderId;
+  document.getElementById("billCustomerName").textContent = order.customerName || "N/A";
+  document.getElementById("billTableNumber").textContent = order.tableNumber || "N/A";
+
+  // ✅ FIX 1: Order Type Logic (Duplicate line removed)
+  const orderType = order.orderType || order.type || "N/A";
+  document.getElementById("billOrderType").textContent = orderType.toUpperCase();
+
+  // ✅ FIX 2: Added Payment Mode Logic
+  const paymentMode = order.paymentType || order.paymentMethod || "N/A";
+  document.getElementById("billPaymentMode").textContent = paymentMode.toUpperCase();
+
+  // Set Date and Time
+  const orderDate = new Date(order.timestamp || Date.now());
+  document.getElementById("billDate").textContent = orderDate.toLocaleDateString();
+  document.getElementById("billTime").textContent = orderDate.toLocaleTimeString();
+
+  // Populate items
+  const itemsContainer = document.getElementById("billItems");
+  itemsContainer.innerHTML = "";
+  let subtotal = 0;
+
+  (order.cartItems || []).forEach(item => {
+    const unitPrice = Number(item.unitPrice || 0);
+    const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+    subtotal += itemTotal;
+  });
+
+  const gstAmount = Number(order.gstAmount || 0);
+  const total = Number(order.totalAmount || (subtotal + gstAmount));
+  document.getElementById("billTotalAmount").textContent = `₹${total.toFixed(2)}`;
+  const gstPercent = Number(order.gstPercent || 0);
+
+  const totalsHTML = `
+    <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+    <div style="display:flex; justify-content:space-between;">
+      <span>Subtotal</span>
+      <span>₹${subtotal.toFixed(2)}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between;">
+      <span>GST (${gstPercent}%)</span>
+      <span>₹${gstAmount.toFixed(2)}</span>
+    </div>
+    <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+  `;
+
+  (order.cartItems || []).forEach(item => {
+    const unitPrice = Number(item.unitPrice || 0);
+    const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+
+    const itemDiv = document.createElement("div");
+    itemDiv.style.cssText = "margin-bottom: 4px; font-size: 12px;";
+
+    itemDiv.innerHTML = `
+      <div style="display:flex; justify-content:space-between;">
+        <span style="width:40%;">${item.name}</span>
+        <span style="width:15%; text-align:center;">${item.quantity}</span>
+        <span style="width:20%; text-align:right;">₹${unitPrice.toFixed(2)}</span>
+        <span style="width:25%; text-align:right;">₹${itemTotal.toFixed(2)}</span>
+      </div>
+    `;
+    itemsContainer.appendChild(itemDiv);
+  });
   
-});
+  itemsContainer.insertAdjacentHTML("beforeend", totalsHTML);
 
+  // Show bill template and print
+  const billTemplate = document.getElementById("billTemplate");
+  billTemplate.style.display = "block";
 
-const gstAmount = Number(order.gstAmount || 0);
-const total = Number(order.totalAmount || (subtotal + gstAmount));
-document.getElementById("billTotalAmount").textContent = `₹${total.toFixed(2)}`;
-const gstPercent = Number(order.gstPercent || 0);
-
-const totalsHTML = `
-  <div style="border-top:1px dashed #000; margin:6px 0;"></div>
-
-  <div style="display:flex; justify-content:space-between;">
-    <span>Subtotal</span>
-    <span>₹${subtotal.toFixed(2)}</span>
-  </div>
-
-  <div style="display:flex; justify-content:space-between;">
-    <span>GST (${gstPercent}%)</span>
-    <span>₹${gstAmount.toFixed(2)}</span>
-  </div>
-
-  <div style="border-top:1px dashed #000; margin:6px 0;"></div>
-`;
-
-// document.getElementById("billItems").insertAdjacentHTML("beforeend", totalsHTML);
-
-(order.cartItems || []).forEach(item => {
-  const unitPrice = Number(item.unitPrice || 0);
-  const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
-
-  const itemDiv = document.createElement("div");
-  itemDiv.style.cssText = "margin-bottom: 4px; font-size: 12px;";
-
-itemDiv.innerHTML = `
-  <div style="display:flex; justify-content:space-between;">
-    
-    <span style="width:40%;">${item.name}</span>
-    
-    <span style="width:15%; text-align:center;">
-      ${item.quantity}
-    </span>
-    
-    <span style="width:20%; text-align:right;">
-      ₹${unitPrice.toFixed(2)}
-    </span>
-    
-    <span style="width:25%; text-align:right;">
-      ₹${itemTotal.toFixed(2)}
-    </span>
-
-  </div>
-`;
-  itemsContainer.appendChild(itemDiv);
-});
-itemsContainer.insertAdjacentHTML("beforeend", totalsHTML);
-
-      // document.getElementById("billTotalAmount").textContent = `₹${total.toFixed(2)}`;
-
-      // Show bill template and print
-      const billTemplate = document.getElementById("billTemplate");
-     billTemplate.style.display = "block";
-
-setTimeout(() => {
-
+  setTimeout(() => {
     window.print();
+  }, 300);
 
-},300);
-
-window.onafterprint = () => {
-
+  window.onafterprint = () => {
     billTemplate.style.display = "none";
+  };
 
+  showNotification("Bill sent to printer!", "success");
 };
-//       document.getElementById("billItems").insertAdjacentHTML("beforeend", `
-//   <div style="text-align:center; margin-top:10px;">
-//     Thank You! Visit Again 🙏
-//   </div>
-// `);
-
-      showNotification("Bill sent to printer!", "success");
-    };
 
     auth.onAuthStateChanged(user => {
       if (!user) {

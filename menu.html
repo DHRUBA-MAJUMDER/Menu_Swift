@@ -1417,21 +1417,33 @@ img {
     window.closeComboOverlay = closeComboOverlay;
     window.addComboToCart = addComboToCart;
 
-    document.addEventListener('DOMContentLoaded', function() {
+   document.addEventListener('DOMContentLoaded', function() {
+  
+  // 1. Recommend Button Setup
+  document.getElementById('addRecommendBtn').onclick = function() {
+    var key = 'upsell_' + recommendedItem.id;
+    if (!cart[key]) cart[key] = { id: key, name: recommendedItem.name, price: recommendedItem.price, quantity: 1, plateType: 'Standard', restaurantId: restaurantId };
+    else cart[key].quantity += 1;
+    updateCartDisplay();
+    closeRecommend();
+  };
+
+  // 2. Wait for Firebase Login to complete before calling init()
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      console.log("Login successful! Fetching menu data...");
+      
       if (locationVerified) {
         document.getElementById('locationModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
       }
-      init();
+      
+      // Data fetch karna ab start hoga jab user properly authenticate ho chuka hai
+      init(); 
+    }
+  });
 
-      document.getElementById('addRecommendBtn').onclick = function() {
-        var key = 'upsell_' + recommendedItem.id;
-        if (!cart[key]) cart[key] = { id: key, name: recommendedItem.name, price: recommendedItem.price, quantity: 1, plateType: 'Standard', restaurantId: restaurantId };
-        else cart[key].quantity += 1;
-        updateCartDisplay();
-        closeRecommend();
-      };
-    });
+});
   </script>
 </body>
 </html>
