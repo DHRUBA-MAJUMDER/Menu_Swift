@@ -761,7 +761,8 @@ img {
 
     // State
     const urlParams = new URLSearchParams(window.location.search);
-    const restaurantId = urlParams.get('restaurantId');
+   const rawId = urlParams.get('restaurantId');
+   const restaurantId = rawId ? rawId.trim() : null; 
     let originalItems = [];
     let restaurantData = null;
     let locationVerified = checkStoredLocation();
@@ -1096,57 +1097,59 @@ img {
     }
 
     // Fetch Restaurant (OPTIMIZED: Bypasses heavy orders/orderHistory data)
-    function fetchRestaurantData() {
-      if (!restaurantId) { showErrorModal('Invalid', 'No restaurant ID found.'); return; }
-      
-      // 🔥 FIX: Poore root node ko download karne ke bajay strictly needed fields fetch kar rahe hain
-      Promise.all([
-        db.ref('/restaurants/' + restaurantId + '/name').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/restaurantName').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/skipLocationVerification').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/latitude').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/longitude').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/allowedRadius').once('value'),
-        db.ref('/restaurants/' + restaurantId + '/totalSeats').once('value')
-      ]).then(function(results) {
-        var name = results[0].val() || results[1].val() || 'Restaurant Menu';
-        var skipLoc = results[2].val() || false;
-        var lat = results[3].val();
-        var lng = results[4].val();
-        var radius = results[5].val();
-        var seats = results[6].val();
+    // Fetch Restaurant (OPTIMIZED & BUG FIXED)
+// Fetch Restaurant (OPTIMIZED & BUG FIXED)
+// Fetch Restaurant (STRICT CHECK REMOVED & AUTO-SKIP LOCATION IF MISSING)
+function fetchRestaurantData() {
+  if (!restaurantId) { 
+    showErrorModal('Invalid Link', 'No restaurant ID found in the link.'); 
+    var btn = document.querySelector('#errorModal button');
+    if (btn) btn.style.display = 'none';
+    return; 
+  }
+  
+  console.log("Loading data for Restaurant ID:", restaurantId);
 
-        if (!results[0].exists() && !results[1].exists()) { 
-          showErrorModal('Not Found', 'Restaurant not found.'); 
-          return; 
-        }
+  Promise.all([
+    db.ref('/restaurants/' + restaurantId + '/name').once('value'),
+    db.ref('/restaurants/' + restaurantId + '/restaurantName').once('value'),
+    db.ref('/restaurants/' + restaurantId + '/skipLocationVerification').once('value'),
+    db.ref('/restaurants/' + restaurantId + '/latitude').once('value'),
+    db.ref('/restaurants/' + restaurantId + '/longitude').once('value')
+  ]).then(function(results) {
+    
+    // Agar database mein 'name' nahi hai, toh default 'Restaurant Menu' show karega
+    var name = results[0].val() || results[1].val() || 'Restaurant Menu'; 
+    var skipLoc = results[2].val() || false;
+    var lat = results[3].val();
+    var lng = results[4].val();
 
-        // Object prepare kar rahe hain taaki baaki functions purane logic par chalta rahe
-        restaurantData = {
-          name: name,
-          skipLocationVerification: skipLoc,
-          latitude: lat,
-          longitude: lng,
-          allowedRadius: radius,
-          totalSeats: seats
-        };
+    restaurantData = {
+      name: name,
+      skipLocationVerification: skipLoc,
+      latitude: lat,
+      longitude: lng
+    };
 
-        // ... (inside fetchRestaurantData) ...
-        document.getElementById('restaurantName').textContent = restaurantData.name;
-        
-        if (restaurantData.skipLocationVerification === true) {
-          locationVerified = true; storeLocationVerification();
-          document.getElementById('locationModal').style.display = 'none';
-          showMenu(); showToast('Welcome to ' + restaurantData.name + '!', 'success');
-        } else if (locationVerified) {
-          document.getElementById('locationModal').style.display = 'none';
-          showMenu(); showToast('Welcome back to ' + restaurantData.name + '!', 'success');
-        } else {
-          // FIX: Don't auto-request location. Just make sure the modal is visible 
-          // so the user has to click the "Allow Location Access" button.
-          document.getElementById('locationModal').style.display = 'flex';
-        }
-      }).catch(function() { showErrorModal('Error', 'Could not load restaurant data.'); });
+    document.getElementById('restaurantName').textContent = restaurantData.name;
+    
+    // ✅ FIX: Agar Location set nahi hai database mein, toh verify mat karo, seedha menu khol do
+    if (restaurantData.skipLocationVerification === true || !lat || !lng) {
+      locationVerified = true; 
+      storeLocationVerification();
+      document.getElementById('locationModal').style.display = 'none';
+      showMenu(); 
+    } else if (locationVerified) {
+      document.getElementById('locationModal').style.display = 'none';
+      showMenu(); 
+    } else {
+      document.getElementById('locationModal').style.display = 'flex';
+    }
+
+  }).catch(function(error) { 
+    console.error("Firebase Error:", error);
+    showErrorModal('Network Error', 'Could not load restaurant data.'); 
+  });
 }
 
     // Fetch Menu
