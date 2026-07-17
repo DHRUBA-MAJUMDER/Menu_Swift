@@ -773,27 +773,20 @@
 
     function updateKOTStatus(orderId, newStatus) {
       const timestamp = Date.now();
-      const updates = {
-        [`restaurants/${session.restaurantId}/orders/${orderId}/kotStatus`]: newStatus
-      };
+      const updates = { kotStatus: newStatus };
 
       switch(newStatus) {
-        case 'accepted':
-          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotAcceptedTime`] = timestamp;
-          break;
-        case 'preparing':
-          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotPrepStartTime`] = timestamp;
-          break;
-        case 'ready':
-          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotReadyTime`] = timestamp;
-          break;
+        case 'accepted': updates.kotAcceptedTime = timestamp; break;
+        case 'preparing': updates.kotPrepStartTime = timestamp; break;
+        case 'ready': updates.kotReadyTime = timestamp; break;
         case 'served':
-          updates[`restaurants/${session.restaurantId}/orders/${orderId}/kotServedTime`] = timestamp;
-          updates[`restaurants/${session.restaurantId}/orders/${orderId}/status`] = 'done';
+          updates.kotServedTime = timestamp;
+          updates.status = 'done';
           break;
       }
 
-      db.ref().update(updates).then(() => {
+      // ✅ FIX: Root update hata kar specific order path par update kiya gaya hai
+      db.ref(`restaurants/${session.restaurantId}/orders/${orderId}`).update(updates).then(() => {
         showNotification(`Order ${newStatus}!`, 'success');
 
         if (newStatus === 'served') {
@@ -808,13 +801,11 @@
               clearedFrom: 'kot',
               clearedBy: session.staffName || session.staffUsername || 'kitchen_staff'
             };
+            
+            // ✅ FIX: Order History mein save karne ka logic add kiya
             db.ref(`restaurants/${session.restaurantId}/orderHistory/${orderId}`).set(completedOrder)
-              .then(() => {
-                console.log(`✅ Order ${orderId} saved to history by KOT staff`);
-              })
-              .catch(error => {
-                console.error('Error saving to history:', error);
-              });
+              .then(() => console.log(`✅ Order ${orderId} saved to history by KOT staff`))
+              .catch(error => console.error('Error saving to history:', error));
           }
         }
 
@@ -833,12 +824,13 @@
       if (!confirm('Are you sure you want to reject this order?')) return;
 
       const updates = {
-        [`restaurants/${session.restaurantId}/orders/${orderId}/kotStatus`]: 'rejected',
-        [`restaurants/${session.restaurantId}/orders/${orderId}/status`]: 'rejected',
-        [`restaurants/${session.restaurantId}/orders/${orderId}/kotRejectedTime`]: Date.now()
+        kotStatus: 'rejected',
+        status: 'rejected',
+        kotRejectedTime: Date.now()
       };
 
-      db.ref().update(updates).then(() => {
+      // ✅ FIX: Specific order path par update kiya gaya hai
+      db.ref(`restaurants/${session.restaurantId}/orders/${orderId}`).update(updates).then(() => {
         showNotification('Order rejected!', 'error');
       }).catch((error) => {
         console.error('Error rejecting order:', error);
