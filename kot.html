@@ -1008,7 +1008,7 @@
             <span class="text-green-400 font-bold">₹${totalAmount.toFixed(2)}</span>
           </h3>
           <div class="space-y-1 max-h-48 overflow-y-auto">
-           // REPLACE THIS SECTION INSIDE createKOTCard function
+        
 ${(order.cartItems || []).map(item => {
   const unitPrice = Number(item.unitPrice || item.price || 0);
   const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
@@ -1291,7 +1291,7 @@ ${(order.cartItems || []).map(item => {
         <div class="glass-effect p-3 rounded-lg mb-3">
           <h4 class="font-medium text-white mb-2 text-sm">📋 Order Summary:</h4>
           <div class="space-y-1 max-h-32 overflow-y-auto">
-            // REPLACE THIS SECTION INSIDE createKOTCard function
+          
 ${(order.cartItems || []).map(item => {
   const unitPrice = Number(item.unitPrice || item.price || 0);
   const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
