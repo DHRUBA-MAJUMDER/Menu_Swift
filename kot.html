@@ -589,7 +589,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
+ firebase.auth().signInAnonymously().catch(e => console.error("Auth error:", e));
     let kotOrders = {};
     let orderHistory = {};
     let currentFilter = 'all';
