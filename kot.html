@@ -1008,34 +1008,37 @@
             <span class="text-green-400 font-bold">₹${totalAmount.toFixed(2)}</span>
           </h3>
           <div class="space-y-1 max-h-48 overflow-y-auto">
-            ${(order.cartItems || []).map(item => {
-              const unitPrice = Number(item.unitPrice || item.price || 0);
-              const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
-              const vegTag = item.veg ?
-                `<span class="text-xs px-1.5 py-0.5 rounded-full ${
-                  item.veg === 'Veg' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                }">${item.veg}</span>` : '';
+           // REPLACE THIS SECTION INSIDE createKOTCard function
+${(order.cartItems || []).map(item => {
+  const unitPrice = Number(item.unitPrice || item.price || 0);
+  const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
+  const vegTag = item.veg ? 
+    `<span class="text-[10px] px-2 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
 
-              return `
-                <div class="item-row">
-                  <div class="item-name-section">
-                    <span class="text-white font-medium text-sm">${item.name}</span>
-                    <div class="flex items-center gap-1">
-                      ${vegTag}
-                      <span class="text-xs text-gray-400">${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'}</span>
-                    </div>
-                  </div>
-                  <div class="item-qty-section">
-                    <span class="text-white font-bold text-sm">×${item.quantity}</span>
-                    <span class="text-xs text-blue-300">Qty</span>
-                  </div>
-                  <div class="item-price-section">
-                    <span class="text-green-400 font-bold text-sm">₹${itemTotal.toFixed(2)}</span>
-                    <span class="text-xs text-gray-400">@₹${unitPrice.toFixed(2)}</span>
-                  </div>
-                </div>
-              `;
-            }).join('')}
+  // Naya Clean Layout
+  return `
+    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Quantity Box -->
+        <div style="background: rgba(59,130,246,0.2); color: #60a5fa; font-weight: 800; padding: 5px 10px; border-radius: 8px; min-width: 35px; text-align: center;">
+          ${item.quantity}
+        </div>
+        <!-- Name & Plate Type -->
+        <div style="display: flex; flex-direction: column;">
+          <span class="text-white font-bold text-sm">${item.name}</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="text-[11px] font-bold text-blue-300 uppercase">${item.plateType || 'Standard'}</span>
+            ${vegTag}
+          </div>
+        </div>
+      </div>
+      <!-- Price -->
+      <div class="text-green-400 font-bold text-sm">
+        ₹${itemTotal.toFixed(2)}
+      </div>
+    </div>
+  `;
+}).join('')}
           </div>
         </div>
 
@@ -1288,16 +1291,37 @@
         <div class="glass-effect p-3 rounded-lg mb-3">
           <h4 class="font-medium text-white mb-2 text-sm">📋 Order Summary:</h4>
           <div class="space-y-1 max-h-32 overflow-y-auto">
-            ${(order.cartItems || []).map(item => {
-              const unitPrice = Number(item.unitPrice || item.price || 0);
-              const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
-              return `
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-300 truncate flex-1 mr-2">${item.name} ${item.plateType ? `(${item.plateType})` : ''}</span>
-                  <span class="text-white font-medium flex-shrink-0">${item.quantity}x • ₹${itemTotal.toFixed(2)}</span>
-                </div>
-              `;
-            }).join('')}
+            // REPLACE THIS SECTION INSIDE createKOTCard function
+${(order.cartItems || []).map(item => {
+  const unitPrice = Number(item.unitPrice || item.price || 0);
+  const itemTotal = Number(item.totalPrice) || (unitPrice * item.quantity);
+  const vegTag = item.veg ? 
+    `<span class="text-[10px] px-2 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
+
+  // Naya Clean Layout
+  return `
+    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <!-- Quantity Box -->
+        <div style="background: rgba(59,130,246,0.2); color: #60a5fa; font-weight: 800; padding: 5px 10px; border-radius: 8px; min-width: 35px; text-align: center;">
+          ${item.quantity}
+        </div>
+        <!-- Name & Plate Type -->
+        <div style="display: flex; flex-direction: column;">
+          <span class="text-white font-bold text-sm">${item.name}</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="text-[11px] font-bold text-blue-300 uppercase">${item.plateType || 'Standard'}</span>
+            ${vegTag}
+          </div>
+        </div>
+      </div>
+      <!-- Price -->
+      <div class="text-green-400 font-bold text-sm">
+        ₹${itemTotal.toFixed(2)}
+      </div>
+    </div>
+  `;
+}).join('')}
           </div>
         </div>
 
