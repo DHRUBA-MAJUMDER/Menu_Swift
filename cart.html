@@ -934,25 +934,44 @@
         showMessage('error','❌ Please select a payment method.');
         return;
       }
-      if (selectedPaymentType === 'online' && !screenshotBase64) {
-        showMessage('error','❌ Please upload your payment screenshot.');
-        return;
+     if (selectedPaymentType === 'online' && !screenshotBase64) {
+    showMessage('error','❌ Please upload your payment screenshot.');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  loading.classList.add('show');
+
+  try {
+    let finalScreenshotUrl = null;
+
+    // NAYA CODE: Pehle screenshot ko Cloudinary par upload karein
+    if (selectedPaymentType === 'online') {
+      const fileInput = document.getElementById('screenshotInput');
+      if (fileInput.files.length > 0) {
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        formData.append("upload_preset", "unsigned_preset"); // Apna Cloudinary preset dalein
+
+        const res = await fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        finalScreenshotUrl = data.secure_url; // Cloudinary ka chota URL mil gaya
       }
+    }
 
-      submitBtn.disabled = true;
-      loading.classList.add('show');
+    const orderId = Date.now().toString();
+    const order = {
+      restaurantId: restaurantId,
+      customerName: name,
+      tableNumber: table,
+      orderType: type,
+      paymentType: selectedPaymentType,
+      paymentVerified: selectedPaymentType === 'counter' ? true : false,
+      paymentScreenshot: finalScreenshotUrl,
 
-      try {
-        const orderId = Date.now().toString();
-        const order = {
-          restaurantId: restaurantId,
-          customerName: name,
-          tableNumber: table,
-          orderType: type,
-          paymentType: selectedPaymentType,
-          paymentVerified: selectedPaymentType === 'counter' ? true : false,
-          paymentScreenshot: selectedPaymentType === 'online' ? screenshotBase64 : null,
-          
           // --- NEW BOGO CART ITEMS LOGIC ---
           cartItems: cart.map(item => {
             const unitPrice = Number(item.price || 0);
