@@ -285,15 +285,32 @@
     .alert-backdrop.show { opacity:1; visibility:visible; }
 
     /* ===== LOADING ===== */
-    .loading-overlay {
+     .loading-overlay {
       position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);
       display:none; justify-content:center; align-items:center; z-index:9999;
     }
     .loading-overlay.show { display:flex; }
-    .spinner { width:50px; height:50px; border:4px solid rgba(59,130,246,0.2); border-top-color:#3b82f6; border-radius:50%; animation:spin 0.8s linear infinite; }
-    .loading-content { text-align:center; }
+    
+    /* FIX: Added margin: 0 auto; to center the spinner */
+    .spinner { 
+      width:50px; height:50px; 
+      border:4px solid rgba(59,130,246,0.2); 
+      border-top-color:#3b82f6; 
+      border-radius:50%; 
+      animation:spin 0.8s linear infinite; 
+      margin: 0 auto; 
+    }
+    
+    /* FIX: Added flexbox to align everything perfectly in center */
+    .loading-content { 
+      text-align:center; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+    }
     .loading-content p { margin-top:1rem; font-size:1.125rem; font-weight:600; animation: pulse 1.5s ease infinite; }
-
+    /* ===== MESSAGE ===== */
     /* ===== MESSAGE ===== */
     .message { max-width:600px; margin:1rem auto; padding:1rem 1.5rem; border-radius:12px; font-weight:500; display:none; animation:slideDown 0.3s ease; }
     .message.error { background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
@@ -946,22 +963,35 @@
     let finalScreenshotUrl = null;
 
     // NAYA CODE: Pehle screenshot ko Cloudinary par upload karein
-    if (selectedPaymentType === 'online') {
-      const fileInput = document.getElementById('screenshotInput');
-      if (fileInput.files.length > 0) {
-        const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
-        formData.append("upload_preset", "unsigned_preset"); // Apna Cloudinary preset dalein
+   // CLOUDINARY UPLOAD SECTION
+        if (selectedPaymentType === 'online') {
+          const fileInput = document.getElementById('screenshotInput');
+          if (fileInput.files.length > 0) {
+            
+            // 🔥 NAYA CODE: Upload hone se pehle image ko compress karein
+            console.log("Compressing image...");
+            const originalFile = fileInput.files[0];
+            const compressedFile = await compressImage(originalFile); // Ye line magic karegi
+            console.log("Image compressed successfully!");
 
-        const res = await fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
-          method: "POST",
-          body: formData
-        });
-        const data = await res.json();
-        finalScreenshotUrl = data.secure_url; // Cloudinary ka chota URL mil gaya
-      }
-    }
+            const formData = new FormData();
+            formData.append("file", compressedFile); // Ab original nahi, compressed choti file jayegi
+            formData.append("upload_preset", "unsigned_preset"); 
 
+            const res = await fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                console.error("Cloudinary Error Details:", data);
+                throw new Error("Screenshot upload fail ho gaya. Kripya try again.");
+            }
+
+            finalScreenshotUrl = data.secure_url || ""; 
+          }
+        }
     const orderId = Date.now().toString();
     const order = {
       restaurantId: restaurantId,
@@ -1050,6 +1080,41 @@
     window.handleScreenshot = handleScreenshot;
     window.copyUPI = copyUPI;
     window.goToStep = goToStep;
+
+    // 🔥 NAYA FUNCTION: Image ko browser mein hi chota aur compress karne ke liye
+    async function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_SIZE = 600; // Maximum dimension
+
+            // Image resize logic
+            if (width > height && width > MAX_SIZE) {
+              height *= MAX_SIZE / width; width = MAX_SIZE;
+            } else if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height; height = MAX_SIZE;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress quality to 60% (0.6) for super fast upload
+            canvas.toBlob((blob) => {
+              resolve(new File([blob], "payment_proof.jpg", { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.3);
+          };
+        };
+      });
+    }
   </script>
 </body>
 </html>
