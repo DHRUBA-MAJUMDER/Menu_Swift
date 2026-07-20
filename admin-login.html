@@ -1227,12 +1227,18 @@
             setLoading('loginBtn', 'loginSpinner', 'loginText', true, 'Sign In to Dashboard');
             clearMessages();
 
-            try {
-                // 1. Sirf Firebase Authentication ka use karein
-                const firebaseResult = await auth.signInWithEmailAndPassword(email, password);
+           try {
+                // 1. Firebase Auth par 15 seconds ka timeout lagaya
+                const firebaseResult = await withTimeout(
+                    auth.signInWithEmailAndPassword(email, password), 
+                    15000
+                );
                 
-                // 2. Ab user logged in (auth != null) hai, toh rules database read allow karenge
-                const ownerSnap = await db.ref(`owners/${firebaseResult.user.uid}`).once("value");
+                // 2. Owner data fetch par 15 seconds ka timeout lagaya
+                const ownerSnap = await withTimeout(
+                    db.ref(`owners/${firebaseResult.user.uid}`).once("value"), 
+                    15000
+                );
                 const owner = ownerSnap.val();
 
                 if (!owner || !owner.restaurantId) {
@@ -1240,14 +1246,16 @@
                     throw new Error("This account is not linked to any restaurant.");
                 }
 
-                // Check account status
                 if (owner.blocked || owner.revoked) {
                     await auth.signOut();
                     throw new Error("Your account has been suspended or revoked. Please contact support.");
                 }
 
-                // 3. Restaurant data fetch karein
-                const restaurantSnap = await db.ref(`restaurants/${owner.restaurantId}`).once("value");
+                // 3. Restaurant data fetch par 15 seconds ka timeout lagaya
+                const restaurantSnap = await withTimeout(
+                    db.ref(`restaurants/${owner.restaurantId}`).once("value"), 
+                    15000
+                );
                 const restaurant = restaurantSnap.val();
 
                 if (!restaurant) {
@@ -1261,6 +1269,8 @@
                 }
 
                 const restaurantName = restaurant.name || 'Your Restaurant';
+                
+                // (Baaki ka success aur localStorage wala code same rahega...)
 
                 // 4. Success - Set LocalStorage variables
                 loginAttempts = 0;
@@ -1407,6 +1417,15 @@
                 }
             }
         });
+        // Naya Timeout Helper Function
+function withTimeout(promise, ms = 15000) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Network is too slow. Please check your internet connection and try again.")), ms)
+        )
+    ]);
+}
          
     </script>
 </body>
