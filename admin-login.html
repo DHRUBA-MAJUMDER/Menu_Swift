@@ -1207,75 +1207,8 @@
             }
         }
 
-        async function authenticateWithDatabase(email, password) {
-            try {
-                const ownersRef = db.ref('owners');
-                const snapshot = await ownersRef.orderByChild('email').equalTo(email).once('value');
-
-                if (!snapshot.exists()) {
-                    throw new Error("No account found with this email address.");
-                }
-
-                let matchedOwner = null;
-                let ownerUid = null;
-
-                snapshot.forEach(childSnapshot => {
-                    const owner = childSnapshot.val();
-                    if (owner.email === email && owner.password === password) {
-                        matchedOwner = owner;
-                        ownerUid = childSnapshot.key;
-                    }
-                });
-
-                if (!matchedOwner) {
-                    throw new Error("Incorrect password. Please try again.");
-                }
-
-                if (matchedOwner.blocked || matchedOwner.revoked) {
-                    let statusMessage = "Your account has been ";
-                    if (matchedOwner.revoked) {
-                        statusMessage += "revoked. Please contact support for assistance.";
-                    } else {
-                        statusMessage += "temporarily suspended. Please contact support.";
-                    }
-                    throw new Error(statusMessage);
-                }
-
-                if (!matchedOwner.restaurantId) {
-                    throw new Error("This account is not linked to any restaurant.");
-                }
-
-                const restaurantSnap = await db.ref(`restaurants/${matchedOwner.restaurantId}`).once("value");
-                const restaurant = restaurantSnap.val();
-
-                if (!restaurant) {
-                    throw new Error("Associated restaurant not found.");
-                }
-
-                if (restaurant.blocked || restaurant.revoked) {
-                    throw new Error("Restaurant access is currently suspended. Please contact support.");
-                }
-
-                const restaurantName = restaurant.name || 'Your Restaurant';
-
-                localStorage.setItem("restaurantId", matchedOwner.restaurantId);
-                localStorage.setItem("restaurantName", restaurantName);
-                localStorage.setItem("ownerUid", ownerUid);
-                localStorage.setItem("authMethod", "database");
-
-                return {
-                    user: { uid: ownerUid, email: email },
-                    restaurant: restaurant,
-                    restaurantName: restaurantName,
-                    authMethod: "database"
-                };
-
-            } catch (error) {
-                throw error;
-            }
-        }
-
-        loginForm.addEventListener('submit', async function(e) {
+       
+      loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             if (checkLockout()) {
@@ -1295,71 +1228,74 @@
             clearMessages();
 
             try {
-                let authResult = null;
+                // 1. Sirf Firebase Authentication ka use karein
+                const firebaseResult = await auth.signInWithEmailAndPassword(email, password);
+                
+                // 2. Ab user logged in (auth != null) hai, toh rules database read allow karenge
+                const ownerSnap = await db.ref(`owners/${firebaseResult.user.uid}`).once("value");
+                const owner = ownerSnap.val();
 
-                try {
-                    const firebaseResult = await auth.signInWithEmailAndPassword(email, password);
-                    const ownerSnap = await db.ref(`owners/${firebaseResult.user.uid}`).once("value");
-                    const owner = ownerSnap.val();
-
-                    if (!owner || !owner.restaurantId) {
-                        await auth.signOut();
-                        throw new Error("This Firebase account is not linked to any restaurant.");
-                    }
-
-                    const restaurantSnap = await db.ref(`restaurants/${owner.restaurantId}`).once("value");
-                    const restaurant = restaurantSnap.val();
-                    const restaurantName = restaurant ? restaurant.name : 'Your Restaurant';
-
-                    authResult = {
-                        user: firebaseResult.user,
-                        restaurant: restaurant,
-                        restaurantName: restaurantName,
-                        authMethod: "firebase"
-                    };
-
-                    localStorage.setItem("restaurantId", owner.restaurantId);
-                    localStorage.setItem("restaurantName", restaurantName);
-                    localStorage.setItem("ownerUid", firebaseResult.user.uid);
-                    localStorage.setItem("authMethod", "firebase");
-
-                } catch (firebaseError) {
-                    try {
-                        authResult = await authenticateWithDatabase(email, password);
-                    } catch (dbError) {
-                        throw dbError;
-                    }
+                if (!owner || !owner.restaurantId) {
+                    await auth.signOut();
+                    throw new Error("This account is not linked to any restaurant.");
                 }
 
-                if (authResult) {
-                    loginAttempts = 0;
-                    localStorage.setItem('loginAttempts', '0');
-                    localStorage.removeItem('lockoutTime');
-
-                    const currentTime = new Date().toLocaleString();
-                    localStorage.setItem('lastLoginTime', currentTime);
-
-                    if (rememberMe) {
-                        localStorage.setItem("savedEmail", email);
-                        localStorage.setItem("savedPassword", password);
-                        localStorage.setItem("rememberMe", "true");
-                    } else {
-                        localStorage.removeItem("savedEmail");
-                        localStorage.removeItem("savedPassword");
-                        localStorage.removeItem("rememberMe");
-                    }
-
-                    document.getElementById('restaurantNameDisplay').textContent = authResult.restaurantName;
-                    
-                    const lastLogin = localStorage.getItem('lastLoginTime');
-                    if (lastLogin) {
-                        document.getElementById('lastLoginInfo').textContent = `Last login: ${lastLogin}`;
-                    } else {
-                        document.getElementById('lastLoginInfo').style.display = 'none';
-                    }
-
-                    welcomeModal.classList.remove('hidden');
+                // Check account status
+                if (owner.blocked || owner.revoked) {
+                    await auth.signOut();
+                    throw new Error("Your account has been suspended or revoked. Please contact support.");
                 }
+
+                // 3. Restaurant data fetch karein
+                const restaurantSnap = await db.ref(`restaurants/${owner.restaurantId}`).once("value");
+                const restaurant = restaurantSnap.val();
+
+                if (!restaurant) {
+                    await auth.signOut();
+                    throw new Error("Associated restaurant not found.");
+                }
+
+                if (restaurant.blocked || restaurant.revoked) {
+                    await auth.signOut();
+                    throw new Error("Restaurant access is currently suspended. Please contact support.");
+                }
+
+                const restaurantName = restaurant.name || 'Your Restaurant';
+
+                // 4. Success - Set LocalStorage variables
+                loginAttempts = 0;
+                localStorage.setItem('loginAttempts', '0');
+                localStorage.removeItem('lockoutTime');
+
+                const currentTime = new Date().toLocaleString();
+                localStorage.setItem('lastLoginTime', currentTime);
+
+                localStorage.setItem("restaurantId", owner.restaurantId);
+                localStorage.setItem("restaurantName", restaurantName);
+                localStorage.setItem("ownerUid", firebaseResult.user.uid);
+                localStorage.setItem("authMethod", "firebase");
+
+                if (rememberMe) {
+                    localStorage.setItem("savedEmail", email);
+                    localStorage.setItem("savedPassword", password);
+                    localStorage.setItem("rememberMe", "true");
+                } else {
+                    localStorage.removeItem("savedEmail");
+                    localStorage.removeItem("savedPassword");
+                    localStorage.removeItem("rememberMe");
+                }
+
+                // 5. Show Welcome Modal
+                document.getElementById('restaurantNameDisplay').textContent = restaurantName;
+                
+                const lastLogin = localStorage.getItem('lastLoginTime');
+                if (lastLogin) {
+                    document.getElementById('lastLoginInfo').textContent = `Last login: ${lastLogin}`;
+                } else {
+                    document.getElementById('lastLoginInfo').style.display = 'none';
+                }
+
+                welcomeModal.classList.remove('hidden');
 
             } catch (error) {
                 loginAttempts++;
@@ -1373,13 +1309,14 @@
                 } else {
                     let errorMessage = "Login failed. Please try again.";
 
-                    if (error.message.includes("user-not-found") || error.message.includes("No account found")) {
-                        errorMessage = "No account found with this email address.";
-                    } else if (error.message.includes("wrong-password") || error.message.includes("Incorrect password")) {
+                    // Standard Firebase Auth Errors handle karna
+                    if (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") {
+                        errorMessage = "No account found with this email address or wrong credentials.";
+                    } else if (error.code === "auth/wrong-password") {
                         errorMessage = `Incorrect password. ${5 - loginAttempts} attempts remaining.`;
-                    } else if (error.message.includes("invalid-email")) {
+                    } else if (error.code === "auth/invalid-email") {
                         errorMessage = "Please enter a valid email address.";
-                    } else if (error.message.includes("too-many-requests")) {
+                    } else if (error.code === "auth/too-many-requests") {
                         errorMessage = "Too many failed attempts. Please try again later.";
                     } else if (error.message) {
                         errorMessage = error.message;
@@ -1392,44 +1329,6 @@
                 setLoading('loginBtn', 'loginSpinner', 'loginText', false, 'Sign In to Dashboard');
             }
         });
-
-        resetForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('resetEmail').value.trim();
-
-            if (!email) {
-                showMessage('error', 'Please enter your email address.');
-                return;
-            }
-
-            setLoading('resetBtn', 'resetSpinner', 'resetText', true, 'Send Reset Link');
-            clearMessages();
-
-            try {
-                await auth.sendPasswordResetEmail(email);
-                showMessage('success', 'Password reset email sent! Check your inbox.');
-                setTimeout(() => {
-                    backToLoginBtn.click();
-                }, 3000);
-            } catch (error) {
-                let errorMessage = "Failed to send reset email.";
-
-                switch (error.code) {
-                    case "auth/user-not-found":
-                        errorMessage = "No account found with this email address.";
-                        break;
-                    case "auth/invalid-email":
-                        errorMessage = "Please enter a valid email address.";
-                        break;
-                }
-
-                showMessage('error', errorMessage);
-            } finally {
-                setLoading('resetBtn', 'resetSpinner', 'resetText', false, 'Send Reset Link');
-            }
-        });
-
         function closeWelcome() {
             welcomeModal.classList.add('hidden');
             setTimeout(() => {
@@ -1508,21 +1407,7 @@
                 }
             }
         });
-         // ===== REMEMBER ME AUTO-FILL =====
-            if (localStorage.getItem("rememberMe") === "true") {
-                const savedEmail = localStorage.getItem("savedEmail");
-                const savedPassword = localStorage.getItem("savedPassword");
-
-                if (savedEmail && savedPassword) {
-                    document.getElementById("email").value = savedEmail;
-                    document.getElementById("password").value = savedPassword;
-                    document.getElementById("rememberMe").checked = true;
-                }
-            }
-       
-        setTimeout(() => {
-            loginForm.dispatchEvent(new Event("submit"));
-        }, 600);
+         
     </script>
 </body>
 </html>
