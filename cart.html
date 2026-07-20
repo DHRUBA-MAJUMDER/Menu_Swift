@@ -624,11 +624,31 @@
     }
 
     function loadUPISettings() {
-      db.ref(`restaurants/${restaurantId}/settings/upi`).on("value", (snap) => {
-        upiData = snap.val();
-        updateUPIDisplay();
-      });
+  db.ref(`restaurants/${restaurantId}/settings/upi`).on("value", (snap) => {
+    upiData = snap.val();
+    
+    const payOnlineCard = document.getElementById('payOnlineCard');
+    const payCounterCard = document.getElementById('payCounterCard');
+    const paymentGrid = document.querySelector('.payment-type-grid');
+    
+    // Agar UPI data exist karta hai aur ENABLED hai
+    if (upiData && upiData.enabled) {
+      payOnlineCard.style.display = 'block';
+      paymentGrid.style.gridTemplateColumns = '1fr 1fr'; // Original layout
+    } else {
+      // Agar disabled hai, toh online card hide kar dein
+      payOnlineCard.style.display = 'none';
+      paymentGrid.style.gridTemplateColumns = '1fr'; // Counter option ko full width dein
+      
+      // Agar user ne online select kiya hua tha, toh automatically counter par switch karein
+      if (selectedPaymentType === 'online') {
+        selectPaymentType('counter');
+      }
     }
+    
+    updateUPIDisplay();
+  });
+}
 
     function updateUPIDisplay() {
       const area = document.getElementById('upiDisplayArea');
