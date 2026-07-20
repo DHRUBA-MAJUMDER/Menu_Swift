@@ -1097,10 +1097,8 @@ img {
     }
 
     // Fetch Restaurant (OPTIMIZED: Bypasses heavy orders/orderHistory data)
-    // Fetch Restaurant (OPTIMIZED & BUG FIXED)
-// Fetch Restaurant (OPTIMIZED & BUG FIXED)
-// Fetch Restaurant (STRICT CHECK REMOVED & AUTO-SKIP LOCATION IF MISSING)
-function fetchRestaurantData() {
+    let activeRestaurantKey = restaurantId; // Tracks the correct database key
+  function fetchRestaurantData() {
   if (!restaurantId) { 
     showErrorModal('Invalid Link', 'No restaurant ID found in the link.'); 
     var btn = document.querySelector('#errorModal button');
@@ -1110,19 +1108,20 @@ function fetchRestaurantData() {
   
   console.log("Loading data for Restaurant ID:", restaurantId);
 
-  Promise.all([
-    db.ref('/restaurants/' + restaurantId + '/name').once('value'),
-    db.ref('/restaurants/' + restaurantId + '/restaurantName').once('value'),
-    db.ref('/restaurants/' + restaurantId + '/skipLocationVerification').once('value'),
-    db.ref('/restaurants/' + restaurantId + '/latitude').once('value'),
-    db.ref('/restaurants/' + restaurantId + '/longitude').once('value')
-  ]).then(function(results) {
-    
-    // Agar database mein 'name' nahi hai, toh default 'Restaurant Menu' show karega
-    var name = results[0].val() || results[1].val() || 'Restaurant Menu'; 
-    var skipLoc = results[2].val() || false;
-    var lat = results[3].val();
-    var lng = results[4].val();
+  // ✅ FIX: Pehle check karein ki restaurant database mein exist karta bhi hai ya nahi
+  db.ref('/restaurants/' + restaurantId).once('value').then(function(snap) {
+    if (!snap.exists()) {
+      showErrorModal('Invalid Restaurant', 'This restaurant may not exist or the link is incorrect.Please check the link or contact support.');
+      var btn = document.querySelector('#errorModal button');
+      if (btn) btn.style.display = 'none'; // Try Again button hide kar dein kyunki galat ID theek nahi hogi
+      return;
+    }
+
+    var val = snap.val();
+    var name = val.name || val.restaurantName || 'Restaurant Menu'; 
+    var skipLoc = val.skipLocationVerification || false;
+    var lat = val.latitude;
+    var lng = val.longitude;
 
     restaurantData = {
       name: name,
@@ -1133,7 +1132,7 @@ function fetchRestaurantData() {
 
     document.getElementById('restaurantName').textContent = restaurantData.name;
     
-    // ✅ FIX: Agar Location set nahi hai database mein, toh verify mat karo, seedha menu khol do
+    // Location verification logic
     if (restaurantData.skipLocationVerification === true || !lat || !lng) {
       locationVerified = true; 
       storeLocationVerification();
