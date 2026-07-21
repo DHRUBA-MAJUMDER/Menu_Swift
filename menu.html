@@ -54,12 +54,13 @@
     @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
     @keyframes slideUp { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
     @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
-    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
     @keyframes bannerSlide { 0% { transform:translateX(100%); opacity:0; } 100% { transform:translateX(0); opacity:1; } }
     @keyframes comboPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } 50% { box-shadow: 0 0 0 10px rgba(37,99,235,0); } }
     .fade-in-up { animation: fadeInUp 0.45s ease-out both; }
     .scale-in { animation: scaleIn 0.35s ease-out both; }
-    /* ===== LOADING SPINNER ===== Dhruba Majunder */
+    
+    /* ===== LOADING SPINNER ===== */
     .loading-spinner {
       width: 36px; height: 36px;
       border: 3px solid var(--primary-light);
@@ -145,7 +146,7 @@
     }
     .header-center .subtitle svg { width: 12px; height: 12px; color: var(--warning); }
 
-    /* ===== OFFERS BANNER ===== */
+    /* ===== SMALL OFFERS BANNER (Kept as fallback in list) ===== */
     .offers-banner-section {
       max-width: 1280px; margin: 0 auto;
       padding: 0.75rem 1.5rem 0;
@@ -166,14 +167,8 @@
       cursor: pointer;
     }
     .offer-banner::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 200px;
-      height: 200px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 50%;
+      content: ''; position: absolute; top: -50%; right: -20%;
+      width: 200px; height: 200px; background: rgba(255,255,255,0.08); border-radius: 50%;
     }
     .offer-banner .offer-icon { font-size: 1.5rem; flex-shrink: 0; }
     .offer-banner .offer-content { flex: 1; }
@@ -183,6 +178,40 @@
     .offer-banner.combo-banner { background: linear-gradient(135deg, #7c3aed, #ec4899); cursor: pointer; }
     .offer-banner.bogo-banner { background: linear-gradient(135deg, #059669, #0d9488); }
     .offer-banner.happy-banner { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+
+    /* ===== NEW FULLSCREEN WELCOME OFFERS MODAL ===== */
+    .offers-popup-content {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 2.5rem 1.5rem;
+      position: relative;
+      max-height: 85vh;
+      width: 100%;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      border: 2px solid var(--primary);
+    }
+    .popup-title {
+      text-align: center; font-size: 1.6rem; font-weight: 800; margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: pulse 2s infinite;
+    }
+    .popup-offers-list { display: flex; flex-direction: column; gap: 1rem; }
+    .popup-offer-card {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      border-radius: 16px; padding: 1.25rem; color: white;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+      opacity: 0; animation: fadeInUp 0.5s forwards;
+    }
+    .popup-offer-card .icon { font-size: 2.5rem; animation: float 3s ease-in-out infinite; }
+    .popup-offer-card .details h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .popup-offer-card .details p { font-size: 0.9rem; opacity: 0.95; line-height: 1.4; }
+    .popup-offer-card.combo { background: linear-gradient(135deg, #7c3aed, #ec4899); cursor:pointer;}
+    .popup-offer-card.bogo { background: linear-gradient(135deg, #059669, #0d9488); }
+    .popup-offer-card.happy { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+    .popup-offer-card.trending { background: linear-gradient(135deg, #ef4444, #f97316); }
 
     /* ===== COMBO FULLSCREEN OVERLAY ===== */
     .combo-overlay {
@@ -204,10 +233,7 @@
       max-height: 90vh;
       overflow-y: auto;
     }
-    .combo-modal-img {
-      width: 100%; height: 200px; object-fit: cover;
-      display: block;
-    }
+    .combo-modal-img { width: 100%; height: 200px; object-fit: cover; display: block; }
     .combo-modal-placeholder {
       width: 100%; height: 200px;
       background: linear-gradient(135deg, #7c3aed, #ec4899);
@@ -216,12 +242,10 @@
     }
     .combo-modal-body { padding: 1.5rem; }
     .combo-modal-body h2 {
-      font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;
-      color: var(--text);
+      font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text);
     }
     .combo-modal-body .combo-desc {
-      font-size: 0.9rem; color: var(--text-secondary);
-      line-height: 1.6; margin-bottom: 1rem;
+      font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;
     }
     .combo-items-list {
       background: var(--surface-2); border-radius: var(--radius-sm);
@@ -235,16 +259,10 @@
       content: '✓'; color: var(--success); font-weight: 700;
     }
     .combo-price-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
     }
-    .combo-original-price {
-      font-size: 1rem; color: var(--text-muted);
-      text-decoration: line-through;
-    }
-    .combo-special-price {
-      font-size: 1.5rem; font-weight: 800; color: var(--success);
-    }
+    .combo-original-price { font-size: 1rem; color: var(--text-muted); text-decoration: line-through; }
+    .combo-special-price { font-size: 1.5rem; font-weight: 800; color: var(--success); }
     .combo-save-badge {
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: #fff; font-size: 0.75rem; font-weight: 700;
@@ -265,16 +283,10 @@
 
     /* ===== DISCOUNT BADGE ON CARDS ===== */
     .discount-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
+      position: absolute; top: 10px; left: 10px;
       background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.7rem;
-      padding: 3px 8px;
-      border-radius: 8px;
-      z-index: 6;
+      color: #fff; font-weight: 800; font-size: 0.7rem;
+      padding: 3px 8px; border-radius: 8px; z-index: 6;
       box-shadow: 0 2px 8px rgba(239,68,68,0.4);
       animation: pulse 2s ease-in-out infinite;
     }
@@ -287,34 +299,22 @@
       box-shadow: 0 2px 8px rgba(245,158,11,0.4);
     }
     .original-price {
-      text-decoration: line-through;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      margin-right: 4px;
+      text-decoration: line-through; color: var(--text-muted); font-size: 0.7rem; margin-right: 4px;
     }
 
     /* ===== TOOLBAR ===== */
-    .toolbar {
-      max-width: 1280px; margin: 0 auto;
-      padding: 0.875rem 1.5rem 0;
-    }
+    .toolbar { max-width: 1280px; margin: 0 auto; padding: 0.875rem 1.5rem 0; }
     .toolbar-inner {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 0.875rem 1rem;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border);
-      display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center;
+      background: var(--surface); border-radius: var(--radius);
+      padding: 0.875rem 1rem; box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center;
     }
-    .search-box {
-      flex: 1; min-width: 200px; position: relative;
-    }
+    .search-box { flex: 1; min-width: 200px; position: relative; }
     .search-box input {
       width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem;
       border: 1.5px solid var(--border); border-radius: var(--radius-sm);
       font-size: 0.85rem; font-family: inherit;
-      background: var(--surface-2); color: var(--text);
-      transition: all 0.2s;
+      background: var(--surface-2); color: var(--text); transition: all 0.2s;
     }
     .search-box input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-glow); }
     .search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none; }
@@ -366,14 +366,8 @@
     }
 
     /* ===== MENU GRID ===== */
-    .menu-section {
-      max-width: 1280px; margin: 0 auto;
-      padding: 1rem 1.5rem 2rem;
-    }
-    .menu-grid {
-      display: grid; gap: 0.875rem;
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .menu-section { max-width: 1280px; margin: 0 auto; padding: 1rem 1.5rem 2rem; }
+    .menu-grid { display: grid; gap: 0.875rem; grid-template-columns: repeat(2, 1fr); }
     @media (min-width: 640px) { .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
     @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem; } }
     @media (min-width: 1024px) { .menu-grid { grid-template-columns: repeat(4, 1fr); } }
@@ -381,42 +375,27 @@
 
     /* ===== MENU CARD ===== */
     .menu-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
       display: flex; flex-direction: column;
       transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
       box-shadow: var(--shadow-xs);
     }
-    .menu-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--primary);
-    }
+    .menu-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
     .card-img-wrapper { position: relative; overflow: hidden; }
-    .card-img {
-      width: 100%; height: 160px; object-fit: cover;
-      transition: transform 0.5s ease;
-    }
+    .card-img { width: 100%; height: 160px; object-fit: cover; transition: transform 0.5s ease; }
     .menu-card:hover .card-img { transform: scale(1.06); }
     @media (min-width: 640px) { .card-img { height: 180px; } }
     @media (max-width: 480px) { .card-img { height: 130px; } }
 
     .price-tag {
       position: absolute; top: 10px; right: 10px;
-      background: var(--text);
-      color: #fff; font-weight: 700; font-size: 0.8rem;
-      padding: 4px 10px; border-radius: 8px;
-      z-index: 5;
-      box-shadow: var(--shadow-sm);
+      background: var(--text); color: #fff; font-weight: 700; font-size: 0.8rem;
+      padding: 4px 10px; border-radius: 8px; z-index: 5; box-shadow: var(--shadow-sm);
     }
-
     .card-body { padding: 0.75rem; flex: 1; display: flex; flex-direction: column; }
-
     .type-badge {
-      display: inline-flex; align-items: center; gap: 3px;
-      font-size: 0.65rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; font-weight: 700;
       padding: 3px 8px; border-radius: 6px; margin-bottom: 6px; width: fit-content;
       text-transform: uppercase; letter-spacing: 0.03em;
     }
@@ -496,11 +475,8 @@
     /* ===== FLOATING CART (MOBILE) ===== */
     .floating-cart {
       position: fixed; bottom: 20px; right: 20px; z-index: 90;
-      width: 56px; height: 56px;
-      background: var(--primary);
-      border-radius: 50%; display: none;
-      align-items: center; justify-content: center;
-      box-shadow: 0 8px 28px rgba(37,99,235,0.35);
+      width: 56px; height: 56px; background: var(--primary); border-radius: 50%; display: none;
+      align-items: center; justify-content: center; box-shadow: 0 8px 28px rgba(37,99,235,0.35);
       cursor: pointer; transition: all 0.2s; border: none;
     }
     .floating-cart:hover { transform: scale(1.08); box-shadow: 0 12px 36px rgba(37,99,235,0.45); }
@@ -508,8 +484,7 @@
     .floating-cart .badge {
       position: absolute; top: -4px; right: -4px;
       background: var(--danger); color: #fff; font-size: 0.6rem; font-weight: 700;
-      width: 20px; height: 20px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 2px 6px rgba(239,68,68,0.3);
     }
     @media (max-width: 640px) {
@@ -522,14 +497,12 @@
     .recommend-overlay {
       position: fixed; inset: 0; background: rgba(15,23,42,0.4);
       display: none; align-items: flex-end; justify-content: center;
-      z-index: 150; font-family: inherit;
-      backdrop-filter: blur(4px);
+      z-index: 150; font-family: inherit; backdrop-filter: blur(4px);
     }
     .recommend-sheet {
       background: #fff; width: 100%; max-width: 420px;
       border-radius: 20px 20px 0 0; padding: 1.5rem;
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-      animation: slideUp 0.35s ease;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.12); animation: slideUp 0.35s ease;
     }
     .recommend-sheet h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
     .recommend-sheet p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
@@ -556,6 +529,10 @@
       .toast { max-width: calc(100vw - 2rem); left: 1rem; right: 1rem; }
       .combo-modal { max-width: 100%; border-radius: 20px 20px 0 0; margin-top: auto; }
       .combo-overlay { align-items: flex-end; }
+      .menu-section select, main select {
+        padding-left: 0.1px !important; padding-right: 0.1px !important;
+        min-width: 40px !important; text-align: center !important;
+      }
     }
 
     /* ===== SCROLLBAR ===== */
@@ -564,57 +541,83 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+    img { content-visibility: auto; }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    /* 2. Force Initial Offers Popup to be in the Center on Mobile */
     @media (max-width: 640px) {
-  /* Menu card ke bottom row ke select elements ke liye */
-  .menu-section select, 
-  main select {
-    padding-left: 0.1px !important;
-    padding-right: 0.1px !important;
-    min-width: 40px !important;
-    text-align: center !important;
-  }
-}
-img {
-  content-visibility: auto;
-}
+      #initialOffersOverlay {
+        align-items: center !important;
+      }
+      #initialOffersOverlay .combo-modal {
+        margin-top: 0 !important;
+        border-radius: 24px !important; 
+      }
+    }
+    /* --- FIX: Mobile Filter Row Wrap --- */
+    @media (max-width: 640px) {
+      .filter-row { 
+        flex-wrap: wrap !important; 
+        overflow-x: visible !important; 
+        justify-content: center;
+      }
+      .filter-group { margin-bottom: 4px; }
+    }
+
+    /* --- ADD: Flying Cart Animation CSS --- */
+    .flying-item {
+      position: fixed;
+      z-index: 9999;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      pointer-events: none;
+      transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .cart-bump {
+      animation: pulseCart 0.3s ease-out;
+    }
+    @keyframes pulseCart {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Location Modal -->
-  <div id="locationModal" class="modal-overlay">
-    <div class="modal-card" id="locationModalContent">
-      <div class="modal-icon">
-        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
-      </div>
-      <h2>Location Verification</h2>
-      <p>We need to verify you're at or near the restaurant to access the menu.</p>
-      <button onclick="requestLocation()" class="btn btn-primary btn-lg">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        Allow Location Access
-      </button>
-      <p style="font-size:0.72rem; color:var(--text-muted); margin-top:1rem;">
-        🔒 Your location is used only for verification and is never stored.
-      </p>
+  <!-- NEW FULL-SCREEN MODERN LOADER -->
+  <div id="fullScreenLoader" style="position:fixed; inset:0; background:var(--surface); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease, visibility 0.6s ease;">
+    <!-- Logo / Brand Icon -->
+    <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--primary), #7c3aed); border-radius:24px; display:flex; align-items:center; justify-content:center; margin-bottom:2rem; box-shadow:0 12px 32px rgba(37,99,235,0.25); animation:pulse 2s infinite;">
+      <svg width="40" height="40" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </div>
+    
+    <h2 style="font-size:1.4rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; letter-spacing:-0.03em;">MenuSwift</h2>
+    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:2rem;">Preparing your digital menu...</p>
+    
+    <!-- Modern Progress Bar -->
+    <div style="width: 200px; height: 6px; background: var(--surface-3); border-radius: 10px; overflow: hidden; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: linear-gradient(90deg, var(--primary), #7c3aed); border-radius: 10px; animation: progressSlide 1.5s ease-in-out infinite alternate;"></div>
     </div>
   </div>
-
-  <!-- Error Modal -->
-  <div id="errorModal" class="modal-overlay" style="display:none;">
-    <div class="modal-card">
-      <div class="modal-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
-        <svg fill="currentColor" viewBox="0 0 20 20" style="width:36px;height:36px;color:#fff;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-      </div>
-      <h2 id="errorTitle" style="color:#dc2626;">Access Denied</h2>
-      <p id="errorMessage"></p>
-      <button onclick="retryLocation()" class="btn btn-primary btn-lg">Try Again</button>
-    </div>
-  </div>
+  
+  <style>
+    @keyframes progressSlide {
+      0% { left: 0; width: 30%; }
+      50% { width: 60%; }
+      100% { left: 70%; width: 30%; }
+    }
+  </style>
 
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Combo Fullscreen Overlay -->
+  <!-- Combo Fullscreen Overlay (Details view) -->
   <div id="comboOverlay" class="combo-overlay" onclick="closeComboOverlay(event)">
     <div class="combo-modal" onclick="event.stopPropagation()">
       <div style="position:relative;">
@@ -643,8 +646,19 @@ img {
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div id="mainContent" style="display:none;">
+  <!-- INITIAL OFFERS FULLSCREEN POPUP -->
+  <div id="initialOffersOverlay" class="combo-overlay" style="z-index: 400;" onclick="closeInitialOffers(event)">
+    <div class="combo-modal" style="background: transparent; box-shadow: none;" onclick="event.stopPropagation()">
+      <div class="offers-popup-content">
+        <button class="combo-close-btn" style="top: 1rem; right: 1rem; background: rgba(0,0,0,0.8);" onclick="closeInitialOffers()">✕</button>
+        <h2 class="popup-title">🎉 Today's Offers! 🎉</h2>
+        <div id="initialOffersList" class="popup-offers-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content (Yeh ab shuru se display rahega taaki white screen na aaye) -->
+  <div id="mainContent" style="display:block;">
     <header class="site-header">
       <div class="header-inner">
         <div class="header-center">
@@ -702,13 +716,6 @@ img {
 
     <main class="menu-section">
       <div id="menuGrid" class="menu-grid"></div>
-      <div id="loadingState" class="state-card">
-        <div class="state-icon" style="background:var(--primary-light);">
-          <div class="loading-spinner"></div>
-        </div>
-        <h3>Loading Menu</h3>
-        <p>Preparing delicious offerings...</p>
-      </div>
       <div id="noResults" class="state-card" style="display:none;">
         <div class="state-icon" style="background:var(--surface-3);">
           <svg width="28" height="28" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -745,6 +752,17 @@ img {
   </div>
 
   <script>
+    // Global Safe Loader Remover
+    function hideLoader() {
+      var loader = document.getElementById('fullScreenLoader');
+      if(loader) {
+          loader.style.opacity = '0';
+          setTimeout(function() { 
+              loader.style.visibility = 'hidden'; 
+              loader.style.display = 'none'; 
+          }, 600);
+      }
+    }
     // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
@@ -761,11 +779,11 @@ img {
 
     // State
     const urlParams = new URLSearchParams(window.location.search);
-   const rawId = urlParams.get('restaurantId');
-   const restaurantId = rawId ? rawId.trim() : null; 
+    const rawId = urlParams.get('restaurantId');
+    const restaurantId = rawId ? rawId.trim() : null; 
     let originalItems = [];
     let restaurantData = null;
-    let locationVerified = checkStoredLocation();
+    //let locationVerified = checkStoredLocation();
     let cart = {};
     let vegModeActive = false;
     let recommendedItem = null;
@@ -776,27 +794,7 @@ img {
     let bogoItems = {};
     let currentCombo = null;
 
-    // Location Storage
-   function checkStoredLocation() {
-  try {
-    const stored = localStorage.getItem('location_verified_' + restaurantId);
-    const data = stored ? JSON.parse(stored) : null;
     
-    // Change 86400000 (24 hours) to 3600000 (1 hour) or 0 (ask every time)
-    if (data && (Date.now() - data.timestamp < 600000)) return true; 
-    
-    if (data) localStorage.removeItem('location_verified_' + restaurantId);
-  } catch(e) {}
-  return false;
-}
-
-    function storeLocationVerification() {
-      try {
-        localStorage.setItem('location_verified_' + restaurantId, JSON.stringify({
-          verified: true, timestamp: Date.now(), restaurantId: restaurantId
-        }));
-      } catch(e) {}
-    }
 
     // Utils
     function formatRupee(amt) { return '₹' + Number(amt).toLocaleString('en-IN'); }
@@ -841,89 +839,12 @@ img {
       setTimeout(function(){ toast.classList.remove('show'); setTimeout(function(){ toast.remove(); }, 400); }, 4000);
     }
 
-    // Location
-    function requestLocation() {
-  // NEW CHECK: Wait for Firebase data before asking for location
-  if (!restaurantData) { 
-    showToast('Loading restaurant details, please wait a moment...', 'warning'); 
-    return; 
-  }
-
-  if (!navigator.geolocation) { 
-    showErrorModal('Not Supported', 'Your browser does not support geolocation.'); 
-    return; 
-  }
   
-  document.getElementById('locationModalContent').innerHTML =
-    '<div class="modal-icon"><div class="loading-spinner" style="border-color:rgba(37,99,235,0.2);border-top-color:var(--primary);"></div></div>' +
-    '<h2>Getting Your Location</h2><p>Please allow location access when prompted...</p>';
-    
-  navigator.geolocation.getCurrentPosition(
-    function(pos) { verifyLocation(pos.coords.latitude, pos.coords.longitude); },
-    function(err) {
-      var msg = 'Unable to access your location. ';
-      if (err.code === err.PERMISSION_DENIED) msg += 'Please allow location access.';
-      else if (err.code === err.POSITION_UNAVAILABLE) msg += 'Location unavailable.';
-      else msg += 'Request timed out.';
-      showErrorModal('Location Failed', msg);
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
-  );
-}
-
-    function verifyLocation(userLat, userLng) {
-      if (!restaurantData) { showErrorModal('Error', 'Restaurant info not loaded.'); return; }
-      if (restaurantData.skipLocationVerification === true) {
-        locationVerified = true; showMenu();
-        showToast('Welcome to ' + restaurantData.name + '!', 'success');
-        return;
-      }
-      if (!restaurantData.latitude || !restaurantData.longitude) {
-        showErrorModal('Not Configured', 'Restaurant location is not configured.');
-        return;
-      }
-      var dist = calculateDistance(userLat, userLng, parseFloat(restaurantData.latitude), parseFloat(restaurantData.longitude));
-      var radius = parseFloat(restaurantData.allowedRadius) || 1;
-      if (dist <= radius) {
-        locationVerified = true; storeLocationVerification(); showMenu();
-        showToast('Welcome! You\'re ' + (dist*1000).toFixed(0) + 'm away', 'success');
-      } else {
-        showErrorModal('Outside Range', 'You\'re ' + Math.round(dist*1000) + 'm away. Menu is available within ' + Math.round(radius*1000) + 'm of the restaurant only.');
-      }
-    }
-
-    function showErrorModal(title, message) {
-      document.getElementById('errorTitle').textContent = title;
-      document.getElementById('errorMessage').textContent = message;
-      document.getElementById('errorModal').style.display = 'flex';
-      document.getElementById('locationModal').style.display = 'none';
-    }
-
-    function retryLocation() {
-      document.getElementById('errorModal').style.display = 'none';
-      document.getElementById('locationModal').style.display = 'flex';
-      document.getElementById('locationModalContent').innerHTML =
-        '<div class="modal-icon"><svg fill="currentColor" viewBox="0 0 20 20" style="width:36px;height:36px;color:#fff;"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div>' +
-        '<h2>Location Verification</h2><p>We need to verify you\'re at or near the restaurant.</p>' +
-        '<button onclick="requestLocation()" class="btn btn-primary btn-lg">Allow Location Access</button>' +
-        '<p style="font-size:0.72rem;color:var(--text-muted);margin-top:1rem;">🔒 Location used for verification only</p>';
-    }
-
-    function showMenu() {
-      document.getElementById('locationModal').style.display = 'none';
-      document.getElementById('errorModal').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-      fetchOffersAndTrending();
-      fetchMenuItems();
-    }
 
     // ===== Fetch Offers, Combos, BOGO, Happy Hour =====
     function fetchOffersAndTrending() {
       db.ref('/restaurants/' + restaurantId + '/offers').once('value').then(function(snap) {
-        offersData = {};
-        bannerOffers = [];
-        comboOffers = [];
-        bogoItems = {};
+        offersData = {}; bannerOffers = []; comboOffers = []; bogoItems = {};
         var now = Date.now();
 
         if (snap.exists()) {
@@ -934,40 +855,28 @@ img {
             if (!isActive) return;
 
             if (offer.type === 'discount' || offer.type === 'happy_hour') {
-              // Item-specific discount
               if (offer.items && offer.items.length) {
                 offer.items.forEach(function(itemId) {
-                  offersData[itemId] = {
-                    discount: offer.discount,
-                    type: offer.type,
-                    title: offer.title
-                  };
+                  offersData[itemId] = { discount: offer.discount, type: offer.type, title: offer.title };
                 });
               }
               bannerOffers.push(offer);
             } else if (offer.type === 'combo') {
-              comboOffers.push(offer);
-              bannerOffers.push(offer);
+              comboOffers.push(offer); bannerOffers.push(offer);
             } else if (offer.type === 'bogo') {
               if (offer.items && offer.items.length) {
-                offer.items.forEach(function(itemId) {
-                  bogoItems[itemId] = { title: offer.title };
-                });
+                offer.items.forEach(function(itemId) { bogoItems[itemId] = { title: offer.title }; });
               }
               bannerOffers.push(offer);
             } else {
-              // Legacy offers without type
               if (offer.items && offer.items.length && offer.discount) {
-                offer.items.forEach(function(itemId) {
-                  offersData[itemId] = { discount: offer.discount, type: 'discount', title: offer.title };
-                });
+                offer.items.forEach(function(itemId) { offersData[itemId] = { discount: offer.discount, type: 'discount', title: offer.title }; });
               }
               if (offer.bannerText || offer.title) bannerOffers.push(offer);
             }
           });
         }
 
-        // Fetch trending
         return db.ref('/restaurants/' + restaurantId + '/trending').once('value');
       }).then(function(snap) {
         trendingData = {};
@@ -985,50 +894,126 @@ img {
       }).catch(function(err) { console.error("Error fetching offers:", err); });
     }
 
-    function renderBanners() {
-      var section = document.getElementById('offersBannerSection');
-      if (bannerOffers.length === 0) { section.style.display = 'none'; return; }
-      section.style.display = 'block';
-      section.innerHTML = '';
+  function renderBanners() {
+  var section = document.getElementById('offersBannerSection');
+  
+  // Agar koi offer nahi hai, toh section hide kar do
+  if (bannerOffers.length === 0) { 
+    section.style.display = 'none'; 
+    return; 
+  }
 
-      bannerOffers.forEach(function(offer, idx) {
-        var banner = document.createElement('div');
-        var extraClass = '';
-        var icon = '🎉';
+  section.style.display = 'block';
+  section.innerHTML = ''; // Purane saare banners clear kar do
 
-        if (offer.type === 'combo') { extraClass = ' combo-banner'; icon = '🍱'; }
-        else if (offer.type === 'bogo') { extraClass = ' bogo-banner'; icon = '🎁'; }
-        else if (offer.type === 'happy_hour') { extraClass = ' happy-banner'; icon = '⏰'; }
-        else if (offer.isTrending) { extraClass = ' trending-banner'; icon = '🔥'; }
+  // EK Single Professional Summary Banner Banayenge
+  var summaryBanner = document.createElement('div');
+  summaryBanner.className = 'offer-banner summary-banner';
+  
+  // Thoda premium look dene ke liye styling
+  summaryBanner.style.background = 'linear-gradient(135deg, #10b981, #059669)'; // Elegant Green
+  summaryBanner.style.cursor = 'pointer';
+  summaryBanner.style.display = 'flex';
+  summaryBanner.style.justifyContent = 'space-between';
+  summaryBanner.style.alignItems = 'center';
+  summaryBanner.style.padding = '0.75rem 1.25rem';
+  summaryBanner.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.2)';
 
-        banner.className = 'offer-banner' + extraClass;
-        banner.style.animationDelay = (idx * 0.15) + 's';
+  // Banner ka HTML (Left side text, Right side arrow)
+  summaryBanner.innerHTML =
+    '<div style="display:flex; align-items:center; gap:12px;">' +
+      '<span style="font-size: 1.6rem; animation: pulse 2s infinite;">🏷️</span>' +
+      '<div>' +
+        '<div style="font-weight: 800; font-size: 0.95rem;">' + bannerOffers.length + ' Exciting Offers!</div>' +
+        '<div style="font-size: 0.75rem; opacity: 0.95;">Tap to view discounts & combos</div>' +
+      '</div>' +
+    '</div>' +
+    '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity:0.8;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
 
-        var title = offer.bannerText || offer.title || 'Special Offer';
-        var desc = offer.description || offer.offerDescription || '';
+  // Button click karne par aapka banaya hua Fullscreen Popup khul jayega
+  summaryBanner.onclick = function() {
+    showWelcomeOffersPopup();
+  };
 
-        if (offer.type === 'combo') {
-          desc = desc || (offer.itemNames ? offer.itemNames.join(' + ') : '');
-          desc += ' — Just ₹' + offer.comboPrice;
-          banner.onclick = (function(o) { return function() { openCombo(o); }; })(offer);
-        }
-        if (offer.type === 'discount' || offer.type === 'happy_hour') {
-          desc = offer.discount + '% OFF' + (desc ? ' • ' + desc : '');
-        }
-        if (offer.type === 'bogo') {
-          desc = 'Buy 1 Get 1 Free' + (offer.itemNames ? ' on ' + offer.itemNames.join(', ') : '');
-        }
+  section.appendChild(summaryBanner);
+  
+  // Menu load hote hi apne aap ek baar popup dikhane ke liye:
+  // (Agar aap chahte hain ki bina click kiye auto-popup na aaye, toh is line ko hata sakte hain)
+  showWelcomeOffersPopup();
+}
 
-        banner.innerHTML =
-          '<span class="offer-icon">' + icon + '</span>' +
-          '<div class="offer-content">' +
-            '<div class="offer-title">' + title + '</div>' +
-            (desc ? '<div class="offer-desc">' + desc + '</div>' : '') +
-          '</div>' +
-          (offer.type === 'combo' ? '<span style="font-size:0.75rem;opacity:0.8;">Tap to view →</span>' : '');
-        section.appendChild(banner);
-      });
+    // ===== WELCOME OFFERS FULLSCREEN LOGIC =====
+   function showWelcomeOffersPopup() {
+  if (bannerOffers.length === 0) return;
+  var overlay = document.getElementById('initialOffersOverlay');
+  var list = document.getElementById('initialOffersList');
+  list.innerHTML = '';
+  
+  bannerOffers.forEach(function(offer, idx) {
+    var card = document.createElement('div');
+    var typeClass = 'discount';
+    var icon = '🎉';
+    
+    if (offer.type === 'combo') { typeClass = 'combo'; icon = '🍱'; }
+    else if (offer.type === 'bogo') { typeClass = 'bogo'; icon = '🎁'; }
+    else if (offer.type === 'happy_hour') { typeClass = 'happy'; icon = '⏰'; }
+    else if (offer.isTrending) { typeClass = 'trending'; icon = '🔥'; }
+
+    card.className = 'popup-offer-card ' + typeClass;
+    card.style.animationDelay = (idx * 0.15) + 's';
+    
+    var title = offer.bannerText || offer.title || 'Special Offer';
+    var desc = offer.description || offer.offerDescription || '';
+    var actionButton = '';
+
+    // COMBO CARD LOGIC
+    if (offer.type === 'combo') {
+      desc = desc || (offer.itemNames ? offer.itemNames.join(' + ') : '');
+      desc += '<br><strong style="font-size:1.15rem;">Just ₹' + offer.comboPrice + '</strong>';
+      actionButton = '<span style="font-size:0.75rem; background:rgba(255,255,255,0.3); padding:4px 10px; border-radius:12px; margin-top:8px; display:inline-block; font-weight:bold;">Tap to View Menu →</span>';
+      card.onclick = function() { closeInitialOffers(); openCombo(offer); };
+    } 
+    // NON-COMBO LOGIC (Discount, Bogo, Trending)
+    else {
+      if (offer.type === 'discount' || offer.type === 'happy_hour') {
+        desc = '<strong style="font-size:1.15rem;">' + offer.discount + '% OFF</strong>' + (desc ? '<br>' + desc : '');
+      }
+      if (offer.type === 'bogo') {
+        desc = '<strong style="font-size:1.15rem;">Buy 1 Get 1 Free</strong>' + (offer.itemNames ? '<br>on ' + offer.itemNames.join(', ') : '');
+      }
+
+      // Find Item ID associated with offer
+      var targetItemId = null;
+      if (offer.items && offer.items.length > 0) targetItemId = offer.items[0];
+      else if (offer.itemId) targetItemId = offer.itemId;
+
+      // Create "Add to Cart" Button if Item ID is present
+      if (targetItemId) {
+         actionButton = '<button onclick="quickAdd(\'' + targetItemId + '\', event)" style="margin-top:12px; background:#ffffff; color:#0f172a; border:none; padding:8px 16px; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:inline-flex; align-items:center; gap:6px;"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1 5h12m-6 0a1 1 0 100 2 1 1 0 000-2zm-6 0a1 1 0 100 2 1 1 0 000-2z"/></svg> Add to Cart</button>';
+      }
     }
+
+    card.innerHTML = 
+      '<div class="icon">' + icon + '</div>' +
+      '<div class="details" style="flex:1;">' +
+        '<h3>' + title + '</h3>' +
+        '<p>' + desc + '</p>' +
+        actionButton +
+      '</div>';
+      
+    list.appendChild(card);
+  });
+  
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+    function closeInitialOffers(e) {
+      if (e && e.target !== document.getElementById('initialOffersOverlay') && !e.target.classList.contains('combo-close-btn')) return;
+      document.getElementById('initialOffersOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    window.closeInitialOffers = closeInitialOffers;
 
     // ===== Combo Fullscreen Modal =====
     function openCombo(combo) {
@@ -1080,13 +1065,8 @@ img {
       var key = 'combo_' + (currentCombo._id || currentCombo.title);
       if (!cart[key]) {
         cart[key] = {
-          id: key,
-          name: currentCombo.title + ' (Combo)',
-          price: currentCombo.comboPrice,
-          quantity: 1,
-          plateType: 'Combo',
-          restaurantId: restaurantId,
-          isCombo: true
+          id: key, name: currentCombo.title + ' (Combo)', price: currentCombo.comboPrice,
+          quantity: 1, plateType: 'Combo', restaurantId: restaurantId, isCombo: true
         };
       } else {
         cart[key].quantity += 1;
@@ -1096,75 +1076,50 @@ img {
       closeCombo();
     }
 
-    // Fetch Restaurant (OPTIMIZED: Bypasses heavy orders/orderHistory data)
-    let activeRestaurantKey = restaurantId; // Tracks the correct database key
-  function fetchRestaurantData() {
-  if (!restaurantId) { 
-    showErrorModal('Invalid Link', 'No restaurant ID found in the link.'); 
-    var btn = document.querySelector('#errorModal button');
-    if (btn) btn.style.display = 'none';
-    return; 
-  }
-  
-  console.log("Loading data for Restaurant ID:", restaurantId);
+ function fetchRestaurantData() {
+      if (!restaurantId) { 
+        showToast('Invalid link: Restaurant ID missing.', 'error');
+        // Fallback: Hide loader on error
+        hideLoader();
+        return; 
+      }
+      
+      db.ref('/restaurants/' + restaurantId).once('value').then(function(snap) {
+        if (!snap.exists()) {
+          showToast('Invalid Restaurant Link.', 'error');
+          hideLoader();
+          return;
+        }
 
-  // ✅ FIX: Pehle check karein ki restaurant database mein exist karta bhi hai ya nahi
-  db.ref('/restaurants/' + restaurantId).once('value').then(function(snap) {
-    if (!snap.exists()) {
-      showErrorModal('Invalid Restaurant', 'This restaurant may not exist or the link is incorrect.Please check the link or contact support.');
-      var btn = document.querySelector('#errorModal button');
-      if (btn) btn.style.display = 'none'; // Try Again button hide kar dein kyunki galat ID theek nahi hogi
-      return;
-    }
+        var val = snap.val();
+        restaurantData = {
+          name: val.name || val.restaurantName || 'Restaurant Menu'
+        };
 
-    var val = snap.val();
-    var name = val.name || val.restaurantName || 'Restaurant Menu'; 
-    var skipLoc = val.skipLocationVerification || false;
-    var lat = val.latitude;
-    var lng = val.longitude;
+        document.getElementById('restaurantName').textContent = restaurantData.name;
+        
+        // Fetch Menu and Offers
+        fetchOffersAndTrending();
+        fetchMenuItems();
 
-    restaurantData = {
-      name: name,
-      skipLocationVerification: skipLoc,
-      latitude: lat,
-      longitude: lng
-    };
-
-    document.getElementById('restaurantName').textContent = restaurantData.name;
-    
-    // Location verification logic
-    if (restaurantData.skipLocationVerification === true || !lat || !lng) {
-      locationVerified = true; 
-      storeLocationVerification();
-      document.getElementById('locationModal').style.display = 'none';
-      showMenu(); 
-    } else if (locationVerified) {
-      document.getElementById('locationModal').style.display = 'none';
-      showMenu(); 
-    } else {
-      document.getElementById('locationModal').style.display = 'flex';
-    }
-
-  }).catch(function(error) { 
-    console.error("Firebase Error:", error);
-    showErrorModal('Network Error', 'Could not load restaurant data.'); 
-  });
-}
-
-    // Fetch Menu
-    function fetchMenuItems() {
-      db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
-        document.getElementById('loadingState').style.display = 'none';
-        var data = snap.val();
-        if (!data) { document.getElementById('emptyMenu').style.display = 'block'; return; }
-        originalItems = Object.entries(data)
-          .map(function(entry) { return Object.assign({ id: entry[0] }, entry[1]); })
-          .filter(function(i) { return i.name && i.active !== false; });
-        buildCategories();
-        applyFilters();
+      }).catch(function(error) { 
+        console.error("Firebase Error:", error);
+        showToast('Network Error loading restaurant.', 'error');
+        hideLoader();
       });
     }
 
+    // Helper function to safely hide the full screen loader
+    function hideLoader() {
+      var loader = document.getElementById('fullScreenLoader');
+      if(loader) {
+          loader.style.opacity = '0';
+          setTimeout(function() { 
+              loader.style.visibility = 'hidden'; 
+              loader.style.display = 'none'; 
+          }, 600);
+      }
+    }
     function buildCategories() {
       var cats = [];
       originalItems.forEach(function(i) {
@@ -1176,8 +1131,7 @@ img {
       cats.forEach(function(cat) {
         if (cat !== 'drinks') {
           var btn = document.createElement('button');
-          btn.setAttribute('data-cat', cat);
-          btn.className = 'cat-btn';
+          btn.setAttribute('data-cat', cat); btn.className = 'cat-btn';
           btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
           container.appendChild(btn);
         }
@@ -1185,19 +1139,17 @@ img {
       container.querySelectorAll('.cat-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
           container.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
-          e.currentTarget.classList.add('active');
-          applyFilters();
+          e.currentTarget.classList.add('active'); applyFilters();
         });
       });
     }
 
-    // Render Menu Items with discount/bogo/happy hour badges
+    // Render Menu Items
     function renderMenuItems(items) {
       var grid = document.getElementById('menuGrid');
       var noRes = document.getElementById('noResults');
       if (!items.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
-      noRes.style.display = 'none';
-      grid.innerHTML = '';
+      noRes.style.display = 'none'; grid.innerHTML = '';
 
       items.forEach(function(item, idx) {
         var card = document.createElement('div');
@@ -1212,40 +1164,26 @@ img {
         var longName = item.name.length > 40;
         var nameId = 'name-' + item.id;
 
-        // Check for discount
         var offer = offersData[item.id];
         var isTrending = trendingData[item.id];
         var isBogo = bogoItems[item.id];
         var discountPercent = 0;
 
-        if (offer && offer.discount) {
-          discountPercent = parseFloat(offer.discount);
-        }
+        if (offer && offer.discount) discountPercent = parseFloat(offer.discount);
 
         var originalPrice = parseFloat(item.fullPlatePrice || item.price || 0);
         var discountedPrice = discountPercent > 0 ? Math.round(originalPrice - (originalPrice * discountPercent / 100)) : originalPrice;
 
-        // Discount badge HTML
         var discountBadgeHTML = '';
-        if (discountPercent > 0 && offer && offer.type === 'happy_hour') {
-          discountBadgeHTML = '<div class="discount-badge happy-badge">⏰ ' + discountPercent + '% OFF</div>';
-        } else if (discountPercent > 0) {
-          discountBadgeHTML = '<div class="discount-badge">' + discountPercent + '% OFF</div>';
-        } else if (isBogo) {
-          discountBadgeHTML = '<div class="discount-badge bogo-badge">🎁 B1G1</div>';
-        } else if (isTrending) {
-          discountBadgeHTML = '<div class="discount-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🔥 Trending</div>';
-        }
+        if (discountPercent > 0 && offer && offer.type === 'happy_hour') discountBadgeHTML = '<div class="discount-badge happy-badge">⏰ ' + discountPercent + '% OFF</div>';
+        else if (discountPercent > 0) discountBadgeHTML = '<div class="discount-badge">' + discountPercent + '% OFF</div>';
+        else if (isBogo) discountBadgeHTML = '<div class="discount-badge bogo-badge">🎁 B1G1</div>';
+        else if (isTrending) discountBadgeHTML = '<div class="discount-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🔥 Trending</div>';
 
-        // Price tag
         var priceTagHTML = '';
-        if (discountPercent > 0) {
-          priceTagHTML = '<span class="original-price">' + formatRupee(originalPrice) + '</span>' + formatRupee(discountedPrice);
-        } else {
-          priceTagHTML = formatRupee(originalPrice);
-        }
+        if (discountPercent > 0) priceTagHTML = '<span class="original-price">' + formatRupee(originalPrice) + '</span>' + formatRupee(discountedPrice);
+        else priceTagHTML = formatRupee(originalPrice);
 
-        // Plate options
         var plateOptions = '';
         if (item.hasPlateType) {
           var halfOrig = parseFloat(item.halfPlatePrice || (item.price/2) || 0);
@@ -1324,43 +1262,66 @@ img {
       renderMenuItems(filtered);
     }
 
-    // Cart - applies discounted price
-    function addToCart(id, name, encoded, imageUrl) {
-      try {
-        var item = JSON.parse(decodeURIComponent(encoded));
-        var qty = document.getElementById('qty-' + id).value;
-        var plate = document.getElementById('plate-' + id).value;
-        if (!plate) { showToast('Please select plate type', 'warning'); return; }
-        if (!qty) { showToast('Please select quantity', 'warning'); return; }
-        var key = id + '_' + plate;
+    // Cart
+  function addToCart(id, name, encoded, imageUrl) {
+  try {
+    var e = window.event; 
+    var item = JSON.parse(decodeURIComponent(encoded));
+    var qty = document.getElementById('qty-' + id).value;
+    var plate = document.getElementById('plate-' + id).value;
+    
+    if (!plate) { showToast('Please select plate type', 'warning'); return; }
+    if (!qty) { showToast('Please select quantity', 'warning'); return; }
+    
+    var key = id + '_' + plate;
+    var originalPrice = plate === 'Standard' ? parseFloat(item.price||0) : getItemPrice(item, plate);
+    var finalPrice = originalPrice;
 
-        var price = plate === 'Standard' ? parseFloat(item.price||0) : getItemPrice(item, plate);
+    // Normal Discount Logic
+    var offer = offersData[id];
+    var discountPercent = 0;
+    if (offer && offer.discount) discountPercent = parseFloat(offer.discount);
+    if (discountPercent > 0) finalPrice = Math.round(originalPrice - (originalPrice * discountPercent / 100));
 
-        // Apply discount
-        var offer = offersData[id];
-        var discountPercent = 0;
-        if (offer && offer.discount) discountPercent = parseFloat(offer.discount);
-        if (discountPercent > 0) price = Math.round(price - (price * discountPercent / 100));
+    var isBogo = bogoItems[id] ? true : false;
+    var inputQty = parseInt(qty);
 
-        // BOGO: if buying qty >= 2, make every second one free
-        var isBogo = bogoItems[id];
-        var effectiveQty = parseInt(qty);
-        if (isBogo && effectiveQty >= 1) {
-          // Add double qty at same price (buy 1 get 1)
-          effectiveQty = effectiveQty * 2;
-          showToast('🎁 B1G1 applied! ' + effectiveQty + ' items for price of ' + qty, 'success');
-        }
-
-     if (!cart[key]) cart[key] = { id: id, name: name, price: price, quantity: 0, plateType: plate, imageUrl: imageUrl||'', restaurantId: restaurantId, hasPlateType: item.hasPlateType||false, isBogo: isBogo ? true : false };
-        cart[key].quantity += effectiveQty;
-        updateCartDisplay();
-        if (!isBogo) showToast(name + (plate!=='Standard'?' ('+plate+')':'') + ' x' + qty + ' added!', 'success');
-        showUpsell(name);
-        document.getElementById('qty-' + id).value = '';
-        document.getElementById('plate-' + id).value = '';
-      } catch(e) { showToast('Error adding item', 'error'); console.error(e); }
+    // 1. Add the Paid Item
+    if (!cart[key]) {
+      cart[key] = { id: id, name: name, quantity: 0, plateType: plate, imageUrl: imageUrl||'', restaurantId: restaurantId, hasPlateType: item.hasPlateType||false, isBogo: false, price: finalPrice, originalPrice: originalPrice };
+    } else {
+      cart[key].price = finalPrice;
     }
+    cart[key].quantity += inputQty;
 
+    // 2. Add the FREE Item (If BOGO is active)
+    if (isBogo) {
+      var freeKey = id + '_' + plate + '_free';
+      if (!cart[freeKey]) {
+        cart[freeKey] = { id: freeKey, name: name + ' (FREE)', quantity: 0, plateType: plate, imageUrl: imageUrl||'', restaurantId: restaurantId, hasPlateType: item.hasPlateType||false, isBogo: true, price: 0, originalPrice: originalPrice };
+      }
+      cart[freeKey].quantity += inputQty;
+    }
+    
+    updateCartDisplay();
+    
+    // Flying Animation
+    if (e) animateFlyingItem(e, imageUrl || 'images/default.png');
+
+    // Show correct Toast Message
+    if (!isBogo) {
+      showToast(inputQty + 'x ' + name + ' added!', 'success');
+    } else {
+      showToast('🎁 B1G1! ' + (inputQty * 2) + 'x ' + name + ' added!', 'success');
+    }
+    
+    showUpsell(name);
+    document.getElementById('qty-' + id).value = '';
+    document.getElementById('plate-' + id).value = '';
+  } catch(err) { 
+    showToast('Error adding item', 'error'); console.error(err); 
+  }
+}
     function updateCartDisplay() {
       var count = document.getElementById('cart-count');
       var countM = document.getElementById('cart-count-mobile');
@@ -1387,9 +1348,9 @@ img {
     window.closeRecommend = closeRecommend;
 
     // Init
-  // Init (Optimized)
+  // Init - Direct load bina location verify kiye
     function init() {
-      if (!restaurantId) { showErrorModal('Invalid', 'No restaurant ID in URL.'); return; }
+      if (!restaurantId) { showToast('Invalid restaurant ID in URL.', 'error'); return; }
       try {
         var saved = localStorage.getItem('cart_' + restaurantId);
         if (saved) {
@@ -1400,52 +1361,155 @@ img {
         }
       } catch(e) { cart = {}; }
       
-      // Agar location pehle se verified hai, toh sirf data fetch karein
-      if (locationVerified) {
-        fetchRestaurantData();
-      } else {
-        fetchRestaurantData(); // Yeh location modals ko handle kar lega
-      }
+      // Seedha data fetch call karo
+      fetchRestaurantData();
       updateCartDisplay();
     }
 
-    // Expose globals
     window.addToCart = addToCart;
-    window.requestLocation = requestLocation;
-    window.retryLocation = retryLocation;
     window.goToCart = goToCart;
     window.toggleVegMode = toggleVegMode;
     window.closeCombo = closeCombo;
     window.closeComboOverlay = closeComboOverlay;
     window.addComboToCart = addComboToCart;
 
-   document.addEventListener('DOMContentLoaded', function() {
-  
-  // 1. Recommend Button Setup
-  document.getElementById('addRecommendBtn').onclick = function() {
-    var key = 'upsell_' + recommendedItem.id;
-    if (!cart[key]) cart[key] = { id: key, name: recommendedItem.name, price: recommendedItem.price, quantity: 1, plateType: 'Standard', restaurantId: restaurantId };
-    else cart[key].quantity += 1;
-    updateCartDisplay();
-    closeRecommend();
-  };
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('addRecommendBtn').onclick = function() {
+        var key = 'upsell_' + recommendedItem.id;
+        if (!cart[key]) cart[key] = { id: key, name: recommendedItem.name, price: recommendedItem.price, quantity: 1, plateType: 'Standard', restaurantId: restaurantId };
+        else cart[key].quantity += 1;
+        updateCartDisplay(); closeRecommend();
+      };
 
-  // 2. Wait for Firebase Login to complete before calling init()
-  firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      console.log("Login successful! Fetching menu data...");
-      
-      if (locationVerified) {
-        document.getElementById('locationModal').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          console.log("Login successful! Fetching menu data...");
+          init(); // Menu loading start
+        }
+      });
+    });
+
+    // Function for direct "Add to Cart" from Fullscreen Offers Popup
+    window.quickAdd = function(itemId, event) {
+      if(event) event.stopPropagation();
+
+      if (!originalItems || originalItems.length === 0) {
+        showToast('Loading menu, please wait...', 'warning');
+        return;
+      }
+
+      var item = originalItems.find(function(i) { return i.id === itemId; });
+      if(!item) {
+        showToast('Item details not found', 'error');
+        return;
+      }
+
+      var plate = item.hasPlateType ? 'Full' : 'Standard';
+      var qty = 1;
+      var key = item.id + '_' + plate;
+
+      var originalPrice = plate === 'Standard' ? parseFloat(item.price||0) : parseFloat(item.fullPlatePrice || item.price || 0);
+      var finalPrice = originalPrice;
+
+      var offer = offersData[item.id];
+      var discountPercent = 0;
+      if (offer && offer.discount) discountPercent = parseFloat(offer.discount);
+      if (discountPercent > 0) {
+        finalPrice = Math.round(originalPrice - (originalPrice * discountPercent / 100));
+      }
+
+      var isBogo = bogoItems[item.id];
+      var effectiveQty = qty;
+      if (isBogo && effectiveQty >= 1) {
+        effectiveQty = effectiveQty * 2;
+        finalPrice = finalPrice / 2;
+      }
+
+      if (!cart[key]) {
+        cart[key] = { 
+          id: item.id, name: item.name, quantity: 0, plateType: plate, 
+          imageUrl: item.imageUrl||'', restaurantId: restaurantId, 
+          hasPlateType: item.hasPlateType||false, isBogo: isBogo ? true : false, 
+          price: finalPrice, originalPrice: originalPrice 
+        };
+      } else {
+        cart[key].price = finalPrice;
       }
       
-      // Data fetch karna ab start hoga jab user properly authenticate ho chuka hai
-      init(); 
-    }
-  });
+      cart[key].quantity += effectiveQty;
+      updateCartDisplay();
 
-});
+      // Flying Animation
+      if(event) animateFlyingItem(event, item.imageUrl || 'images/default.png');
+
+      if (!isBogo) {
+        showToast(item.name + ' added at ' + formatRupee(finalPrice), 'success');
+      } else {
+        showToast('🎁 B1G1! 2x ' + item.name + ' added', 'success');
+      }
+    };
+
+    // --- FLYING ANIMATION FUNCTION ---
+    function animateFlyingItem(event, imageUrl) {
+      if (!imageUrl || !event) return;
+
+      var mobileCart = document.querySelector('.floating-cart');
+      var desktopCart = document.querySelector('.desktop-cart');
+      var targetCart = (mobileCart && getComputedStyle(mobileCart).display !== 'none') ? mobileCart : desktopCart;
+      
+      if (!targetCart) return;
+
+      var flyingImg = document.createElement('img');
+      flyingImg.src = imageUrl;
+      flyingImg.className = 'flying-item';
+      
+      var rect = event.target.getBoundingClientRect();
+      flyingImg.style.left = rect.left + 'px';
+      flyingImg.style.top = rect.top + 'px';
+      flyingImg.style.width = '40px';
+      flyingImg.style.height = '40px';
+
+      document.body.appendChild(flyingImg);
+
+      var targetRect = targetCart.getBoundingClientRect();
+
+      requestAnimationFrame(function() {
+        flyingImg.style.left = (targetRect.left + (targetRect.width / 2) - 10) + 'px';
+        flyingImg.style.top = (targetRect.top + (targetRect.height / 2) - 10) + 'px';
+        flyingImg.style.width = '20px';
+        flyingImg.style.height = '20px';
+        flyingImg.style.opacity = '0.2';
+      });
+
+      setTimeout(function() {
+        flyingImg.remove();
+        targetCart.classList.add('cart-bump');
+        setTimeout(function() { targetCart.classList.remove('cart-bump'); }, 300);
+      }, 700);
+    }
+    function fetchMenuItems() {
+      db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
+        var data = snap.val();
+        if (!data) { 
+          document.getElementById('emptyMenu').style.display = 'block'; 
+          hideLoader(); // Loader hatao agar menu empty hai
+          return; 
+        }
+        
+        originalItems = Object.entries(data)
+          .map(function(entry) { return Object.assign({ id: entry[0] }, entry[1]); })
+          .filter(function(i) { return i.name && i.active !== false; });
+          
+        buildCategories(); 
+        applyFilters();
+
+        // 💥 Loader Successfully Hide
+        hideLoader();
+      }).catch(function(err) {
+        console.error("Menu fetch error:", err);
+        hideLoader();
+      });
+    }
   </script>
 </body>
 </html>

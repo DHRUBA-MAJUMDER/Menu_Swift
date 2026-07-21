@@ -751,8 +751,7 @@
       localStorage.setItem(`recent_orders_${restaurantId}`, JSON.stringify(recentOrders));
       renderRecentOrders();
     }
-
-  function renderCart() {
+function renderCart() {
       const container = document.getElementById('cartItemsContainer');
       const emptyCart = document.getElementById('emptyCart');
       const orderSummaryCard = document.getElementById('orderSummaryCard');
@@ -775,24 +774,21 @@
 
       let subtotal = 0;
 
-      // Single, clean loop for both BOGO and standard pricing
       cart.forEach((item, index) => {
-        // Read the exact plate price set by menu.html
-        const unitPrice = Number(item.price || item.unitPrice || 0);
-        
-        let itemSubtotal = 0;
-        let bogoBadge = '';
-        
-        if (item.isBogo) {
-          // Pay for half the items, get the other half free
-          const paidQty = Math.ceil(item.quantity / 2);
-          itemSubtotal = paidQty * unitPrice;
-          bogoBadge = '<span class="badge" style="background:#059669; color:white; font-size:0.65rem; margin-left:8px;">🎁 BOGO</span>';
-        } else {
-          itemSubtotal = unitPrice * item.quantity;
-        }
-
+        const unitPrice = Number(item.price || 0);
+        const itemSubtotal = unitPrice * item.quantity;
         subtotal += itemSubtotal;
+
+        let bogoBadge = '';
+        let actionButton = '';
+
+        // Free item ke liye invisible placeholder button taaki alignment bilkul theek rahe
+        if (item.isBogo && item.price === 0) {
+          bogoBadge = '<span class="badge" style="background:#059669; color:white; font-size:0.65rem; margin-left:8px;">🎁 FREE</span>';
+          actionButton = `<button class="remove-btn" style="visibility: hidden; pointer-events: none;" aria-hidden="true">✕ Remove</button>`;
+        } else {
+          actionButton = `<button class="remove-btn" onclick="removeItem(${index})">✕ Remove</button>`;
+        }
 
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item';
@@ -807,7 +803,7 @@
             <span class="price">₹${itemSubtotal.toFixed(2)}</span>
           </div>
           <div class="item-actions">
-            <button class="remove-btn" onclick="removeItem(${index})">✕ Remove</button>
+            ${actionButton}
           </div>
         `;
         container.appendChild(itemEl);
@@ -820,7 +816,6 @@
       document.getElementById('taxAmount').textContent = `₹${gstAmount.toFixed(2)}`;
       document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
     }
-
     function renderRecentOrders() {
       const container = document.getElementById('recentOrdersContainer');
       const noOrders = document.getElementById('noRecentOrders');
@@ -863,11 +858,33 @@
       });
     }
 
-    function removeItem(index) {
+   function removeItem(index) {
       if (index >= 0 && index < cart.length) {
-        const item = document.querySelectorAll('.cart-item')[index];
-        if (item) { item.style.animation = 'fadeInLeft 0.3s ease reverse'; }
-        setTimeout(() => { cart.splice(index,1); saveCart(); renderCart(); }, 300);
+        // Jo item delete karna hai usko save kar liya
+        const removedItem = cart[index];
+        const itemEl = document.querySelectorAll('.cart-item')[index];
+        
+        // Remove animation trigger karein
+        if (itemEl) { itemEl.style.animation = 'fadeInLeft 0.3s ease reverse'; }
+        
+        setTimeout(() => {
+          // 100% FIXED LOGIC: Naya array banayenge jisme deleted item aur uska Free version nahi hoga
+          cart = cart.filter((item, i) => {
+            // 1. Paid item ko remove karo (jis par button click hua hai)
+            if (i === index) return false;
+            
+            // 2. Uske FREE item ko remove karo (Name, PlateType aur Price match karke)
+            if (item.isBogo && item.price === 0 && item.name === removedItem.name + ' (FREE)' && item.plateType === removedItem.plateType) {
+              return false; 
+            }
+            
+            // Baaki items safe rahenge
+            return true; 
+          });
+          
+          saveCart();
+          renderCart();
+        }, 300); // 300ms ka wait animation complete hone ke liye
       }
     }
 
@@ -921,16 +938,11 @@
       }, 5000);
     }
 
-    async function submitOrder() {
-      // --- NEW BOGO SUBTOTAL LOGIC ---
+   async function submitOrder() {
+      // --- NEW SIMPLE SUBTOTAL LOGIC ---
       let subtotal = 0;
       cart.forEach(item => { 
-        const unitPrice = Number(item.price || 0);
-        if (item.isBogo) {
-          subtotal += (Math.ceil(item.quantity / 2) * unitPrice);
-        } else {
-          subtotal += (unitPrice * item.quantity);
-        }
+        subtotal += (Number(item.price || 0) * item.quantity);
       });
       // ---------------------------------
 
@@ -951,14 +963,106 @@
         showMessage('error','❌ Please select a payment method.');
         return;
       }
-     if (selectedPaymentType === 'online' && !screenshotBase64) {
-    showMessage('error','❌ Please upload your payment screenshot.');
-    return;
-  }
+      if (selectedPaymentType === 'online' && !screenshotBase64) {
+        showMessage('error','❌ Please upload your payment screenshot.');
+        return;
+      }
 
-  submitBtn.disabled = true;
-  loading.classList.add('show');
+      submitBtn.disabled = true;
+      loading.classList.add('show');
 
+      try {
+        let finalScreenshotUrl = null;
+
+        // CLOUDINARY UPLOAD SECTION
+        if (selectedPaymentType === 'online') {
+          const fileInput = document.getElementById('screenshotInput');
+          if (fileInput.files.length > 0) {
+            console.log("Compressing image...");
+            const originalFile = fileInput.files[0];
+            const compressedFile = await compressImage(originalFile); 
+            console.log("Image compressed successfully!");
+
+            const formData = new FormData();
+            formData.append("file", compressedFile); 
+            formData.append("upload_preset", "unsigned_preset"); 
+
+            const res = await fetch("https://api.cloudinary.com/v1_1/dlko55uxs/image/upload", {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                console.error("Cloudinary Error Details:", data);
+                throw new Error("Screenshot upload fail ho gaya. Kripya try again.");
+            }
+
+            finalScreenshotUrl = data.secure_url || ""; 
+          }
+        }
+        
+        const orderId = Date.now().toString();
+        const order = {
+          restaurantId: restaurantId,
+          customerName: name,
+          tableNumber: table,
+          orderType: type,
+          paymentType: selectedPaymentType,
+          paymentVerified: selectedPaymentType === 'counter' ? true : false,
+          paymentScreenshot: finalScreenshotUrl,
+
+          // --- FIXED CART ITEMS MAPPING ---
+          cartItems: cart.map(item => {
+            const unitPrice = Number(item.price || 0);
+            return { 
+              name: item.name, 
+              plateType: item.plateType || "Standard", 
+              quantity: item.quantity, 
+              unitPrice: unitPrice, 
+              totalPrice: unitPrice * item.quantity,
+              isBogo: item.isBogo || false
+            };
+          }),
+          // ---------------------------------
+
+          subtotal: subtotal,
+          gstPercent: gstPercent,
+          gstAmount: gstAmount,
+          totalAmount: totalPrice,
+          timestamp: Date.now(),
+          status: "new"
+        };
+
+        await db.ref(`restaurants/${restaurantId}/orders/${orderId}`).set(order);
+        saveRecentOrder(order);
+        localStorage.removeItem(`cart_${restaurantId}`);
+        cart = [];
+        document.getElementById('customerName').value = '';
+        document.getElementById('tableNumber').value = '';
+        document.getElementById('orderType').selectedIndex = 0;
+        selectedPaymentType = null;
+        screenshotBase64 = null;
+        document.getElementById('payCounterCard').classList.remove('selected');
+        document.getElementById('payOnlineCard').classList.remove('selected');
+        document.getElementById('onlinePaymentSection').classList.remove('show');
+
+        goToStep(1);
+        renderCart();
+
+        if (order.paymentType === 'online') {
+          showSuccessAlert('Order Submitted! 💳', 'Your order has been placed with online payment.<br>Please show the screenshot at the counter for verification.');
+        } else {
+          showSuccessAlert('Order Submitted! 👨‍🍳', 'Your order is being prepared.<br>Please pay at the counter when ready!');
+        }
+      } catch (err) {
+        console.error('Submit error:', err);
+        showMessage('error','❌ Failed to submit order. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        loading.classList.remove('show');
+      }
+    
   try {
     let finalScreenshotUrl = null;
 
