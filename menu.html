@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu - MenuSwift</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://menuswift-fe577-default-rtdb.firebaseio.com">
   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -586,33 +590,49 @@
       50% { transform: scale(1.3); }
       100% { transform: scale(1); }
     }
+
+    /* ===== PREMIUM SKELETON LOADER (MATCHING UI) ===== */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    .skeleton-card {
+      background: var(--card-bg); 
+      border: 1px solid var(--border);
+      border-radius: var(--radius); 
+      overflow: hidden;
+      display: flex; 
+      flex-direction: column;
+      box-shadow: var(--shadow-xs);
+    }
+    .skel-img { width: 100%; height: 160px; }
+    @media (min-width: 640px) { .skel-img { height: 180px; } }
+    @media (max-width: 480px) { .skel-img { height: 130px; } }
+    
+    .skel-body { padding: 0.75rem; flex: 1; display: flex; flex-direction: column; }
+    .skel-badge { width: 45px; height: 18px; border-radius: 6px; margin-bottom: 8px; }
+    .skel-title { width: 70%; height: 16px; border-radius: 4px; margin-bottom: 12px; }
+    .skel-actions { margin-top: auto; display: flex; flex-direction: column; gap: 0.375rem; }
+    .skel-select { width: 100%; height: 32px; border-radius: 8px; }
+    .skel-controls { display: flex; gap: 0.375rem; }
+    .skel-qty { flex: 1; height: 32px; border-radius: 8px; }
+    .skel-btn { width: 65px; height: 32px; border-radius: 8px; }
   </style>
 </head>
 <body>
-
-  <!-- NEW FULL-SCREEN MODERN LOADER -->
-  <div id="fullScreenLoader" style="position:fixed; inset:0; background:var(--surface); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease, visibility 0.6s ease;">
-    <!-- Logo / Brand Icon -->
-    <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--primary), #7c3aed); border-radius:24px; display:flex; align-items:center; justify-content:center; margin-bottom:2rem; box-shadow:0 12px 32px rgba(37,99,235,0.25); animation:pulse 2s infinite;">
-      <svg width="40" height="40" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-    </div>
+  <body>
+  <!-- 2-SECOND LOGO SPLASH SCREEN -->
+  <div id="splashScreen" style="position:fixed; inset:0; background:var(--surface); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.5s ease, visibility 0.5s ease;">
+    <!-- Menu Swift Logo -->
+   <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="Menu Swift Technology" style="width: 120px; height: auto; margin-bottom: 1.5rem; animation: pulse 2s infinite; mix-blend-mode: multiply;">
     
-    <h2 style="font-size:1.4rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; letter-spacing:-0.03em;">MenuSwift</h2>
-    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:2rem;">Preparing your digital menu...</p>
-    
-    <!-- Modern Progress Bar -->
-    <div style="width: 200px; height: 6px; background: var(--surface-3); border-radius: 10px; overflow: hidden; position: relative;">
-      <div style="position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: linear-gradient(90deg, var(--primary), #7c3aed); border-radius: 10px; animation: progressSlide 1.5s ease-in-out infinite alternate;"></div>
-    </div>
+    <h2 style="font-size:1.6rem; font-weight:800; background: linear-gradient(135deg, var(--primary), #000000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing:-0.03em;">Menu Swift</h2>
   </div>
-  
-  <style>
-    @keyframes progressSlide {
-      0% { left: 0; width: 30%; }
-      50% { width: 60%; }
-      100% { left: 70%; width: 30%; }
-    }
-  </style>
 
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
@@ -714,15 +734,115 @@
       </div>
     </div>
 
-    <main class="menu-section">
+   <main class="menu-section">
+      <!-- SKELETON LOADER (Actual UI se 100% matching) -->
+      <div id="skeletonLoader" class="menu-grid">
+        <!-- Card 1 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title" style="width: 50%;"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title" style="width: 80%;"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title" style="width: 60%;"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card 5 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title" style="width: 75%;"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Card 6 -->
+        <div class="skeleton-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-body">
+            <div class="skeleton skel-badge"></div>
+            <div class="skeleton skel-title" style="width: 55%;"></div>
+            <div class="skel-actions">
+              <div class="skeleton skel-select"></div>
+              <div class="skel-controls">
+                <div class="skeleton skel-qty"></div>
+                <div class="skeleton skel-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yahan aapka asali menu grid render hoga -->
+   
+     <!-- Yahan aapka asali menu grid render hoga -->
       <div id="menuGrid" class="menu-grid"></div>
+      
+      <!-- FIXED: Proper wrapper for No Results -->
       <div id="noResults" class="state-card" style="display:none;">
         <div class="state-icon" style="background:var(--surface-3);">
           <svg width="28" height="28" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         </div>
-        <h3>No dishes found</h3>
-        <p>Try adjusting your search or filters</p>
+       <h3>No dishes found</h3>
+       <p>Try adjusting your search or filters</p>
       </div>
+
       <div id="emptyMenu" class="state-card" style="display:none;">
         <div class="state-icon" style="background:var(--surface-3);">
           <svg width="28" height="28" fill="none" stroke="var(--text-muted)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -731,7 +851,8 @@
         <p>Our chefs are preparing something special</p>
       </div>
     </main>
-  </div>
+      
+    
 
   <!-- Floating Cart Button (mobile) -->
   <button class="floating-cart" onclick="goToCart()">
@@ -842,9 +963,25 @@
   
 
     // ===== Fetch Offers, Combos, BOGO, Happy Hour =====
+   // ===== Fetch Offers, Combos, BOGO, Happy Hour (With Instant Caching) =====
     function fetchOffersAndTrending() {
+      // 💥 1. INSTANT LOAD FROM CACHE
+      var cachedOffers = localStorage.getItem('offersData_' + restaurantId);
+      if (cachedOffers) {
+        try {
+          var parsed = JSON.parse(cachedOffers);
+          offersData = parsed.offersData || {};
+          bannerOffers = parsed.bannerOffers || [];
+          comboOffers = parsed.comboOffers || [];
+          bogoItems = parsed.bogoItems || {};
+          trendingData = parsed.trendingData || {};
+          renderBanners();
+        } catch(e) { console.error("Offers cache read error", e); }
+      }
+
+      // 💥 2. FETCH FROM FIREBASE IN BACKGROUND
       db.ref('/restaurants/' + restaurantId + '/offers').once('value').then(function(snap) {
-        offersData = {}; bannerOffers = []; comboOffers = []; bogoItems = {};
+        var tempOffersData = {}; var tempBannerOffers = []; var tempComboOffers = []; var tempBogoItems = {};
         var now = Date.now();
 
         if (snap.exists()) {
@@ -857,43 +994,60 @@
             if (offer.type === 'discount' || offer.type === 'happy_hour') {
               if (offer.items && offer.items.length) {
                 offer.items.forEach(function(itemId) {
-                  offersData[itemId] = { discount: offer.discount, type: offer.type, title: offer.title };
+                  tempOffersData[itemId] = { discount: offer.discount, type: offer.type, title: offer.title };
                 });
               }
-              bannerOffers.push(offer);
+              tempBannerOffers.push(offer);
             } else if (offer.type === 'combo') {
-              comboOffers.push(offer); bannerOffers.push(offer);
+              tempComboOffers.push(offer); tempBannerOffers.push(offer);
             } else if (offer.type === 'bogo') {
               if (offer.items && offer.items.length) {
-                offer.items.forEach(function(itemId) { bogoItems[itemId] = { title: offer.title }; });
+                offer.items.forEach(function(itemId) { tempBogoItems[itemId] = { title: offer.title }; });
               }
-              bannerOffers.push(offer);
+              tempBannerOffers.push(offer);
             } else {
               if (offer.items && offer.items.length && offer.discount) {
-                offer.items.forEach(function(itemId) { offersData[itemId] = { discount: offer.discount, type: 'discount', title: offer.title }; });
+                offer.items.forEach(function(itemId) { tempOffersData[itemId] = { discount: offer.discount, type: 'discount', title: offer.title }; });
               }
-              if (offer.bannerText || offer.title) bannerOffers.push(offer);
+              if (offer.bannerText || offer.title) tempBannerOffers.push(offer);
             }
           });
         }
 
-        return db.ref('/restaurants/' + restaurantId + '/trending').once('value');
-      }).then(function(snap) {
-        trendingData = {};
-        if (snap.exists()) {
-          snap.forEach(function(child) {
-            var trend = child.val();
-            if (trend.active !== false && trend.itemId) trendingData[trend.itemId] = trend;
-            if (trend.active !== false && (trend.bannerText || trend.title)) {
-              bannerOffers.push(Object.assign({}, trend, { isTrending: true }));
+        return db.ref('/restaurants/' + restaurantId + '/trending').once('value').then(function(trendSnap) {
+            var tempTrendingData = {};
+            if (trendSnap.exists()) {
+              trendSnap.forEach(function(child) {
+                var trend = child.val();
+                if (trend.active !== false && trend.itemId) tempTrendingData[trend.itemId] = trend;
+                if (trend.active !== false && (trend.bannerText || trend.title)) {
+                  tempBannerOffers.push(Object.assign({}, trend, { isTrending: true }));
+                }
+              });
             }
-          });
-        }
-        renderBanners();
-        if (originalItems.length > 0) applyFilters();
+            
+            // Update Variables
+            offersData = tempOffersData;
+            bannerOffers = tempBannerOffers;
+            comboOffers = tempComboOffers;
+            bogoItems = tempBogoItems;
+            trendingData = tempTrendingData;
+            
+            // 💥 SAVE TO CACHE FOR NEXT TIME
+            var cacheObject = {
+               offersData: offersData,
+               bannerOffers: bannerOffers,
+               comboOffers: comboOffers,
+               bogoItems: bogoItems,
+               trendingData: trendingData
+            };
+            localStorage.setItem('offersData_' + restaurantId, JSON.stringify(cacheObject));
+            
+            renderBanners();
+            if (originalItems.length > 0) applyFilters(); // Refresh prices based on new offers
+        });
       }).catch(function(err) { console.error("Error fetching offers:", err); });
     }
-
   function renderBanners() {
   var section = document.getElementById('offersBannerSection');
   
@@ -1146,6 +1300,10 @@
 
     // Render Menu Items
     function renderMenuItems(items) {
+      // 🔥 FAILSAFE: Jaise hi real menu items aayein, skeleton ko turant uda do
+      var skeleton = document.getElementById('skeletonLoader');
+      if (skeleton) skeleton.style.display = 'none';
+
       var grid = document.getElementById('menuGrid');
       var noRes = document.getElementById('noResults');
       if (!items.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
@@ -1487,29 +1645,80 @@
         setTimeout(function() { targetCart.classList.remove('cart-bump'); }, 300);
       }, 700);
     }
+   // ===== AGGRESSIVE IMAGE CACHING =====
+    function forceCacheImages(items) {
+      // 1 second ka delay taaki pehle UI smooth load ho jaye, phir images cache hon
+      setTimeout(function() {
+        items.forEach(function(item) {
+          if (item.imageUrl && item.imageUrl.includes('http')) {
+            // Yeh browser ko force karta hai image network se utha kar cache me daalne ko
+            var img = new Image();
+            img.src = item.imageUrl;
+          }
+        });
+      }, 1000); 
+    }
+
+    // ===== FETCH MENU ITEMS (With Instant Caching) =====
     function fetchMenuItems() {
+      // 💥 1. LOAD FROM CACHE FIRST (Instant Load)
+      var cachedMenu = localStorage.getItem('menuData_' + restaurantId);
+      if (cachedMenu) {
+        try {
+          originalItems = JSON.parse(cachedMenu);
+          buildCategories(); 
+          applyFilters();
+          hideLoader(); // Cache milte hi skeleton turant hata do!
+        } catch(e) { console.error("Cache read error", e); }
+      }
+
+      // 💥 2. FETCH FROM FIREBASE IN BACKGROUND
       db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
         var data = snap.val();
         if (!data) { 
           document.getElementById('emptyMenu').style.display = 'block'; 
-          hideLoader(); // Loader hatao agar menu empty hai
+          hideLoader(); 
           return; 
         }
         
-        originalItems = Object.entries(data)
+        var freshItems = Object.entries(data)
           .map(function(entry) { return Object.assign({ id: entry[0] }, entry[1]); })
           .filter(function(i) { return i.name && i.active !== false; });
           
-        buildCategories(); 
-        applyFilters();
+        // Agar fresh data humare cached data se alag hai, tabhi screen update karo
+        if (JSON.stringify(freshItems) !== JSON.stringify(originalItems)) {
+          originalItems = freshItems;
+          // Naye data ko agle use ke liye Cache mein save kar lo
+          localStorage.setItem('menuData_' + restaurantId, JSON.stringify(originalItems)); 
+          buildCategories(); 
+          applyFilters();
+        }
 
         // 💥 Loader Successfully Hide
         hideLoader();
+        
+        // 💥 3. FORCE IMAGES INTO BROWSER CACHE (Ab function call ho raha hai)
+        forceCacheImages(originalItems);
+        
       }).catch(function(err) {
         console.error("Menu fetch error:", err);
         hideLoader();
       });
     }
+
+    // 💥 Splash Screen Logic (Hides exactly after 2 seconds)
+    document.addEventListener("DOMContentLoaded", function() {
+      setTimeout(function() {
+        var splash = document.getElementById('splashScreen');
+        if (splash) {
+          splash.style.opacity = '0'; // Smooth fade out start
+          setTimeout(function() {
+            splash.style.visibility = 'hidden';
+            splash.style.display = 'none'; // Completely removed from screen
+          }, 500); // 500ms wait for the fade animation to finish
+        }
+      }, 2000); // 2000ms = 2 Seconds
+    });
   </script>
 </body>
 </html>
