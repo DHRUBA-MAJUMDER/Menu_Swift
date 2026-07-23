@@ -964,11 +964,12 @@
 
     // ===== Fetch Offers, Combos, BOGO, Happy Hour =====
    // ===== Fetch Offers, Combos, BOGO, Happy Hour (With Instant Caching) =====
+   // ===== FETCH OFFERS (CRASH-PROOF CACHE) =====
     function fetchOffersAndTrending() {
-      // 💥 1. INSTANT LOAD FROM CACHE
-      var cachedOffers = localStorage.getItem('offersData_' + restaurantId);
-      if (cachedOffers) {
-        try {
+      // 💥 SAFE CACHE READ
+      try {
+        var cachedOffers = localStorage.getItem('offersData_' + restaurantId);
+        if (cachedOffers) {
           var parsed = JSON.parse(cachedOffers);
           offersData = parsed.offersData || {};
           bannerOffers = parsed.bannerOffers || [];
@@ -976,10 +977,9 @@
           bogoItems = parsed.bogoItems || {};
           trendingData = parsed.trendingData || {};
           renderBanners();
-        } catch(e) { console.error("Offers cache read error", e); }
-      }
+        }
+      } catch(e) { console.warn("Mobile storage blocked, skipping cache."); }
 
-      // 💥 2. FETCH FROM FIREBASE IN BACKGROUND
       db.ref('/restaurants/' + restaurantId + '/offers').once('value').then(function(snap) {
         var tempOffersData = {}; var tempBannerOffers = []; var tempComboOffers = []; var tempBogoItems = {};
         var now = Date.now();
@@ -1026,14 +1026,12 @@
               });
             }
             
-            // Update Variables
             offersData = tempOffersData;
             bannerOffers = tempBannerOffers;
             comboOffers = tempComboOffers;
             bogoItems = tempBogoItems;
             trendingData = tempTrendingData;
             
-            // 💥 SAVE TO CACHE FOR NEXT TIME
             var cacheObject = {
                offersData: offersData,
                bannerOffers: bannerOffers,
@@ -1041,10 +1039,12 @@
                bogoItems: bogoItems,
                trendingData: trendingData
             };
-            localStorage.setItem('offersData_' + restaurantId, JSON.stringify(cacheObject));
+            
+            // 💥 SAFE CACHE WRITE
+            try { localStorage.setItem('offersData_' + restaurantId, JSON.stringify(cacheObject)); } catch(e){} 
             
             renderBanners();
-            if (originalItems.length > 0) applyFilters(); // Refresh prices based on new offers
+            if (originalItems.length > 0) applyFilters(); 
         });
       }).catch(function(err) { console.error("Error fetching offers:", err); });
     }
@@ -1230,7 +1230,8 @@
       closeCombo();
     }
 
-function fetchRestaurantData() {
+// ===== FETCH RESTAURANT DATA (CRASH-PROOF CACHE) =====
+    function fetchRestaurantData() {
       if (!restaurantId) { 
         showToast('Invalid link: Restaurant ID missing.', 'error');
         var skeleton = document.getElementById('skeletonLoader');
@@ -1238,24 +1239,20 @@ function fetchRestaurantData() {
         return; 
       }
 
-      // 💥 1. INSTANT CACHE LOAD FOR RESTAURANT NAME
-      var cachedRestaurant = localStorage.getItem('restaurantData_' + restaurantId);
-      if (cachedRestaurant) {
-        try {
+      // 💥 SAFE CACHE READ
+      try {
+        var cachedRestaurant = localStorage.getItem('restaurantData_' + restaurantId);
+        if (cachedRestaurant) {
           restaurantData = JSON.parse(cachedRestaurant);
           document.getElementById('restaurantName').textContent = restaurantData.name;
-        } catch(e) {}
-      }
+        }
+      } catch(e) { console.warn("Mobile storage blocked, skipping cache."); }
 
-      // 💥 2. TURANT MENU & OFFERS LOAD KARO (Cache se)
-      // Yeh restaurant name ke network response ka wait nahi karega
       fetchOffersAndTrending();
       fetchMenuItems();
       
-      // 💥 3. BACKGROUND FIREBASE FETCH (Data verify karne ke liye)
       db.ref('/restaurants/' + restaurantId).once('value').then(function(snap) {
         if (!snap.exists()) {
-          showToast('Invalid Restaurant Link.', 'error');
           var skeleton = document.getElementById('skeletonLoader');
           if (skeleton) skeleton.style.display = 'none';
           return;
@@ -1264,17 +1261,13 @@ function fetchRestaurantData() {
         var val = snap.val();
         var newName = val.name || val.restaurantName || 'Restaurant Menu';
         
-        // Agar naam cache se alag hai (ya first time hai), tabhi update karo
         if (!restaurantData || restaurantData.name !== newName) {
           restaurantData = { name: newName };
           document.getElementById('restaurantName').textContent = restaurantData.name;
-          localStorage.setItem('restaurantData_' + restaurantId, JSON.stringify(restaurantData));
+          // 💥 SAFE CACHE WRITE (Agar block hua toh crash nahi hoga)
+          try { localStorage.setItem('restaurantData_' + restaurantId, JSON.stringify(restaurantData)); } catch(e){} 
         }
-
-      }).catch(function(error) { 
-        console.error("Firebase Error:", error);
-       
-      });
+      }).catch(function(error) { console.error("Firebase Error:", error); });
     }
 
     // Helper function to safely hide the full screen loader
@@ -1674,24 +1667,27 @@ function fetchRestaurantData() {
     }
 
     // ===== FETCH MENU ITEMS (With Instant Caching) =====
+   // ===== FETCH MENU ITEMS (CRASH-PROOF CACHE) =====
     function fetchMenuItems() {
-      // 💥 1. LOAD FROM CACHE FIRST (Instant Load)
-      var cachedMenu = localStorage.getItem('menuData_' + restaurantId);
-      if (cachedMenu) {
-        try {
+      // 💥 SAFE CACHE READ
+      try {
+        var cachedMenu = localStorage.getItem('menuData_' + restaurantId);
+        if (cachedMenu) {
           originalItems = JSON.parse(cachedMenu);
           buildCategories(); 
           applyFilters();
-          hideLoader(); // Cache milte hi skeleton turant hata do!
-        } catch(e) { console.error("Cache read error", e); }
-      }
+          hideLoader(); // UI smooth karne ke liye pehle hi hata do
+        }
+      } catch(e) { console.warn("Mobile storage blocked, skipping cache."); }
 
-      // 💥 2. FETCH FROM FIREBASE IN BACKGROUND
       db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
         var data = snap.val();
+        var skeleton = document.getElementById('skeletonLoader');
+        
         if (!data) { 
           document.getElementById('emptyMenu').style.display = 'block'; 
-          hideLoader(); 
+          if (skeleton) skeleton.style.display = 'none';
+          hideLoader();
           return; 
         }
         
@@ -1699,23 +1695,23 @@ function fetchRestaurantData() {
           .map(function(entry) { return Object.assign({ id: entry[0] }, entry[1]); })
           .filter(function(i) { return i.name && i.active !== false; });
           
-        // Agar fresh data humare cached data se alag hai, tabhi screen update karo
         if (JSON.stringify(freshItems) !== JSON.stringify(originalItems)) {
           originalItems = freshItems;
-          // Naye data ko agle use ke liye Cache mein save kar lo
-          localStorage.setItem('menuData_' + restaurantId, JSON.stringify(originalItems)); 
+          // 💥 SAFE CACHE WRITE
+          try { localStorage.setItem('menuData_' + restaurantId, JSON.stringify(originalItems)); } catch(e){} 
           buildCategories(); 
           applyFilters();
         }
 
-        // 💥 Loader Successfully Hide
+        // Guaranteed hide skeleton & loader
+        if (skeleton) skeleton.style.display = 'none';
         hideLoader();
-        
-        // 💥 3. FORCE IMAGES INTO BROWSER CACHE (Ab function call ho raha hai)
         forceCacheImages(originalItems);
         
       }).catch(function(err) {
         console.error("Menu fetch error:", err);
+        var skeleton = document.getElementById('skeletonLoader');
+        if (skeleton) skeleton.style.display = 'none';
         hideLoader();
       });
     }
