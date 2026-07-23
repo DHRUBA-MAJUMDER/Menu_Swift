@@ -1230,31 +1230,46 @@
       closeCombo();
     }
 
- function fetchRestaurantData() {
+function fetchRestaurantData() {
       if (!restaurantId) { 
         showToast('Invalid link: Restaurant ID missing.', 'error');
-        // Fallback: Hide loader on error
-        hideLoader();
+        var skeleton = document.getElementById('skeletonLoader');
+        if (skeleton) skeleton.style.display = 'none';
         return; 
       }
+
+      // 💥 1. INSTANT CACHE LOAD FOR RESTAURANT NAME
+      var cachedRestaurant = localStorage.getItem('restaurantData_' + restaurantId);
+      if (cachedRestaurant) {
+        try {
+          restaurantData = JSON.parse(cachedRestaurant);
+          document.getElementById('restaurantName').textContent = restaurantData.name;
+        } catch(e) {}
+      }
+
+      // 💥 2. TURANT MENU & OFFERS LOAD KARO (Cache se)
+      // Yeh restaurant name ke network response ka wait nahi karega
+      fetchOffersAndTrending();
+      fetchMenuItems();
       
+      // 💥 3. BACKGROUND FIREBASE FETCH (Data verify karne ke liye)
       db.ref('/restaurants/' + restaurantId).once('value').then(function(snap) {
         if (!snap.exists()) {
           showToast('Invalid Restaurant Link.', 'error');
-          hideLoader();
+          var skeleton = document.getElementById('skeletonLoader');
+          if (skeleton) skeleton.style.display = 'none';
           return;
         }
 
         var val = snap.val();
-        restaurantData = {
-          name: val.name || val.restaurantName || 'Restaurant Menu'
-        };
-
-        document.getElementById('restaurantName').textContent = restaurantData.name;
+        var newName = val.name || val.restaurantName || 'Restaurant Menu';
         
-        // Fetch Menu and Offers
-        fetchOffersAndTrending();
-        fetchMenuItems();
+        // Agar naam cache se alag hai (ya first time hai), tabhi update karo
+        if (!restaurantData || restaurantData.name !== newName) {
+          restaurantData = { name: newName };
+          document.getElementById('restaurantName').textContent = restaurantData.name;
+          localStorage.setItem('restaurantData_' + restaurantId, JSON.stringify(restaurantData));
+        }
 
       }).catch(function(error) { 
         console.error("Firebase Error:", error);
