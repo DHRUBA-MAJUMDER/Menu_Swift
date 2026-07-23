@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - MenuSwift</title>
     <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+    <link rel="preload" as="image" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -95,25 +96,22 @@
             margin-bottom: 2.5rem;
         }
 
-        .brand-logo {
-            width: 120px;
-            height: 80px;
+       .brand-logo {
+            width: 140px;
+            height: 110px;
             margin: 0 auto 1.5rem;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .brand-logo:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            background: transparent; /* Agar background transparent rakhna ho */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .brand-logo img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* 'cover' ki jagah 'contain' karne se logo bilkul nahi katega */
         }
 
         .brand-icon {
@@ -931,11 +929,10 @@
         <div class="login-card">
             <div class="brand-section">
                 <div class="brand-logo">
-                    <img src="Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png"
-                        alt="MenuSwift Logo"
-                        onerror="this.parentElement.style.display='none'; document.querySelector('.brand-icon').style.display='flex';">
-                </div>
-                <div class="brand-icon" style="display: none;">🍽️</div>
+            <!-- onerror hata diya gaya hai aur proper path add kar diya gaya hai -->
+            <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="MenuSwift Logo">
+        </div>
+        <!-- Backup icon ki ab zarurat nahi hai, isliye hata diya -->
                 <h1 class="brand-title">MenuSwift</h1>
                 <p class="brand-subtitle">Restaurant Admin Portal</p>
                 <div class="security-badge">
@@ -990,13 +987,12 @@
                     <div class="login-attempts" id="loginAttempts"></div>
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                    </svg>
-                    <span id="loginText">Sign In to Dashboard</span>
-                    <div id="loginSpinner" class="spinner hidden"></div>
-                </button>
+                <!-- UPDATE YOUR LOGIN BUTTON TO THIS -->
+<!-- CORRECTED LOGIN BUTTON -->
+<button type="submit" id="loginBtn" class="btn btn-primary">
+    <span id="btnText">Secure Login</span>
+    <div id="btnSpinner" class="spinner" style="display: none; margin-left: 8px;"></div>
+</button>
 
                 <div class="forgot-password">
                     <button type="button" id="forgotPasswordBtn">Forgot your password?</button>
@@ -1192,18 +1188,24 @@
             messageContainer.innerHTML = '';
         }
 
-        function setLoading(button, spinner, text, isLoading, originalText) {
+       function setLoading(button, spinner, text, isLoading, originalText) {
             const btn = document.getElementById(button);
             const spinnerEl = document.getElementById(spinner);
             const textEl = document.getElementById(text);
 
+            if (!btn || !spinnerEl || !textEl) return; // Failsafe taaki crash na ho
+
             btn.disabled = isLoading;
             if (isLoading) {
-                spinnerEl.classList.remove('hidden');
-                textEl.textContent = 'Processing...';
+                spinnerEl.style.display = 'block';
+                textEl.textContent = 'Verifying...';
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'not-allowed';
             } else {
-                spinnerEl.classList.add('hidden');
+                spinnerEl.style.display = 'none';
                 textEl.textContent = originalText;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
             }
         }
 
@@ -1224,53 +1226,52 @@
                 return;
             }
 
-            setLoading('loginBtn', 'loginSpinner', 'loginText', true, 'Sign In to Dashboard');
+           // Purane 'loginSpinner' aur 'loginText' ko hata kar naye IDs dalein
+            setLoading('loginBtn', 'btnSpinner', 'btnText', true, 'Secure Login');
             clearMessages();
 
-           try {
-                // 1. Firebase Auth par 15 seconds ka timeout lagaya
+          try {
+                // 1. Firebase Auth (Timeout badha kar 30s kiya for slow networks)
                 const firebaseResult = await withTimeout(
                     auth.signInWithEmailAndPassword(email, password), 
-                    15000
+                    30000
                 );
                 
-                // 2. Owner data fetch par 15 seconds ka timeout lagaya
-                const ownerSnap = await withTimeout(
-                    db.ref(`owners/${firebaseResult.user.uid}`).once("value"), 
-                    15000
-                );
-                const owner = ownerSnap.val();
-
-                if (!owner || !owner.restaurantId) {
-                    await auth.signOut();
-                    throw new Error("This account is not linked to any restaurant.");
-                }
-
-                if (owner.blocked || owner.revoked) {
-                    await auth.signOut();
-                    throw new Error("Your account has been suspended or revoked. Please contact support.");
-                }
-
-                // 3. Restaurant data fetch par 15 seconds ka timeout lagaya
-                const restaurantSnap = await withTimeout(
-                    db.ref(`restaurants/${owner.restaurantId}`).once("value"), 
-                    15000
-                );
-                const restaurant = restaurantSnap.val();
-
-                if (!restaurant) {
-                    await auth.signOut();
-                    throw new Error("Associated restaurant not found.");
-                }
-
-                if (restaurant.blocked || restaurant.revoked) {
-                    await auth.signOut();
-                    throw new Error("Restaurant access is currently suspended. Please contact support.");
-                }
-
-                const restaurantName = restaurant.name || 'Your Restaurant';
+                const uid = firebaseResult.user.uid;
+                let ownerRestId = localStorage.getItem("restaurantId");
+                let restName = localStorage.getItem("restaurantName") || 'Your Restaurant';
                 
-                // (Baaki ka success aur localStorage wala code same rahega...)
+                // 💥 AGGRESSIVE CACHE: Agar user pehle se cached hai, toh Database ka wait mat karo
+                if (!ownerRestId || localStorage.getItem("ownerUid") !== uid) {
+                    const ownerSnap = await withTimeout(db.ref(`owners/${uid}`).once("value"), 20000);
+                    const owner = ownerSnap.val();
+
+                    if (!owner || !owner.restaurantId) {
+                        await auth.signOut();
+                        throw new Error("This account is not linked to any restaurant.");
+                    }
+
+                    if (owner.blocked || owner.revoked) {
+                        await auth.signOut();
+                        throw new Error("Your account has been suspended or revoked.");
+                    }
+
+                    ownerRestId = owner.restaurantId;
+                    
+                    const restaurantSnap = await withTimeout(db.ref(`restaurants/${ownerRestId}`).once("value"), 20000);
+                    const restaurant = restaurantSnap.val();
+
+                    if (!restaurant) {
+                        await auth.signOut();
+                        throw new Error("Associated restaurant not found.");
+                    }
+
+                    if (restaurant.blocked || restaurant.revoked) {
+                        await auth.signOut();
+                        throw new Error("Restaurant access is currently suspended.");
+                    }
+                    restName = restaurant.name || 'Your Restaurant';
+                }
 
                 // 4. Success - Set LocalStorage variables
                 loginAttempts = 0;
@@ -1280,9 +1281,9 @@
                 const currentTime = new Date().toLocaleString();
                 localStorage.setItem('lastLoginTime', currentTime);
 
-                localStorage.setItem("restaurantId", owner.restaurantId);
-                localStorage.setItem("restaurantName", restaurantName);
-                localStorage.setItem("ownerUid", firebaseResult.user.uid);
+                localStorage.setItem("restaurantId", ownerRestId);
+                localStorage.setItem("restaurantName", restName);
+                localStorage.setItem("ownerUid", uid);
                 localStorage.setItem("authMethod", "firebase");
 
                 if (rememberMe) {
@@ -1296,7 +1297,7 @@
                 }
 
                 // 5. Show Welcome Modal
-                document.getElementById('restaurantNameDisplay').textContent = restaurantName;
+                document.getElementById('restaurantNameDisplay').textContent = restName;
                 
                 const lastLogin = localStorage.getItem('lastLoginTime');
                 if (lastLogin) {
@@ -1306,6 +1307,8 @@
                 }
 
                 welcomeModal.classList.remove('hidden');
+
+            
 
             } catch (error) {
                 loginAttempts++;
@@ -1335,8 +1338,9 @@
                     showMessage('error', errorMessage);
                 }
 
-            } finally {
-                setLoading('loginBtn', 'loginSpinner', 'loginText', false, 'Sign In to Dashboard');
+           } finally {
+                // Yahan bhi naye IDs dalein
+                setLoading('loginBtn', 'btnSpinner', 'btnText', false, 'Secure Login');
             }
         });
         function closeWelcome() {
