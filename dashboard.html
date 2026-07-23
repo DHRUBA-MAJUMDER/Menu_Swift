@@ -5,6 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard</title>
+  <!-- Preconnect for Ultra-Fast Firebase Routing -->
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://menuswift-fe577-default-rtdb.firebaseio.com">
+  <link rel="dns-prefetch" href="https://menuswift-fe577-default-rtdb.firebaseio.com">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -1388,9 +1392,11 @@
                   Order Dashboard
                 </h1>
                 <span class="flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full">
-                  <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                  Live
+                  <span class="network-badge flex items-center gap-1 px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-full transition-colors duration-300">
+                  <span class="network-dot w-2 h-2 bg-red-400 rounded-full"></span>
+                  <span class="network-text">Connecting...</span>
                 </span>
+                
               </div>
 
 
@@ -1461,9 +1467,10 @@
                 Order Dashboard
               </h1>
               <span class="flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full">
-                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                Live
-              </span>
+                <span class="network-badge flex items-center gap-1 px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-full transition-colors duration-300">
+                  <span class="network-dot w-2 h-2 bg-red-400 rounded-full"></span>
+                  <span class="network-text">Connecting...</span>
+                </span>
             </div>
 
             <!-- <p class="text-blue-200 text-sm">Professional order management</p> -->
@@ -3064,7 +3071,26 @@
             setupActiveTicket(activeTicket[0]);
           }
         });
-       // 💥 AGGRESSIVE CACHING: Firebase aane se pehle Cache se turant orders load karein
+       // ==========================================
+        // 💥 1. FAIL-SAFE LOADER HIDER FUNCTION
+        // ==========================================
+        function hideLoaderSafely() {
+            const loader = document.getElementById("pageLoader");
+            if (loader && loader.style.display !== "none") {
+                loader.style.opacity = "0";
+                setTimeout(() => {
+                    loader.style.display = "none";
+                    document.body.style.visibility = "visible";
+                }, 400);
+            }
+        }
+
+        // Agar network bohot slow ho ya 2.5 second tak data na aaye, toh bhi skeleton hata do taaki app block na ho
+        const failsafeTimer = setTimeout(hideLoaderSafely, 2500);
+
+        // ==========================================
+        // 💥 2. AGGRESSIVE CACHING (Instant UI Render)
+        // ==========================================
         const cachedDashboardOrders = localStorage.getItem("cachedDashboardOrders_" + restaurantId);
         if (cachedDashboardOrders) {
           try {
@@ -3073,18 +3099,40 @@
             renderOrders(currentFilter);
             
             // ✅ ORDERS RENDER HONE KE BAAD SKELETON KO HIDE KAREIN
-            const loader = document.getElementById("pageLoader");
-            if (loader) {
-              loader.style.opacity = "0";
-              setTimeout(() => {
-                loader.style.display = "none";
-                document.body.style.visibility = "visible";
-              }, 400);
-            }
+            hideLoaderSafely();
+            clearTimeout(failsafeTimer);
           } catch (e) { console.error("Cache read error"); }
         }
 
-        // Enhanced Orders listener with better error handling
+        // ==========================================
+        // 💥 3. NETWORK CONNECTION MONITORING (Mobile + Desktop Badges)
+        // ==========================================
+        db.ref(".info/connected").on("value", function(snap) {
+            const badges = document.querySelectorAll(".network-badge");
+            const dots = document.querySelectorAll(".network-dot");
+            const texts = document.querySelectorAll(".network-text");
+
+            if (snap.val() === true) {
+                // Online State (Green)
+                badges.forEach(b => b.className = "network-badge flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full transition-colors duration-300");
+                dots.forEach(d => d.className = "network-dot w-2 h-2 bg-emerald-400 rounded-full animate-pulse");
+                texts.forEach(t => t.textContent = "Live");
+            } else {
+                // Offline/Syncing State (Red)
+                badges.forEach(b => b.className = "network-badge flex items-center gap-1 px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-full transition-colors duration-300");
+                dots.forEach(d => d.className = "network-dot w-2 h-2 bg-red-400 rounded-full");
+                texts.forEach(t => t.textContent = "Syncing...");
+                
+                // Force Reconnect Attempt after 5 seconds if offline
+                setTimeout(() => {
+                    firebase.database().goOnline();
+                }, 5000);
+            }
+        });
+
+        // ==========================================
+        // 💥 4. LIVE ORDERS LISTENER FROM FIREBASE
+        // ==========================================
         db.ref(`restaurants/${restaurantId}/orders`).on("value", snapshot => {
           const newData = snapshot.val() || {};
 
@@ -3100,28 +3148,21 @@
           // Agli baar ke fast load ke liye orders cache mein save karein
           localStorage.setItem("cachedDashboardOrders_" + restaurantId, JSON.stringify(ordersData));
 
-          // 🔥 ALWAYS render orders first
+          // 🔥 ALWAYS render orders
           renderOrders(currentFilter);
 
           // ✅ LIVE DATA AANE KE BAAD SKELETON HIDE KAREIN
           if (isFirstLoad) {
-            const loader = document.getElementById("pageLoader");
-            if (loader && loader.style.display !== "none") {
-                loader.style.opacity = "0";
-                setTimeout(() => {
-                  loader.style.display = "none";
-                  document.body.style.visibility = "visible";
-                }, 400);
-            }
+            hideLoaderSafely();
             isFirstLoad = false;
           }
-        
-          // 🔥 ALWAYS render
-          renderOrders(currentFilter);
+          
+          clearTimeout(failsafeTimer);
         });
 
-
-        // Search and filter handlers for both mobile and desktop
+        // ==========================================
+        // 💥 5. SEARCH & FILTER HANDLERS
+        // ==========================================
         function setupSearchHandlers() {
           const searchInputs = [
             document.getElementById("searchInput"),
@@ -3150,7 +3191,8 @@
             currentFilter = btn.dataset.filter;
             renderOrders(currentFilter);
             // Close mobile menu after selection
-            document.getElementById("mobileMenu").classList.remove("open");
+            const mobileMenu = document.getElementById("mobileMenu");
+            if (mobileMenu) mobileMenu.classList.remove("open");
           });
         });
 
