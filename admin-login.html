@@ -1230,20 +1230,20 @@
             setLoading('loginBtn', 'btnSpinner', 'btnText', true, 'Secure Login');
             clearMessages();
 
-          try {
-                // 1. Firebase Auth (Timeout badha kar 30s kiya for slow networks)
-                const firebaseResult = await withTimeout(
-                    auth.signInWithEmailAndPassword(email, password), 
-                    30000
-                );
+         try {
+                // 1. Firebase Auth (Manual timeout hata diya gaya hai. Firebase khud isko instantly handle karega)
+                const firebaseResult = await auth.signInWithEmailAndPassword(email, password);
                 
                 const uid = firebaseResult.user.uid;
                 let ownerRestId = localStorage.getItem("restaurantId");
                 let restName = localStorage.getItem("restaurantName") || 'Your Restaurant';
                 
-                // 💥 AGGRESSIVE CACHE: Agar user pehle se cached hai, toh Database ka wait mat karo
+                // 💥 AGGRESSIVE CACHE
                 if (!ownerRestId || localStorage.getItem("ownerUid") !== uid) {
-                    const ownerSnap = await withTimeout(db.ref(`owners/${uid}`).once("value"), 20000);
+                    
+                    // 🔥 MAJOR FIX: Use .get() instead of .once("value"). 
+                    // Yeh 5G networks par hang nahi hota aur data force-fetch karta hai.
+                    const ownerSnap = await db.ref(`owners/${uid}`).get();
                     const owner = ownerSnap.val();
 
                     if (!owner || !owner.restaurantId) {
@@ -1258,7 +1258,7 @@
 
                     ownerRestId = owner.restaurantId;
                     
-                    const restaurantSnap = await withTimeout(db.ref(`restaurants/${ownerRestId}`).once("value"), 20000);
+                    const restaurantSnap = await db.ref(`restaurants/${ownerRestId}`).get();
                     const restaurant = restaurantSnap.val();
 
                     if (!restaurant) {
@@ -1307,8 +1307,6 @@
                 }
 
                 welcomeModal.classList.remove('hidden');
-
-            
 
             } catch (error) {
                 loginAttempts++;
@@ -1422,14 +1420,7 @@
             }
         });
         // Naya Timeout Helper Function
-function withTimeout(promise, ms = 15000) {
-    return Promise.race([
-        promise,
-        new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Network is too slow. Please check your internet connection and try again.")), ms)
-        )
-    ]);
-}
+
          
     </script>
 </body>
