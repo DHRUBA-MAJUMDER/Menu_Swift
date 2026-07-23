@@ -8,11 +8,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gstatic.com">
   <link rel="preconnect" href="https://menuswift-fe577-default-rtdb.firebaseio.com">
+  <link rel="preload" as="image" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+  </noscript>
   <style>
     :root {
       --primary: #2563eb;
@@ -623,13 +627,12 @@
     .skel-qty { flex: 1; height: 32px; border-radius: 8px; }
     .skel-btn { width: 65px; height: 32px; border-radius: 8px; }
   </style>
-</head>
-<body>
+
   <body>
   <!-- 2-SECOND LOGO SPLASH SCREEN -->
   <div id="splashScreen" style="position:fixed; inset:0; background:var(--surface); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.5s ease, visibility 0.5s ease;">
     <!-- Menu Swift Logo -->
-   <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="Menu Swift Technology" style="width: 120px; height: auto; margin-bottom: 1.5rem; animation: pulse 2s infinite; mix-blend-mode: multiply;">
+   <img src="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png" alt="Menu Swift Technology" style="width: 120px; height: auto; margin-bottom: 1.5rem;" width="120" height="120">
     
     <h2 style="font-size:1.6rem; font-weight:800; background: linear-gradient(135deg, var(--primary), #000000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing:-0.03em;">Menu Swift</h2>
   </div>
@@ -871,8 +874,10 @@
       </div>
     </div>
   </div>
+<!-- Move Firebase scripts here, just before your main script -->
 
   <script>
+    
     // Global Safe Loader Remover
     function hideLoader() {
       var loader = document.getElementById('fullScreenLoader');
@@ -1717,17 +1722,17 @@
     }
 
     // 💥 Splash Screen Logic (Hides exactly after 2 seconds)
-    document.addEventListener("DOMContentLoaded", function() {
-      setTimeout(function() {
-        var splash = document.getElementById('splashScreen');
-        if (splash) {
-          splash.style.opacity = '0'; // Smooth fade out start
-          setTimeout(function() {
-            splash.style.visibility = 'hidden';
-            splash.style.display = 'none'; // Completely removed from screen
-          }, 500); // 500ms wait for the fade animation to finish
-        }
-      }, 2000); // 2000ms = 2 Seconds
+   // 💥 Instant Splash Screen Removal
+    window.addEventListener("load", function() {
+      // Ab hum 2 second wait nahi karenge. Page load hote hi turant hata denge.
+      var splash = document.getElementById('splashScreen');
+      if (splash) {
+        splash.style.opacity = '0'; 
+        setTimeout(function() {
+          splash.style.visibility = 'hidden';
+          splash.style.display = 'none'; 
+        }, 300); 
+      }
     });
   </script>
 </body>
