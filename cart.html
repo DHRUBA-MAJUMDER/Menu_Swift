@@ -939,7 +939,7 @@ function renderCart() {
       }, 5000);
     }
 
-   async function submitOrder() {
+  async function submitOrder() {
       let subtotal = 0;
       cart.forEach(item => { 
         subtotal += (Number(item.price || 0) * item.quantity);
@@ -954,6 +954,30 @@ function renderCart() {
       const loading = document.getElementById('loadingOverlay');
       const submitBtn = document.getElementById('submitBtn');
 
+      // 1. Menu Disable Check
+      if (isMenuClosed) {
+        showMessage('error', '❌ Sorry, the restaurant is not accepting orders right now. Please try again later.');
+        return;
+      }
+
+      // 2. Table Capacity Check
+      if (type === 'Dine-In' && parseInt(table) > maxTableCapacity) {
+        showMessage('error', `❌ Invalid Table Number! Maximum table limit is ${maxTableCapacity}.`);
+        return;
+      }
+
+      // 3. Frequent Order Suspension Check (Anti-Spam)
+      let currentHistory = JSON.parse(localStorage.getItem('anti_spam_orders') || '[]');
+      const now = Date.now();
+      // Pichle 5 minutes (300000 ms) ke orders filter karein
+      currentHistory = currentHistory.filter(time => now - time < 300000);
+      
+      if (currentHistory.length >= 2) {
+        showMessage('error', '⚠️ Ordering too fast! Please wait 5 minutes before placing another order to prevent spam.');
+        return;
+      }
+
+      // 4. Basic Form Validations
       if (!name || !table || cart.length === 0) {
         showMessage('error','❌ Please fill all fields and add items to cart.');
         return;
@@ -1033,6 +1057,11 @@ function renderCart() {
 
         // Firebase par sirf EK HI baar order save hoga
         await db.ref(`restaurants/${restaurantId}/orders/${orderId}`).set(order);
+        
+        // Save order timestamp for anti-spam (CORRECTED)
+        currentHistory.push(Date.now());
+        localStorage.setItem('anti_spam_orders', JSON.stringify(currentHistory));
+        
         saveRecentOrder(order);
         localStorage.removeItem(`cart_${restaurantId}`);
         cart = [];
@@ -1116,6 +1145,17 @@ function renderCart() {
         };
       });
     }
+    // --- NEW FEATURES VARIABLES ---
+let maxTableCapacity = Infinity;
+let isMenuClosed = false;
+
+// Listeners add karein (Jaise loadGST() call hota hai, waise hi inko bhi chalayein)
+db.ref(`restaurants/${restaurantId}/totalSeats`).on('value', snap => {
+  if(snap.exists()) maxTableCapacity = parseInt(snap.val());
+});
+db.ref(`restaurants/${restaurantId}/settings/isMenuClosed`).on('value', snap => {
+  isMenuClosed = snap.val() || false;
+});
   </script>
 </body>
 </html>
