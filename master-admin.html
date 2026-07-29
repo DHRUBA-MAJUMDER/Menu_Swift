@@ -10,7 +10,11 @@
 
 
   <!-- Tailwind CDN -->
+<<<<<<< HEAD
   <link rel="stylesheet" href="output.css">
+=======
+  <script src="https://cdn.tailwindcss.com"></script>
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
   <!-- QRious for QR codes -->
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js">
@@ -1563,6 +1567,7 @@
     // ===== Admin Authentication Credentials =====
    // ===== Firebase config ke baad yahan se NAYA CODE shuru karein =====
     
+<<<<<<< HEAD
    let isAdminAuthenticated = false;
 
     // ===== 1. LOGOUT FUNCTION =====
@@ -1578,15 +1583,32 @@
     };
 
     // ===== 2. PASSWORD TOGGLE FUNCTIONS =====
+=======
+    let isAdminAuthenticated = false;
+
+    // ===== 1. FIXED Logout Function =====
+    window.logout = function () {
+      signOut(auth).then(() => {
+        console.log("Logged out successfully");
+      }).catch(console.error);
+    };
+
+    // Password toggle function
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     window.togglePassword = function () {
       const passwordInput = document.getElementById('passwordInput');
       const eyeIcon = document.getElementById('eyeIcon');
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
+<<<<<<< HEAD
         eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>`;
       } else {
         passwordInput.type = 'password';
         eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+=======
+      } else {
+        passwordInput.type = 'password';
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
       }
     };
 
@@ -1600,7 +1622,11 @@
       passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
     };
 
+<<<<<<< HEAD
     // ===== 3. REAL FIREBASE LOGIN HANDLER (No Credentials Array) =====
+=======
+    // ===== 2. REAL FIREBASE LOGIN HANDLER =====
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const email = document.getElementById('emailInput').value.trim();
@@ -1608,15 +1634,27 @@
       const errorDiv = document.getElementById('loginError');
       const errorText = document.getElementById('loginErrorText');
 
+<<<<<<< HEAD
+=======
+      // Loading state
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
       const submitBtn = e.target.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<div class="flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Authenticating...</div>';
       submitBtn.disabled = true;
 
       try {
+<<<<<<< HEAD
         await signInWithEmailAndPassword(auth, email, password);
         console.log("✅ Secure Firebase Login Successful");
         errorDiv.classList.add('hidden');
+=======
+        // Direct Firebase Se Secure Login!
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("✅ Secure Firebase Login Successful");
+        errorDiv.classList.add('hidden');
+        
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
       } catch (error) {
         console.error("Login error:", error);
         errorText.textContent = "Invalid email or password. Access Denied!";
@@ -1632,6 +1670,7 @@
       }
     });
 
+<<<<<<< HEAD
     // ===== 4. FIREBASE AUTH STATE LISTENER (Strict Security) =====
     onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -1644,27 +1683,66 @@
         const allowedAdmins = ["admin@menuswift.com", "master@menuswift.in"];
 
         if (!allowedAdmins.includes(user.email)) {
+=======
+    // ===== 3. FIREBASE AUTH STATE LISTENER (Central Controller) =====
+    // Yeh background mein humesha check karega ki user logged in hai ya nahi
+    // ===== 3. FIREBASE AUTH STATE LISTENER (Strict Security) =====
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // 🚨 CHECK 1: Agar koi customer (Anonymous) ghusne ki koshish kare, toh usko turant bahar nikalo
+        if (user.isAnonymous) {
+            console.log("Security: Blocked Anonymous User");
+            await signOut(auth);
+            return; // Iske baad aage ka code nahi chalega, user direct Login screen pe jayega
+        }
+
+        // 🚨 CHECK 2: Sirf aapka ASLI Admin Email hi andar ja payega
+        // DHYAN DEIN: Agar aapka admin email kuch aur hai, toh yahan change kar lein 👇
+        const myAdminEmail = "admin@menuswift.com"; 
+
+        if (user.email !== myAdminEmail) {
+            console.log("Security: Blocked unauthorized email ->", user.email);
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
             alert("🚨 Access Denied! You are not the Master Admin.");
             await signOut(auth);
             return;
         }
 
+<<<<<<< HEAD
         console.log("👑 Master Admin Verified:", user.email);
         isAdminAuthenticated = true;
         window._isAuthenticated = true;
+=======
+        // ✅ Agar dono test pass ho gaye (Email match ho gaya aur anonymous nahi hai), tab Panel khulega
+        console.log("👑 Master Admin Verified:", user.email);
+        isAdminAuthenticated = true;
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('adminPanel').classList.remove('hidden');
         initializeAdminPanel(); 
         
       } else {
+<<<<<<< HEAD
         isAdminAuthenticated = false;
         window._isAuthenticated = false;
+=======
+        // 🔒 User logged out hai, Login Screen dikhao
+        console.log("User is logged out");
+        isAdminAuthenticated = false;
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
         document.getElementById('loginScreen').classList.remove('hidden');
         document.getElementById('adminPanel').classList.add('hidden');
       }
     });
 
+<<<<<<< HEAD
     // ===== 5. GLOBAL STATE VARIABLES =====
+=======
+    // NOTE: Purane code mein sabse niche likha hua "checkAuth();" ko hata dena
+    // Kyunki ab 'onAuthStateChanged' khud check karega.
+
+    // ===== Global state =====
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     window._restaurantMap = {};
     window._editingId = null;
     window._confirmTargetId = null;
@@ -1677,6 +1755,11 @@
     window._selectedContactQueries = new Set();
     window._selectedSupportTickets = new Set();
     window._deleteCallback = null;
+<<<<<<< HEAD
+=======
+
+    // Form submissions data
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     window._signupData = [];
     window._contactData = [];
 
@@ -1756,7 +1839,73 @@
       }
     };
 
+<<<<<<< HEAD
    
+=======
+    // ===== FIXED Login form handler with Firebase Authentication =====
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const errorDiv = document.getElementById('loginError');
+      const errorText = document.getElementById('loginErrorText');
+
+      // Show loading state
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<div class="flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Authenticating...</div>';
+      submitBtn.disabled = true;
+
+      try {
+        // Check admin credentials
+        if (email === adminCredentials.email && password === adminCredentials.password) {
+          // Try to sign in with Firebase Auth
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+            console.log("✅ Firebase Auth successful");
+          } catch (firebaseError) {
+            console.log("Firebase Auth failed, creating admin account:", firebaseError.code);
+
+            // If admin account doesn't exist, create it
+            if (firebaseError.code === 'auth/user-not-found') {
+              try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                console.log("✅ Admin Firebase account created");
+              } catch (createError) {
+                console.error("Failed to create admin account:", createError);
+                // Continue anyway - we can still use database auth
+              }
+            }
+          }
+
+          // Set authentication state
+          sessionStorage.setItem('menuswift_admin_auth', 'authenticated');
+          isAdminAuthenticated = true;
+          showAdminPanel();
+          errorDiv.classList.add('hidden');
+
+        } else {
+          throw new Error('Invalid admin credentials');
+        }
+
+      } catch (error) {
+        console.error("Login error:", error);
+        errorText.textContent = error.message || 'Invalid credentials. Please try again.';
+        errorDiv.classList.remove('hidden');
+        document.getElementById('passwordInput').classList.add('shake');
+        setTimeout(() => {
+          document.getElementById('passwordInput').classList.remove('shake');
+        }, 500);
+      } finally {
+        // Reset button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        document.getElementById('emailInput').value = '';
+        document.getElementById('passwordInput').value = '';
+      }
+    });
+
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     // ===== Helper functions =====
 
     const seatsToPlan = seats => {
@@ -3015,16 +3164,20 @@
     }
 
     // ===== Load Owners (FIXED TO REMOVE DUPLICATES) =====
+<<<<<<< HEAD
     // ===== SAFE DATA STORAGE FOR MODALS =====
     window._safeOwnerData = {};
 
     // ===== Load Owners (BULLETPROOF VERSION) =====
+=======
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     function loadOwners() {
       if (!isAdminAuthenticated) return;
 
       const ownerList = document.getElementById("ownerList");
       const ownersRef = ref(db, "owners");
 
+<<<<<<< HEAD
       // 1. Show Loading State
       ownerList.innerHTML = `
         <div class="text-center py-10">
@@ -3044,6 +3197,27 @@
             if (existing) {
               const existingTime = existing.owner.updatedAt || existing.owner.createdAt || 0;
               const currentTime = owner.updatedAt || owner.createdAt || 0;
+=======
+      onValue(ownersRef, snap => {
+        ownerList.innerHTML = "";
+        const all = snap.val() || {};
+
+        // Create a map to track unique restaurant IDs and prevent duplicates
+        const uniqueOwners = new Map();
+
+        Object.entries(all).forEach(([uid, owner]) => {
+          // Skip migrated records
+          if (owner.migrated) return;
+
+          // If we've seen this restaurant ID before, keep the most recent one
+          if (owner.restaurantId) {
+            const existing = uniqueOwners.get(owner.restaurantId);
+            if (existing) {
+              // Keep the one with the most recent update timestamp
+              const existingTime = existing.owner.updatedAt || existing.owner.createdAt || 0;
+              const currentTime = owner.updatedAt || owner.createdAt || 0;
+
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
               if (currentTime > existingTime) {
                 uniqueOwners.set(owner.restaurantId, { uid, owner });
               }
@@ -3051,10 +3225,15 @@
               uniqueOwners.set(owner.restaurantId, { uid, owner });
             }
           } else {
+<<<<<<< HEAD
+=======
+            // If no restaurant ID, use the uid as key
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
             uniqueOwners.set(uid, { uid, owner });
           }
         });
 
+<<<<<<< HEAD
         ownerList.innerHTML = "";
 
         // 2. Show Empty State if no data
@@ -3157,6 +3336,107 @@
 
           } catch (e) {
               console.error("Error rendering owner ID:", uid, e);
+=======
+        // Render unique owners
+        uniqueOwners.forEach(({ uid, owner: o }) => {
+          const li = document.createElement("li");
+          li.className = "bg-gray-50 p-4 rounded-lg border";
+
+          const statusInfo = o.revoked ? 'Revoked' : (o.blocked ? 'Blocked' : 'Active');
+          const statusClass = o.revoked ? 'text-red-800' : (o.blocked ? 'text-red-600' : 'text-green-600');
+
+          // Auth type indicator
+          const authTypeIcon = o.hasFirebaseAuth ? "🔐" : "📝";
+          const authTypeText = o.hasFirebaseAuth ? "Firebase Auth" : "Database Only";
+
+          li.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div class="text-sm space-y-2">
+                <div class="flex items-center gap-2">
+                  <strong>Email:</strong> ${o.email}
+                  <span class="text-xs px-2 py-1 rounded ${o.hasFirebaseAuth ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}" title="${authTypeText}">
+                    ${authTypeIcon} ${authTypeText}
+                  </span>
+                </div>
+                <div class="password-field">
+                  <strong>Password:</strong> 
+                  <span class="password-display">
+                    <input type="password" value="${o.password || 'N/A'}" readonly class="bg-transparent border-none p-0 text-sm w-32" id="ownerPass-${uid}">
+                    <button type="button" onclick="toggleOwnerPasswordDisplay('${uid}')" class="ml-2 text-gray-500 hover:text-gray-700">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+                <div><strong>Restaurant ID:</strong> ${o.restaurantId || "-"}</div>
+                <div><strong>Status:</strong> <span class="${statusClass} font-semibold">${statusInfo}</span></div>
+                <div><strong>Created:</strong> ${formatDate(o.createdAt)}</div>
+                ${o.updatedAt ? `<div><strong>Last Updated:</strong> ${formatDate(o.updatedAt)}</div>` : ''}
+                ${o.credentialsChanged ? `<div class="text-xs text-blue-600"><strong>Credentials Updated</strong> - Owner can use updated login details</div>` : ''}
+                ${o.needsFirebaseUpdate ? `<div class="text-xs text-orange-600"><strong>Firebase Update Required</strong> - Manual Firebase account update needed</div>` : ''}
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="openOwnerEditModal('${uid}', ${JSON.stringify(o).replace(/"/g, '&quot;')})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-all duration-200">
+                  ✏️ Edit
+                </button>
+                <button data-uid="${uid}" class="owner-block-btn ${o.blocked ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} text-white px-3 py-1 rounded text-sm transition-all duration-200">
+                  ${o.blocked ? "✅ Unblock" : "🚫 Block"}
+                </button>
+                ${o.revoked ? `
+                  <button data-uid="${uid}" class="restore-btn bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-all duration-200">🔄 Restore</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+
+          ownerList.appendChild(li);
+
+          // Block/Unblock button
+          const blockBtn = li.querySelector(".owner-block-btn");
+          blockBtn.addEventListener("click", async () => {
+            const newBlocked = !o.blocked;
+            await update(ref(db, "owners/" + uid), {
+              blocked: newBlocked,
+              revoked: false,
+              [newBlocked ? 'blockedAt' : 'unblockedAt']: Date.now()
+            });
+
+            // Also update restaurant
+            if (o.restaurantId) {
+              const rSnap = await get(ref(db, "restaurants/" + o.restaurantId));
+              if (rSnap.exists()) {
+                await update(ref(db, "restaurants/" + o.restaurantId), {
+                  blocked: newBlocked,
+                  revoked: false
+                });
+              }
+            }
+          });
+
+          // Restore button for revoked accounts
+          const restoreBtn = li.querySelector(".restore-btn");
+          if (restoreBtn) {
+            restoreBtn.addEventListener("click", async () => {
+              if (!confirm(`Restore access for ${o.email}?`)) return;
+
+              await update(ref(db, "owners/" + uid), {
+                blocked: false,
+                revoked: false,
+                restoredAt: Date.now()
+              });
+
+              if (o.restaurantId) {
+                await update(ref(db, "restaurants/" + o.restaurantId), {
+                  blocked: false,
+                  revoked: false
+                });
+              }
+
+              alert(`✅ Access restored for ${o.email}`);
+            });
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
           }
         });
       });

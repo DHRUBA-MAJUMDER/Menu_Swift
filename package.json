@@ -15,6 +15,7 @@
   },
   "engines": {
     "node": "20.x"
+<<<<<<< HEAD
   },
   "devDependencies": {
     "tailwindcss": "^3.4.19"
@@ -24,3 +25,7 @@
   "license": "ISC",
   "type": "commonjs"
 }
+=======
+  }
+}
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe

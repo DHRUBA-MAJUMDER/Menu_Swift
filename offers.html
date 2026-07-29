@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+<<<<<<< HEAD
   <meta name="viewport" content="width=device-wid
   th, initial-scale=1.0">
   <title>Offers & Promotions - MenuSwift</title>
   <link rel="stylesheet" href="output.css">
+=======
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers & Promotions - MenuSwift</title>
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -185,6 +190,7 @@
     }
 
     /* Offer List */
+<<<<<<< HEAD
     /* All Offers Grid Container */
    #allOffersContainer {
       display: grid;
@@ -212,6 +218,18 @@
       box-shadow: var(--shadow-md); 
       border-color: var(--primary);
       transform: translateY(-2px);
+=======
+    .offer-item {
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 1rem; margin-bottom: 0.75rem;
+      background: var(--surface); transition: all 0.2s;
+      animation: fadeInUp 0.3s ease-out;
+    }
+    .offer-item:hover { box-shadow: var(--shadow-md); }
+    .offer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
     }
     .offer-title-text { font-weight: 700; font-size: 0.95rem; }
     .offer-type-badge {
@@ -497,6 +515,7 @@
 
     <!-- ========== ALL OFFERS TAB ========== -->
     <div id="tab-active" class="tab-content">
+<<<<<<< HEAD
   <div class="card">
     <div class="card-title">📋 All Offers & Promotions</div>
     <div id="allOffersContainer" style="max-height: 480px; overflow-y: auto; padding-right: 5px;">
@@ -504,6 +523,16 @@
     </div>
   </div>
 </div>
+=======
+      <div class="card">
+        <div class="card-title">📋 All Offers & Promotions</div>
+        <div id="allOffersContainer">
+          <p style="color:var(--text-muted);font-size:0.85rem;">Loading offers...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+>>>>>>> 36ad5cc30a2611a120b4f411740fde17e80c24fe
 
 <script>
 // ===== Firebase =====
