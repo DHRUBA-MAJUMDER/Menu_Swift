@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Swift QR Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+input, button {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: orange;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.card {
+  width: 300px;
+  height: 500px;
+  background: #222;
+  margin: 20px auto;
+  border-radius: 12px;
+  padding: 15px;
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+.card h2 {
+  color: orange;
+}
+
+.table-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: orange;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+</style>
+<body>
+  <div class="container">
+    <h1>🍽️ Menu Swift – QR Card Generator</h1>
+
+    <label>Restaurant Name:</label>
+    <input type="text" id="restaurantName" placeholder="e.g. City Beats">
+
+    <label>Menu URL:</label>
+    <input type="text" id="menuURL" placeholder="https://...">
+
+    <label>Number of Cards:</label>
+    <input type="number" id="numCards" value="1" min="1">
+
+    <label>Upload Logo:</label>
+    <input type="file" id="logoUpload" accept="image/*">
+
+    <button onclick="generateCards()">Generate</button>
+    <div id="cards"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    let logoData = null;
+
+document.getElementById("logoUpload").addEventListener("change", function(e) {
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    logoData = event.target.result;
+  };
+  reader.readAsDataURL(e.target.files[0]);
+});
+
+function generateCards() {
+  const name = document.getElementById("restaurantName").value;
+  const url = document.getElementById("menuURL").value;
+  const num = parseInt(document.getElementById("numCards").value);
+  const container = document.getElementById("cards");
+
+  container.innerHTML = "";
+
+  for (let i = 1; i <= num; i++) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const badge = document.createElement("div");
+    badge.className = "table-badge";
+    badge.innerText = "No-" + i;
+
+    const title = document.createElement("h2");
+    title.innerText = name;
+
+    const subtitle = document.createElement("p");
+    subtitle.innerHTML = "<b>SCAN TO</b><br>VIEW MENU & ORDER";
+
+    const qrCanvas = document.createElement("canvas");
+    QRCode.toCanvas(qrCanvas, url, { width: 200 });
+
+    const note = document.createElement("p");
+    note.innerText = "Scan using any Camera or QR Scanner";
+
+    const footer = document.createElement("p");
+    footer.style.color = "orange";
+    footer.innerText = "developed by Menu Swift";
+
+    // Append everything
+    card.appendChild(badge);
+
+    if (logoData) {
+      const logoImg = document.createElement("img");
+      logoImg.src = logoData;
+      logoImg.style.width = "80px";
+      logoImg.style.marginTop = "10px";
+      card.appendChild(logoImg);
+    }
+
+    card.appendChild(title);
+    card.appendChild(subtitle);
+    card.appendChild(qrCanvas);
+    card.appendChild(note);
+    card.appendChild(footer);
+
+    container.appendChild(card);
+  }
+}
+  </script>
+</body>
+</html>

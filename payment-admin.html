@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Payment Admin Panel</title>
+     <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 50px rgba(0,0,0,0.2);
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .admin-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .admin-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .back-to-payment {
+            position: absolute;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-to-payment:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .filters {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .filters h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .payments-table {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 0.4rem;
+        }
+
+        .payment-details {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { background: #28a745; }
+        .notification.error { background: #dc3545; }
+        .notification.info { background: #17a2b8; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .admin-header {
+                padding: 1.5rem;
+            }
+
+            .admin-header h1 {
+                font-size: 2rem;
+            }
+
+            .back-to-payment {
+                position: static;
+                transform: none;
+                display: inline-block;
+                margin-bottom: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .table-actions {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 0.5rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <a href="index.html" class="back-to-payment">← Back to Payment</a>
+            <h1>🛠️ Admin Panel</h1>
+            <p>Restaurant Payment Management System</p>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="total-payments">0</div>
+                <div class="stat-label">Total Payments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-number" id="pending-payments">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="approved-payments">0</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-number" id="declined-payments">0</div>
+                <div class="stat-label">Declined</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-number" id="total-revenue">₹0</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters">
+            <h3>Filter Payments</h3>
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="status-filter">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="declined">Declined</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Plan</label>
+                    <select id="plan-filter">
+                        <option value="">All Plans</option>
+                        <option value="starter">Starter</option>
+                        <option value="professional">Professional</option>
+                        <option value="business">Business</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Billing Cycle</label>
+                    <select id="billing-filter">
+                        <option value="">All Billing</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" id="search-input" placeholder="Restaurant name, ID, or owner">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                <button class="btn btn-warning" onclick="exportData()">Export Data</button>
+                <button class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="payments-table">
+            <div class="table-header">
+                <h3>Payment Transactions</h3>
+                <div class="table-actions">
+                    <button class="btn btn-success" onclick="bulkApprove()">Bulk Approve</button>
+                    <button class="btn btn-danger" onclick="bulkDecline()">Bulk Decline</button>
+                    <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                            <th>Payment ID</th>
+                            <th>Restaurant</th>
+                            <th>Owner</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-tbody">
+                        <!-- Payments will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Details Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h3>Payment Details</h3>
+            <div id="payment-modal-content">
+                <!-- Payment details will be populated here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="confirmation-title">Confirm Action</h3>
+            <p id="confirmation-message">Are you sure you want to perform this action?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConfirmationModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirm-action-btn" onclick="confirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Firebase config (same as dashboard)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfnihGycst9nqbJHYPhc3xC5MKU26LAJk",
+            authDomain: "menuswift-fe577.firebaseapp.com",
+            databaseURL: "https://menuswift-fe577-default-rtdb.firebaseio.com",
+            projectId: "menuswift-fe577",
+            storageBucket: "menuswift-fe577.appspot.com",
+            messagingSenderId: "417323386413",
+            appId: "1:417323386413:web:f50d9fc566ae5d8e77daa4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let allPayments = [];
+        let filteredPayments = [];
+        let selectedPayments = new Set();
+        let pendingAction = null;
+
+        // Initialize admin panel
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaymentsFromFirebase();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('plan-filter').addEventListener('change', applyFilters);
+            document.getElementById('billing-filter').addEventListener('change', applyFilters);
+
+            document.getElementById('payment-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById('confirmation-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeConfirmationModal();
+            });
+        }
+
+        // Load payments from Firebase (real-time)
+        function loadPaymentsFromFirebase() {
+            db.ref('subscriptionPayments').on('value', snapshot => {
+                const data = snapshot.val() || {};
+                allPayments = [];
+
+                // Flatten: subscriptionPayments/{restaurantId}/{paymentId} -> array
+                Object.entries(data).forEach(([restId, payments]) => {
+                    if (typeof payments === 'object') {
+                        Object.entries(payments).forEach(([payId, payData]) => {
+                            allPayments.push({
+                                ...payData,
+                                id: payData.id || payId,
+                                restaurantId: payData.restaurantId || restId,
+                                _firebasePath: `subscriptionPayments/${restId}/${payId}`
+                            });
+                        });
+                    }
+                });
+
+                // Sort newest first
+                allPayments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                updateStatistics();
+                applyFilters();
+            });
+        }
+
+        function updateStatistics() {
+            const total = allPayments.length;
+            const pending = allPayments.filter(p => p.status === 'pending').length;
+            const approved = allPayments.filter(p => p.status === 'approved').length;
+            const declined = allPayments.filter(p => p.status === 'declined').length;
+            const revenue = allPayments.filter(p => p.status === 'approved').reduce((sum, p) => sum + (p.amount || 0), 0);
+
+            document.getElementById('total-payments').textContent = total;
+            document.getElementById('pending-payments').textContent = pending;
+            document.getElementById('approved-payments').textContent = approved;
+            document.getElementById('declined-payments').textContent = declined;
+            document.getElementById('total-revenue').textContent = `₹${revenue.toLocaleString()}`;
+        }
+
+        function applyFilters() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const planFilter = document.getElementById('plan-filter').value;
+            const billingFilter = document.getElementById('billing-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            filteredPayments = allPayments.filter(payment => {
+                const matchesStatus = !statusFilter || payment.status === statusFilter;
+                const matchesPlan = !planFilter || payment.planId === planFilter;
+                const matchesBilling = !billingFilter || payment.billingCycle === billingFilter;
+                const matchesSearch = !searchTerm || 
+                    (payment.restaurantName || '').toLowerCase().includes(searchTerm) ||
+                    (payment.restaurantId || '').toLowerCase().includes(searchTerm) ||
+                    (payment.ownerName || '').toLowerCase().includes(searchTerm) ||
+                    (payment.id || '').toLowerCase().includes(searchTerm);
+
+                return matchesStatus && matchesPlan && matchesBilling && matchesSearch;
+            });
+
+            renderPaymentsTable();
+        }
+
+        function renderPaymentsTable() {
+            const tbody = document.getElementById('payments-tbody');
+            
+            if (filteredPayments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <h3>No Payments Found</h3>
+                                <p>No payments match your current filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredPayments.map(payment => {
+                const date = new Date(payment.createdAt).toLocaleDateString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                return `
+                    <tr>
+                        <td><input type="checkbox" class="payment-checkbox" value="${payment.id}" onchange="togglePaymentSelection('${payment.id}')"></td>
+                        <td>
+                            <strong>${payment.id}</strong><br>
+                            <small style="color: #6c757d;">${(payment.method || 'N/A').toUpperCase()}</small>
+                        </td>
+                        <td>
+                            <strong>${payment.restaurantName || 'N/A'}</strong><br>
+                            <small style="color: #6c757d;">ID: ${payment.restaurantId || 'N/A'}</small><br>
+                            <small style="color: #6c757d;">Seats: ${payment.seatCount || 'N/A'}</small>
+                        </td>
+                        <td>
+                            <strong>${payment.ownerName || 'N/A'}</strong><br>
+                            <small style="color: #6c757d;">${payment.ownerPhone || 'N/A'}</small>
+                        </td>
+                        <td>
+                            <strong>${payment.planName || 'N/A'}</strong><br>
+                            <small style="color: #6c757d;">${payment.billingCycle || 'N/A'}</small>
+                            ${(payment.discount || 0) > 0 ? `<br><small style="color: #28a745;">${payment.discount}% OFF</small>` : ''}
+                        </td>
+                        <td>
+                            <strong>₹${(payment.amount || 0).toLocaleString()}</strong>
+                            ${payment.originalAmount && payment.originalAmount !== payment.amount ? `<br><small style="text-decoration: line-through; color: #6c757d;">₹${payment.originalAmount.toLocaleString()}</small>` : ''}
+                        </td>
+                        <td><span class="status-badge status-${payment.status}">${payment.status}</span></td>
+                        <td><small>${date}</small></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm" onclick="viewPayment('${payment.id}')">View</button>
+                                ${payment.status === 'pending' ? `
+                                    <button class="btn btn-success btn-sm" onclick="approvePayment('${payment.id}')">Approve</button>
+                                    <button class="btn btn-danger btn-sm" onclick="declinePayment('${payment.id}')">Decline</button>
+                                ` : ''}
+                                <button class="btn btn-danger btn-sm" onclick="deletePayment('${payment.id}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function viewPayment(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            const modalContent = document.getElementById('payment-modal-content');
+            modalContent.innerHTML = `
+                <div class="payment-details">
+                    <h4>Restaurant Information</h4>
+                    <p><strong>Restaurant Name:</strong> ${payment.restaurantName || 'N/A'}</p>
+                    <p><strong>Restaurant ID:</strong> ${payment.restaurantId || 'N/A'}</p>
+                    <p><strong>Seat Count:</strong> ${payment.seatCount || 'N/A'}</p>
+                    <p><strong>Owner Name:</strong> ${payment.ownerName || 'N/A'}</p>
+                    <p><strong>Owner Phone:</strong> ${payment.ownerPhone || 'N/A'}</p>
+                </div>
+                <div class="payment-details">
+                    <h4>Subscription Details</h4>
+                    <p><strong>Plan:</strong> ${payment.planName || 'N/A'}</p>
+                    <p><strong>Billing Cycle:</strong> ${payment.billingCycle || 'N/A'}</p>
+                    <p><strong>Original Amount:</strong> ₹${(payment.originalAmount || 0).toLocaleString()}</p>
+                    ${(payment.discount || 0) > 0 ? `<p><strong>Discount:</strong> ${payment.discount}%</p>` : ''}
+                    <p><strong>Final Amount:</strong> ₹${(payment.amount || 0).toLocaleString()}</p>
+                </div>
+                <div class="payment-details">
+                    <h4>Payment Information</h4>
+                    <p><strong>Payment ID:</strong> ${payment.id}</p>
+                    <p><strong>Method:</strong> ${(payment.method || 'N/A').toUpperCase()}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${payment.status}">${payment.status}</span></p>
+                    ${payment.paymentReference ? `<p><strong>Reference:</strong> ${payment.paymentReference}</p>` : ''}
+                    ${payment.paymentNote ? `<p><strong>Note:</strong> ${payment.paymentNote}</p>` : ''}
+                </div>
+                <div class="payment-details">
+                    <h4>Timestamps</h4>
+                    <p><strong>Created:</strong> ${new Date(payment.createdAt).toLocaleString('en-IN')}</p>
+                    ${payment.submittedAt ? `<p><strong>Submitted:</strong> ${new Date(payment.submittedAt).toLocaleString('en-IN')}</p>` : ''}
+                    ${payment.approvedAt ? `<p><strong>Approved:</strong> ${new Date(payment.approvedAt).toLocaleString('en-IN')}</p>` : ''}
+                    ${payment.declinedAt ? `<p><strong>Declined:</strong> ${new Date(payment.declinedAt).toLocaleString('en-IN')}</p>` : ''}
+                </div>
+            `;
+
+            document.getElementById('payment-modal').classList.add('show');
+        }
+
+        // APPROVE: Update Firebase payment status + extend subscription + unblock
+        function approvePayment(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            if (!confirm('Approve this payment and extend subscription by 30 days?')) return;
+
+            const restId = payment.restaurantId;
+            const now = Date.now();
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+            // 1. Update payment status in Firebase
+            db.ref(payment._firebasePath).update({
+                status: 'approved',
+                approvedAt: new Date().toISOString()
+            });
+
+            // 2. Extend subscription expiry by 30 days from now (or from current expiry if still valid)
+            db.ref('restaurants/' + restId + '/subscriptionExpiry').once('value').then(snap => {
+                const currentExpiry = snap.val() || 0;
+                const baseTime = (currentExpiry > now) ? currentExpiry : now;
+                const newExpiry = baseTime + thirtyDays;
+
+                // Update restaurant: extend expiry, unblock
+                db.ref('restaurants/' + restId).update({
+                    subscriptionExpiry: newExpiry,
+                    blocked: false,
+                    revoked: false
+                });
+            });
+
+            // 3. Find owner by restaurantId and unblock
+            db.ref('owners').orderByChild('restaurantId').equalTo(restId).once('value').then(snap => {
+                const owners = snap.val() || {};
+                Object.keys(owners).forEach(ownerUid => {
+                    db.ref('owners/' + ownerUid).update({
+                        blocked: false,
+                        revoked: false
+                    });
+                });
+            });
+
+            showNotification(`Payment ${paymentId} approved! Subscription extended by 30 days.`, 'success');
+        }
+
+        function declinePayment(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            db.ref(payment._firebasePath).update({
+                status: 'declined',
+                declinedAt: new Date().toISOString()
+            });
+
+            showNotification(`Payment ${paymentId} declined.`, 'error');
+        }
+
+        function deletePayment(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            showConfirmationModal(
+                'Delete Payment',
+                `Are you sure you want to permanently delete payment ${paymentId}?`,
+                'Delete',
+                () => {
+                    db.ref(payment._firebasePath).remove();
+                    showNotification(`Payment ${paymentId} deleted!`, 'success');
+                }
+            );
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.payment-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedPayments.add(checkbox.value);
+                } else {
+                    selectedPayments.delete(checkbox.value);
+                }
+            });
+        }
+
+        function togglePaymentSelection(paymentId) {
+            if (selectedPayments.has(paymentId)) {
+                selectedPayments.delete(paymentId);
+            } else {
+                selectedPayments.add(paymentId);
+            }
+            const totalCheckboxes = document.querySelectorAll('.payment-checkbox').length;
+            const selectAll = document.getElementById('select-all');
+            selectAll.indeterminate = selectedPayments.size > 0 && selectedPayments.size < totalCheckboxes;
+            selectAll.checked = selectedPayments.size === totalCheckboxes;
+        }
+
+        function bulkApprove() {
+            if (selectedPayments.size === 0) {
+                showNotification('Please select payments to approve', 'error');
+                return;
+            }
+            showConfirmationModal(
+                'Bulk Approve',
+                `Approve ${selectedPayments.size} selected payments and extend their subscriptions?`,
+                'Approve',
+                () => {
+                    selectedPayments.forEach(paymentId => {
+                        const payment = allPayments.find(p => p.id === paymentId);
+                        if (payment && payment.status === 'pending') {
+                            approvePayment(paymentId);
+                        }
+                    });
+                    selectedPayments.clear();
+                    document.getElementById('select-all').checked = false;
+                }
+            );
+        }
+
+        function bulkDecline() {
+            if (selectedPayments.size === 0) {
+                showNotification('Please select payments to decline', 'error');
+                return;
+            }
+            showConfirmationModal(
+                'Bulk Decline',
+                `Decline ${selectedPayments.size} selected payments?`,
+                'Decline',
+                () => {
+                    selectedPayments.forEach(paymentId => {
+                        const payment = allPayments.find(p => p.id === paymentId);
+                        if (payment && payment.status === 'pending') {
+                            declinePayment(paymentId);
+                        }
+                    });
+                    selectedPayments.clear();
+                    document.getElementById('select-all').checked = false;
+                }
+            );
+        }
+
+        function clearFilters() {
+            document.getElementById('status-filter').value = '';
+            document.getElementById('plan-filter').value = '';
+            document.getElementById('billing-filter').value = '';
+            document.getElementById('search-input').value = '';
+            applyFilters();
+        }
+
+        function exportData() {
+            if (filteredPayments.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+            const csv = generateCSV(filteredPayments);
+            downloadCSV(csv, `restaurant-payments-${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function generateCSV(payments) {
+            const headers = ['Payment ID', 'Restaurant Name', 'Restaurant ID', 'Owner Name', 'Owner Phone',
+                'Seat Count', 'Plan', 'Billing Cycle', 'Original Amount', 'Discount %',
+                'Final Amount', 'Status', 'Payment Method', 'Payment Reference',
+                'Created Date', 'Submitted Date', 'Approved Date', 'Declined Date'];
+
+            const rows = payments.map(payment => [
+                payment.id, payment.restaurantName, payment.restaurantId, payment.ownerName, payment.ownerPhone,
+                payment.seatCount, payment.planName, payment.billingCycle, payment.originalAmount, payment.discount,
+                payment.amount, payment.status, payment.method || '', payment.paymentReference || '',
+                payment.createdAt, payment.submittedAt || '', payment.approvedAt || '', payment.declinedAt || ''
+            ]);
+
+            return [headers, ...rows].map(row => 
+                row.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAllData() {
+            showConfirmationModal(
+                'Clear All Data',
+                'Delete ALL payment data from Firebase? This cannot be undone.',
+                'Delete All',
+                () => {
+                    db.ref('subscriptionPayments').remove().then(() => {
+                        allPayments = [];
+                        filteredPayments = [];
+                        selectedPayments.clear();
+                        updateStatistics();
+                        renderPaymentsTable();
+                        showNotification('All payment data cleared!', 'info');
+                    });
+                }
+            );
+        }
+
+        function refreshData() {
+            showNotification('Data refreshes automatically via Firebase!', 'info');
+        }
+
+        function closeModal() {
+            document.getElementById('payment-modal').classList.remove('show');
+        }
+
+        function showConfirmationModal(title, message, confirmText, action) {
+            document.getElementById('confirmation-title').textContent = title;
+            document.getElementById('confirmation-message').textContent = message;
+            document.getElementById('confirm-action-btn').textContent = confirmText;
+            pendingAction = action;
+            document.getElementById('confirmation-modal').classList.add('show');
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmation-modal').classList.remove('show');
+            pendingAction = null;
+        }
+
+        function confirmAction() {
+            if (pendingAction) {
+                pendingAction();
+                pendingAction = null;
+            }
+            closeConfirmationModal();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
