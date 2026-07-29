@@ -238,12 +238,14 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .search-input {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
+     .search-input { flex: 1; min-width: 200px; position: relative; }
+   .search-input {
+  width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 16px; /* 0.85rem hata kar 16px kar dein */
+  font-family: inherit;
+  background: var(--surface-2); color: var(--text); transition: all 0.2s;
+}
 
     .search-input:focus {
       background: rgba(255, 255, 255, 0.15);
