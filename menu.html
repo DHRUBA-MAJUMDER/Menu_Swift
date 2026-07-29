@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Menu - MenuSwift</title>
   <link rel="stylesheet" href="output.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -319,12 +319,13 @@
       border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center;
     }
     .search-box { flex: 1; min-width: 200px; position: relative; }
-    .search-box input {
-      width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem;
-      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-      font-size: 0.85rem; font-family: inherit;
-      background: var(--surface-2); color: var(--text); transition: all 0.2s;
-    }
+   .search-box input {
+  width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 16px; /* 0.85rem hata kar 16px kar dein */
+  font-family: inherit;
+  background: var(--surface-2); color: var(--text); transition: all 0.2s;
+}
     .search-box input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-glow); }
     .search-box svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none; }
 
@@ -1261,6 +1262,16 @@
         if (!snap.exists()) {
           var skeleton = document.getElementById('skeletonLoader');
           if (skeleton) skeleton.style.display = 'none';
+          
+          // Naye additions error dikhane ke liye
+          showToast('Invalid URL: Restaurant not found!', 'error');
+          document.getElementById('restaurantName').textContent = "Link Invalid";
+          
+          // "Coming soon" ki jagah proper error message dikhayein
+          var emptyMenu = document.getElementById('emptyMenu');
+          if(emptyMenu) {
+             emptyMenu.innerHTML = '<h3>Invalid Menu Link</h3><p>Please check the URL and try again.</p>';
+          }
           return;
         }
 
