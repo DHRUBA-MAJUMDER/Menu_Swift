@@ -950,7 +950,7 @@
                 <div class="form-group">
                     <label class="form-label" for="email">Email Address</label>
                     <div class="form-input-wrapper">
-                        <input type="email" id="email" class="form-input" placeholder="admin@restaurant.com" required autocomplete="email">
+                      <input type="email" id="email" class="form-input" placeholder="admin@restaurant.com" required autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false">
                         <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
                         </svg>
@@ -1218,8 +1218,8 @@
                 return;
             }
 
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
+          const email = emailInput.value.trim().toLowerCase();
+const password = passwordInput.value.trim(); // Mobile password pasting issue fix
             const rememberMe = document.getElementById('rememberMe').checked;
 
             if (!email || !password) {
