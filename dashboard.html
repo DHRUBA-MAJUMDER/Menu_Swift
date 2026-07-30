@@ -1817,107 +1817,68 @@
     </div>
   </div>
 
-  <!-- Main Dashboard -->
+ <!-- Main Dashboard -->
   <div class="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
-    <!-- Enhanced Search and Filter Section -->
-    <div class="glass-effect p-4 lg:p-6 rounded-2xl border border-white/10 fade-in">
-      <!-- Mobile Search -->
-      <div class="mb-4 lg:hidden">
-        <div class="relative">
-          <input type="text" id="searchInputMobile" placeholder="🔍 Search orders..."
-            class="search-input w-full p-3 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-sm" />
-          <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+  <!-- Enhanced Search and Filter Section -->
+    <div class="glass-effect p-4 lg:p-5 rounded-2xl border border-white/10 fade-in mb-6">
+      <div class="flex flex-col items-center justify-center gap-4 text-center">
+        
+        <!-- 1. Centered, Compact & Visible Search Bar -->
+        <div class="w-full max-w-md relative">
+          <input type="text" id="searchInput" placeholder="🔍 Search by Name or Table..."
+            class="w-full py-2.5 px-4 lg:py-3 lg:px-5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 focus:bg-white/15 transition-all shadow-inner text-sm lg:text-base" />
+          <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
         </div>
-      </div>
 
+        <!-- 2. Flex Wrap Properly Centered Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-2 lg:gap-3">
+          <button class="toggle-btn bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 hover:scale-105 active" data-filter="all">
+            🆕 New Orders
+          </button>
+          <button class="toggle-btn bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 hover:scale-105" data-filter="accepted">
+            ✅ Accepted
+          </button>
+          <button class="toggle-btn bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 hover:scale-105" data-filter="rejected">
+            ❌ Rejected
+          </button>
+          <button class="toggle-btn bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 hover:scale-105" data-filter="dinein">
+            🏪 Dine-In
+          </button>
+          <button class="toggle-btn bg-gradient-to-r from-yellow-500 to-yellow-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-300 hover:scale-105" data-filter="takeaway">
+            📦 Takeaway
+          </button>
+          <button onclick="clearAllDoneOrders()" class="bg-gradient-to-r from-pink-500 to-pink-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-white text-xs lg:text-sm font-semibold hover:scale-105 transition-all duration-300">
+            🧹 Clear Done
+          </button>
+          <button id="menuToggleBtn" onclick="toggleMenuStatus()" class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-white text-xs lg:text-sm font-semibold hover:scale-105 transition-all duration-300">
+            🟢 Menu is ON
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Grid -->
+    <div id="ordersContainer" class="orders-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+      <!-- Orders will be inserted here -->
+    </div>
+  </div>
       <!-- Desktop Layout -->
       <div class="hidden lg:flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4">
         <div class="w-full lg:w-1/3">
           <div class="relative">
-            <input type="text" id="searchInput" placeholder="🔍 Search by Name or Table..."
-              class="search-input w-full p-3 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all" />
-            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+           
               </svg>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <button
-            class="toggle-btn bg-gradient-to-r from-blue-500 to-blue-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
-            data-filter="all">
-            🆕 New Orders
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-green-500 to-green-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
-            data-filter="accepted">
-            ✅ Accepted
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-red-500 to-red-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
-            data-filter="rejected">
-            ❌ Rejected
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-purple-500 to-purple-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
-            data-filter="dinein">
-            🏪 Dine-In
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-yellow-500 to-yellow-600 btn-compact font-semibold transition-all duration-300 hover:scale-105"
-            data-filter="takeaway">
-            📦 Takeaway
-          </button>
-          <button onclick="clearAllDoneOrders()"
-            class="bg-gradient-to-r from-pink-500 to-pink-600 btn-compact text-white font-semibold hover:scale-105 transition-all duration-300">
-            🧹 Clear Done
-          </button>
-        </div>
-      </div>
+  
 
-      <!-- Mobile Filter Buttons -->
-      <div class="lg:hidden">
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <button
-            class="toggle-btn bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
-            data-filter="all">
-            🆕 New
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-green-500 to-green-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
-            data-filter="accepted">
-            ✅ Accepted
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
-            data-filter="rejected">
-            ❌ Rejected
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-purple-500 to-purple-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
-            data-filter="dinein">
-            🏪 Dine-In
-          </button>
-          <button
-            class="toggle-btn bg-gradient-to-r from-yellow-500 to-yellow-600 px-3 py-2 rounded-xl font-medium text-xs transition-all duration-300"
-            data-filter="takeaway">
-            📦 Takeaway
-          </button>
-          <button onclick="clearAllDoneOrders()"
-            class="bg-gradient-to-r from-pink-500 to-pink-600 px-3 py-2 rounded-xl text-white font-medium text-xs hover:scale-105 transition-all duration-300">
-            🧹 Clear Done
-          </button>
-        </div>
-      </div>
-    </div>
+      
 
     <!-- Orders Grid -->
     <div id="ordersContainer"
@@ -3190,18 +3151,16 @@
         }
 
         setupSearchHandlers();
-
-        document.querySelectorAll(".toggle-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentFilter = btn.dataset.filter;
-            renderOrders(currentFilter);
-            // Close mobile menu after selection
-            const mobileMenu = document.getElementById("mobileMenu");
-            if (mobileMenu) mobileMenu.classList.remove("open");
+      // 👉 RE-ADDING MISSING BUTTON CLICK LOGIC
+          document.querySelectorAll(".toggle-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              document.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
+              btn.classList.add("active");
+              currentFilter = btn.dataset.filter;
+              renderOrders(currentFilter);
+            });
           });
-        });
+       
 
         // Support ticket functions
         window.submitNewTicket = async () => {
@@ -3410,177 +3369,186 @@
           });
         };
 
-        // Enhanced render function with better mobile UI and print button
-        // Enhanced render function with better mobile UI and print button
-        function renderOrders(filter) {
-          const container = document.getElementById("ordersContainer");
-          if (!container) return;
+    // 👉 2. NEW PERFECTLY CENTERED CARD LOGIC
+          function renderOrders(filter) {
+            const container = document.getElementById("ordersContainer");
+            if (!container) return;
+            container.innerHTML = "";
 
-          container.innerHTML = "";
+            const searchQuery = (
+              document.getElementById("searchInput")?.value ||
+              document.getElementById("searchInputMobile")?.value ||
+              ""
+            ).toLowerCase();
 
-          const searchQuery = (
-            document.getElementById("searchInput")?.value ||
-            document.getElementById("searchInputMobile")?.value ||
-            ""
-          ).toLowerCase();
-
-          const sortedIds = Object.keys(ordersData).sort((a, b) => {
-            return (ordersData[b].timestamp || 0) - (ordersData[a].timestamp || 0);
-          });
-
-          let displayedCount = 0;
-
-          for (const id of sortedIds) {
-            const order = ordersData[id];
-            const status = (order.status || "new").toLowerCase();
-
-            // 🔥 Catching all variations of order type from Firebase
-            const type = (order.type || order.orderType || order.order_type || "").toLowerCase().trim();
-
-            const name = (order.customerName || "").toLowerCase();
-            const table = (order.tableNumber || "").toLowerCase();
-
-            // Filter logic matches normalized values
-            if (filter === "accepted" && status !== "accepted") continue;
-            if (filter === "rejected" && status !== "rejected") continue;
-            if (filter === "dinein" && !type.includes("dine")) continue;
-            if (filter === "takeaway" && !type.includes("take")) continue;
-            if (filter === "all" && status !== "new") continue;
-            if (searchQuery && !name.includes(searchQuery) && !table.includes(searchQuery)) continue;
-
-            displayedCount++;
-
-            let subtotal = 0;
-            (order.cartItems || []).forEach(item => {
-              const itemTotal = Number(item.totalPrice || 0);
-              subtotal += itemTotal;
+            const sortedIds = Object.keys(ordersData).sort((a, b) => {
+              return (ordersData[b].timestamp || 0) - (ordersData[a].timestamp || 0);
             });
 
-            const time = order.timestamp
-              ? new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : '';
+            let displayedCount = 0;
 
-            const statusColors = {
-              new: "from-blue-500 to-blue-600",
-              accepted: "from-green-500 to-green-600",
-              rejected: "from-red-500 to-red-600",
-              done: "from-purple-500 to-purple-600"
-            };
+            const activeTableCounts = {};
+            Object.values(ordersData).forEach(o => {
+              const st = (o.status || 'new').toLowerCase();
+              if (st !== 'done' && st !== 'rejected' && o.tableNumber) {
+                activeTableCounts[o.tableNumber] = (activeTableCounts[o.tableNumber] || 0) + 1;
+              }
+            });
 
-            const typeIcon = type.includes("dine") ? "🏪" : "📦";
+            for (const id of sortedIds) {
+              const order = ordersData[id];
+              const status = (order.status || "new").toLowerCase();
+              const type = (order.type || order.orderType || order.order_type || "").toLowerCase().trim();
+              const name = (order.customerName || "").toLowerCase();
+              const table = (order.tableNumber || "").toLowerCase();
 
-            const card = document.createElement("div");
-            card.className = "order-card rounded-2xl p-3 lg:p-4 shadow-xl space-y-3 flex flex-col justify-between fade-in";
+              if (filter === "accepted" && status !== "accepted") continue;
+              if (filter === "rejected" && status !== "rejected") continue;
+              if (filter === "dinein" && !type.includes("dine")) continue;
+              if (filter === "takeaway" && !type.includes("take")) continue;
+              if (filter === "all" && status !== "new") continue;
+              if (searchQuery && !name.includes(searchQuery) && !table.includes(searchQuery)) continue;
 
-            card.innerHTML = `
-            <div class="flex justify-between items-start">
-              <div class="space-y-1 flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h2 class="text-sm lg:text-lg font-bold text-white">#${id}</h2>
-                  <span class="status-badge px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${statusColors[status]} text-white">
-                    ${status.toUpperCase()}
-                  </span>
-                  ${getPaymentBadgeHTML(order)}
+              displayedCount++;
+
+              let subtotal = 0;
+              (order.cartItems || []).forEach(item => {
+                subtotal += Number(item.totalPrice || 0);
+              });
+
+              let tableWarningHtml = '';
+              if (status !== 'done' && status !== 'rejected' && activeTableCounts[table] > 1) {
+                tableWarningHtml = `<div class="mt-2 p-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-xs font-bold animate-pulse flex items-center justify-center w-full">
+                  ⚠️ Table ${table} has ${activeTableCounts[table]} active orders!
+                </div>`;
+              }
+
+              const time = order.timestamp ? new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+              const statusColors = { new: "from-blue-500 to-blue-600", accepted: "from-green-500 to-green-600", rejected: "from-red-500 to-red-600", done: "from-purple-500 to-purple-600" };
+              const typeIcon = type.includes("dine") ? "🏪" : "📦";
+
+              const card = document.createElement("div");
+              card.className = "order-card rounded-2xl p-3 lg:p-4 shadow-xl flex flex-col h-full fade-in";
+
+              card.innerHTML = `
+              <!-- HEADER SECTION -->
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex flex-col gap-1.5 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-sm lg:text-lg font-bold text-white leading-none">#${id}</h2>
+                    <span class="status-badge px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-semibold bg-gradient-to-r ${statusColors[status]} text-white flex items-center justify-center">
+                      ${status.toUpperCase()}
+                    </span>
+                    ${getPaymentBadgeHTML(order)}
+                  </div>
+                  <div class="flex items-center gap-1 text-xs text-gray-400">
+                    <span class="flex items-center">🕒</span>
+                    <span>${time}</span>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
-                  <span class="flex items-center gap-1">🕒 ${time}</span>
+                <div class="text-right ml-2 flex flex-col items-end">
+                  <div class="total-price text-sm lg:text-base font-bold text-white leading-none mb-1">₹${Number(order.totalAmount || subtotal).toFixed(2)}</div>
+                  <div class="text-[10px] lg:text-xs text-gray-400 leading-tight">
+                    Sub: ₹${subtotal.toFixed(2)}<br>
+                    GST (${order.gstPercent || 0}%): ₹${Number(order.gstAmount || 0).toFixed(2)}
+                  </div>
                 </div>
-              </div>
-              <div class="text-right ml-2">
-                <div class="total-price text-sm lg:text-base font-bold text-white">₹${Number(order.totalAmount || subtotal).toFixed(2)}</div>
-                <div class="text-xs text-gray-400">
-                  Subtotal: ₹${subtotal.toFixed(2)}<br>
-                  GST (${order.gstPercent || 0}%): ₹${Number(order.gstAmount || 0).toFixed(2)}
-                </div>
-              </div>
-            </div>
-            
-            <div class="glass-effect p-2 lg:p-3 rounded-xl flex-1 flex flex-col justify-between">
-              <div class="flex items-center gap-2 mb-2 flex-wrap text-xs lg:text-sm">
-                <span>👤</span>
-                <span class="font-semibold text-white">${order.customerName}</span>
-                <span class="text-gray-400">|</span>
-                <span class="text-gray-300">Table: ${order.tableNumber || "N/A"}</span>
-                <span class="text-gray-400">|</span>
-                
-                <span class="px-2 py-0.5 rounded font-medium ${type.includes('dine') ? 'bg-purple-500/20 text-purple-300' : 'bg-yellow-500/20 text-yellow-300'}">
-                  ${typeIcon} ${type.includes('dine') ? 'Dine-In' : type.includes('take') ? 'Takeaway' : 'Order'}
-                </span>
               </div>
               
-              <div class="space-y-1 max-h-32 lg:max-h-48 overflow-y-auto">
-                ${(order.cartItems || []).map(item => {
-              const unitPrice = Number(item.unitPrice || 0);
-              const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
-              const vegTag = item.veg ? `<span class="text-xs px-1 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
-              return `
-                    <div class="order-item-row flex justify-between items-center py-1">
-                      <div class="flex items-center gap-1 flex-1 min-w-0">
-                        <span class="text-white font-medium text-xs truncate">${item.name}</span>
-                        ${vegTag}
-                      </div>
-                      <div class="order-item-quantity text-right ml-2 flex-shrink-0">
-                        <div class="text-white font-semibold text-xs">₹${itemTotal.toFixed(2)}</div>
-                        <div class="text-xs text-gray-400">
-                          ${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'} × ${item.quantity}
+              <!-- BODY SECTION -->
+              <div class="glass-effect p-2 lg:p-3 rounded-xl flex-1 flex flex-col">
+                <!-- Customer Details Row (Perfectly Centered) -->
+                <div class="flex items-center gap-2 mb-2 flex-wrap text-xs lg:text-sm bg-white/5 p-2 rounded-lg border border-white/5">
+                  <span class="flex items-center gap-1 text-gray-300">
+                    <span class="flex items-center">👤</span>
+                    <span class="font-semibold text-white">${order.customerName}</span>
+                  </span>
+                  <span class="text-gray-500">|</span>
+                  <span class="text-gray-300 flex items-center gap-1">Table: <span class="text-white font-bold">${order.tableNumber || "N/A"}</span></span>
+                  <span class="text-gray-500">|</span>
+                  <span class="px-2 py-0.5 rounded font-medium flex items-center gap-1 ${type.includes('dine') ? 'bg-purple-500/20 text-purple-300' : 'bg-yellow-500/20 text-yellow-300'}">
+                    <span class="flex items-center">${typeIcon}</span>
+                    <span>${type.includes('dine') ? 'Dine-In' : 'Takeaway'}</span>
+                  </span>
+                </div>
+                
+                ${tableWarningHtml}
+                
+                <!-- Items List (Perfectly Vertically Aligned) -->
+                <div class="space-y-1 max-h-32 lg:max-h-48 overflow-y-auto mt-2 pr-1">
+                  ${(order.cartItems || []).map(item => {
+                    const unitPrice = Number(item.unitPrice || 0);
+                    const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+                    const vegTag = item.veg ? `<span class="text-[9px] lg:text-[10px] px-1.5 py-0.5 rounded-full flex items-center ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
+                    return `
+                      <div class="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                          <span class="text-white font-medium text-xs lg:text-sm truncate">${item.name}</span>
+                          ${vegTag}
+                        </div>
+                        <div class="flex flex-col items-end ml-3 flex-shrink-0">
+                          <span class="text-white font-semibold text-xs lg:text-sm leading-none">₹${itemTotal.toFixed(2)}</span>
+                          <span class="text-[10px] lg:text-xs text-gray-400 mt-1 leading-none">
+                            ${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'} × ${item.quantity}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  `;
-            }).join("")}
+                    `;
+                  }).join("")}
+                </div>
               </div>
-            </div>
 
-            <div class="mt-auto pt-3 space-y-2 w-full">
-              ${getVerifyButtonHTML(id, order)}
-              
-              ${status === "new" ? `
-                <div class="flex gap-2">
-                  <button onclick="updateOrderStatus('${id}', 'accepted')" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
-                    <span>✅</span> Accept
-                  </button>
-                  <button onclick="updateOrderStatus('${id}', 'rejected')" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
-                    <span>❌</span> Reject
-                  </button>
-                </div>
-              ` : ""}
-              
-              ${status === "accepted" ? `
-                <div class="grid grid-cols-1 gap-2 w-full">
-                  <button onclick="updateOrderStatus('${id}', 'done')" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
-                    <span>🎉</span> Mark as Done
-                  </button>
-                  <button onclick="printBill('${id}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
-                    <span>🖨️</span> Print Bill
-                  </button>
-                </div>
-              ` : ""}
-              
-              ${(status === "done" || status === "rejected") ? `
-                <div class="flex gap-2">
-                  <button onclick="printBill('${id}')" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
-                    <span>🖨️</span> Print Bill
-                  </button>
-                  <button onclick="completeOrder('${id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1">
-                    <span>🗑️</span> Clear
-                  </button>
-                </div>
-              ` : ""}
-            </div>
+             <!-- Footer Section (Buttons Strictly 50-50 Centered) -->
+              <div class="mt-3 pt-3 border-t border-white/10 w-full flex flex-col gap-2">
+                ${getVerifyButtonHTML(id, order)}
+                
+                ${status === "new" ? `
+                  <div class="grid grid-cols-2 gap-2 w-full">
+                    <button onclick="updateOrderStatus('${id}', 'accepted')" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1">
+                      <span>✅</span> <span>Accept</span>
+                    </button>
+                    <button onclick="updateOrderStatus('${id}', 'rejected')" class="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1">
+                      <span>❌</span> <span>Reject</span>
+                    </button>
+                  </div>
+                ` : ""}
+                
+                ${status === "accepted" ? `
+                  <div class="grid grid-cols-2 gap-2 w-full">
+                    <button onclick="updateOrderStatus('${id}', 'done')" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1 truncate">
+                      <span>🎉</span> <span>Mark Done</span>
+                    </button>
+                    <button onclick="printBill('${id}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1 truncate">
+                      <span>🖨️</span> <span>Print</span>
+                    </button>
+                  </div>
+                ` : ""}
+                
+                ${(status === "done" || status === "rejected") ? `
+                  <div class="grid grid-cols-2 gap-2 w-full">
+                    <button onclick="printBill('${id}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1 truncate">
+                      <span>🖨️</span> <span>Print</span>
+                    </button>
+                    <button onclick="completeOrder('${id}')" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-black py-2 px-1 rounded-xl text-[11px] lg:text-sm font-bold shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-1 truncate">
+                      <span>🗑️</span> <span>Clear</span>
+                    </button>
+                  </div>
+                ` : ""}
+              </div>
+              `;
+              container.appendChild(card);
+            }
+
+            if (displayedCount === 0) {
+              container.innerHTML = `
+              <div class="col-span-full flex flex-col items-center justify-center py-12 lg:py-16 text-center">
+                <div class="text-4xl lg:text-6xl mb-4 opacity-50 flex items-center justify-center">📋</div>
+                <h3 class="text-lg lg:text-xl font-semibold text-gray-300 mb-2">No orders found</h3>
+                <p class="text-gray-400 text-sm lg:text-base">Orders will appear here when customers place them</p>
+              </div>
             `;
-            container.appendChild(card);
+            }
           }
-
-          if (displayedCount === 0) {
-            container.innerHTML = `
-            <div class="col-span-full flex flex-col items-center justify-center py-12 lg:py-16 text-center">
-              <div class="text-4xl lg:text-6xl mb-4 opacity-50">📋</div>
-              <h3 class="text-lg lg:text-xl font-semibold text-gray-300 mb-2">No orders found</h3>
-              <p class="text-gray-400 text-sm lg:text-base">Orders will appear here when customers place them</p>
-            </div>
-          `;
-          }
-        }
       }).catch(error => {
         console.error("Error loading owner data:", error);
         // Prevent error flash by delaying redirect
@@ -3803,15 +3771,13 @@
       }
     });
 
-  firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(user => {
       if (user) {
         console.log("✅ Owner logged in:", user.uid);
 
-        // 💥 1. INSTANT CACHE LOAD: Network ka wait kiye bina seedha dashboard dikhao
         const cachedRestId = localStorage.getItem("restaurantId");
         if (cachedRestId) {
             restaurantId = cachedRestId;
-            // Turant loader hatao taaki white screen na dikhe
             const loader = document.getElementById("pageLoader");
             if(loader) {
               loader.style.opacity = "0";
@@ -3822,7 +3788,6 @@
             }
         }
 
-        // 💥 2. BACKGROUND FIREBASE SYNC
         db.ref("owners/" + user.uid).once("value").then(snapshot => {
           const ownerData = snapshot.val();
           if (!ownerData || !ownerData.restaurantId) {
@@ -3836,17 +3801,32 @@
           restaurantId = ownerData.restaurantId;
           localStorage.setItem("restaurantId", restaurantId);
 
-          // Admin rights check
-          db.ref('admins/' + user.uid).once('value')
-            .then(snap => {
-              if (snap.exists()) {
-                db.ref('ownerRestaurantIndex/' + restaurantId).set(user.uid);
+          // 👉 1. NEW MENU TOGGLE LOGIC
+          let isMenuClosed = false;
+          db.ref(`restaurants/${restaurantId}/settings/isMenuClosed`).on('value', snap => {
+            isMenuClosed = snap.val() || false;
+            const btns = document.querySelectorAll('#menuToggleBtn');
+            btns.forEach(btn => {
+              if(isMenuClosed) {
+                btn.innerHTML = '🔴 Menu is OFF';
+                btn.className = 'toggle-btn bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-white text-xs lg:text-sm font-semibold hover:scale-105 transition-all duration-300';
+              } else {
+                btn.innerHTML = '🟢 Menu is ON';
+                btn.className = 'toggle-btn bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-2 lg:px-4 lg:py-2 rounded-xl text-white text-xs lg:text-sm font-semibold hover:scale-105 transition-all duration-300';
               }
             });
+          });
 
-          // ✅ DEFINING checkAccessStatus HERE SO IT DOESN'T THROW ERROR
+          window.toggleMenuStatus = () => {
+            db.ref(`restaurants/${restaurantId}/settings/isMenuClosed`).set(!isMenuClosed)
+              .then(() => showNotification(isMenuClosed ? "Menu turned OFF for customers" : "Menu turned ON for customers", "success"));
+          };
+
+          db.ref('admins/' + user.uid).once('value').then(snap => {
+            if (snap.exists()) { db.ref('ownerRestaurantIndex/' + restaurantId).set(user.uid); }
+          });
+
           function checkAccessStatus() {
-            // Monitor owner status changes in real-time
             db.ref("owners/" + user.uid).on("value", ownerSnapshot => {
               const currentOwnerData = ownerSnapshot.val();
               if (!currentOwnerData) {
@@ -3856,7 +3836,6 @@
                 }, 100);
                 return;
               }
-
               if (currentOwnerData.blocked || currentOwnerData.revoked) {
                 const reason = currentOwnerData.revokedReason || currentOwnerData.blockedReason || "Account suspended";
                 document.getElementById("revokeReason").textContent = reason;
@@ -3867,7 +3846,6 @@
               }
             });
 
-            // Monitor restaurant status changes in real-time
             db.ref("restaurants/" + restaurantId).on("value", restaurantSnapshot => {
               const currentRestaurantData = restaurantSnapshot.val();
               if (!currentRestaurantData) {
@@ -3877,9 +3855,7 @@
                 }, 100);
                 return;
               }
-
               restaurantData = currentRestaurantData;
-
               if (currentRestaurantData.blocked || currentRestaurantData.revoked) {
                 const reason = currentRestaurantData.revokedReason || currentRestaurantData.blockedReason || "Account suspended";
                 document.getElementById("revokeReason").textContent = reason;
@@ -3892,8 +3868,9 @@
             });
           }
 
+          setTimeout(() => { checkAccessStatus(); }, 300);
+
           function loadSubscriptionInfo(restaurantData) {
-            // Auto-set ₹299 plan if seats ≤ 20
             if (restaurantData.totalSeats && restaurantData.totalSeats <= 20 && restaurantData.subscriptionPlan !== 299) {
               db.ref("restaurants/" + restaurantId + "/subscriptionPlan").set(299);
               restaurantData.subscriptionPlan = 299;
@@ -3962,7 +3939,6 @@
             </div>
             `;
             
-            // ✅ Fallback agar cache miss ho
             const loader = document.getElementById("pageLoader");
             if(loader) {
               loader.style.opacity = "0";
@@ -3994,25 +3970,395 @@
             }
 
             if (needsRenewal && !sessionStorage.getItem('renewalBannerDismissed')) {
-              setTimeout(() => {
-                showRenewalBanner(daysLeft, isExpired);
-              }, 1000);
+              setTimeout(() => { showRenewalBanner(daysLeft, isExpired); }, 1000);
             }
           }
 
-          // FINALLY CALL IT HERE
-          checkAccessStatus();
+          db.ref("adminBroadcasts").on("value", snap => {
+            const box = document.getElementById("broadcastMessages");
+            const data = snap.val() || {};
+            if (localStorage.getItem('clearedBroadcasts') === 'true') {
+              box.innerHTML = `<div class="text-center text-gray-400 py-4"><div class="text-2xl mb-2">📢</div><p>All announcements cleared locally</p></div>`;
+              return;
+            }
+            box.innerHTML = "";
+            if (Object.keys(data).length === 0) {
+              box.innerHTML = '<div class="text-center text-gray-400 py-4">No announcements at this time</div>';
+              return;
+            }
+            Object.entries(data).sort((a, b) => b[0] - a[0]).forEach(([ts, msg]) => {
+              const div = document.createElement("div");
+              const time = new Date(+ts).toLocaleString();
+              div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
+              div.innerHTML = `<div class="font-semibold text-blue-300 text-xs mb-1">📅 ${time}</div><div class="text-white text-sm">${msg}</div>`;
+              box.appendChild(div);
+            });
+          });
+
+          db.ref(`supportTickets/${restaurantId}`).once("value").then(ticketSnap => {
+            const tickets = ticketSnap.val() || {};
+            const activeTicket = Object.entries(tickets).find(([_, t]) => t.status !== "closed");
+            if (activeTicket) { setupActiveTicket(activeTicket[0]); }
+          });
+
+          function hideLoaderSafely() {
+            const loader = document.getElementById("pageLoader");
+            if (loader && loader.style.display !== "none") {
+                loader.style.opacity = "0";
+                setTimeout(() => {
+                    loader.style.display = "none";
+                    document.body.style.visibility = "visible";
+                }, 400);
+            }
+          }
+
+          const failsafeTimer = setTimeout(hideLoaderSafely, 2500);
+
+          const cachedDashboardOrders = localStorage.getItem("cachedDashboardOrders_" + restaurantId);
+          if (cachedDashboardOrders) {
+            try {
+              ordersData = JSON.parse(cachedDashboardOrders);
+              renderOrders(currentFilter);
+              hideLoaderSafely();
+              clearTimeout(failsafeTimer);
+            } catch (e) { console.error("Cache read error"); }
+          }
+
+          db.ref(".info/connected").on("value", function(snap) {
+            const badges = document.querySelectorAll(".network-badge");
+            const dots = document.querySelectorAll(".network-dot");
+            const texts = document.querySelectorAll(".network-text");
+            if (snap.val() === true) {
+                badges.forEach(b => b.className = "network-badge flex items-center gap-1 px-3 py-1 text-sm bg-emerald-500/20 text-emerald-400 rounded-full transition-colors duration-300");
+                dots.forEach(d => d.className = "network-dot w-2 h-2 bg-emerald-400 rounded-full animate-pulse");
+                texts.forEach(t => t.textContent = "Live");
+            } else {
+                badges.forEach(b => b.className = "network-badge flex items-center gap-1 px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-full transition-colors duration-300");
+                dots.forEach(d => d.className = "network-dot w-2 h-2 bg-red-400 rounded-full");
+                texts.forEach(t => t.textContent = "Syncing...");
+                setTimeout(() => { firebase.database().goOnline(); }, 5000);
+            }
+          });
+
+          db.ref(`restaurants/${restaurantId}/orders`).on("value", snapshot => {
+            const newData = snapshot.val() || {};
+            const isNew = Object.keys(newData).some(id => !ordersData[id]);
+            if (isNew && Object.keys(ordersData).length > 0) {
+              enableSound();
+              setTimeout(() => playSound(), 100);
+              showNotification("New order received!", "success");
+            }
+            ordersData = newData;
+            localStorage.setItem("cachedDashboardOrders_" + restaurantId, JSON.stringify(ordersData));
+            renderOrders(currentFilter);
+            if (isFirstLoad) { hideLoaderSafely(); isFirstLoad = false; }
+            clearTimeout(failsafeTimer);
+          });
+
+          function setupSearchHandlers() {
+            const searchInputs = [
+              document.getElementById("searchInput"),
+              document.getElementById("searchInputMobile")
+            ].filter(Boolean);
+            searchInputs.forEach(input => {
+              input.addEventListener("input", (e) => {
+                searchInputs.forEach(otherInput => {
+                  if (otherInput !== input) { otherInput.value = e.target.value; }
+                });
+                renderOrders(currentFilter);
+              });
+            });
+          }
+          setupSearchHandlers();
+
+          window.submitNewTicket = async () => {
+            const msg = document.getElementById("newTicketMessage").value.trim();
+            if (!msg) return alert("Please enter a message.");
+            try {
+              const ticketRef = db.ref(`supportTickets/${restaurantId}`);
+              const snap = await ticketRef.once("value");
+              let existingTicketId = null;
+              const tickets = snap.val() || {};
+              for (const [ticketId, ticketData] of Object.entries(tickets)) {
+                const messages = ticketData.messages || {};
+                const hasAdminReply = Object.values(messages).some(m => m.sender === "admin");
+                if (!hasAdminReply) { existingTicketId = ticketId; break; }
+              }
+              const timestamp = Date.now();
+              let targetTicketId = existingTicketId || timestamp;
+              if (!existingTicketId) {
+                await db.ref(`supportTickets/${restaurantId}/${targetTicketId}`).set({ status: "open", timestamp: timestamp });
+              }
+              await db.ref(`supportTickets/${restaurantId}/${targetTicketId}/messages/${timestamp}`).set({ sender: "owner", text: msg, timestamp: timestamp });
+              document.getElementById("newTicketMessage").value = "";
+              setupActiveTicket(targetTicketId);
+              showNotification("Support ticket submitted successfully!", "success");
+            } catch (error) {
+              showNotification("Failed to submit ticket. Please try again.", "error");
+            }
+          };
+
+          window.sendTicketReply = () => {
+            const text = document.getElementById("replyMessage").value.trim();
+            if (!text) return alert("Write something");
+            const ts = Date.now();
+            db.ref(`supportTickets/${restaurantId}/${window.activeTicketId}/messages/${ts}`).set({ sender: "owner", text, timestamp: ts })
+            .then(() => {
+              document.getElementById("replyMessage").value = "";
+              showNotification("Message sent!", "success");
+            }).catch(error => {
+              showNotification("Failed to send message. Please try again.", "error");
+            });
+          };
+
+          window.setupActiveTicket = (ticketId) => {
+            window.activeTicketId = ticketId;
+            document.getElementById("createTicketSection").classList.add("hidden");
+            document.getElementById("activeTicketSection").classList.remove("hidden");
+            const msgBox = document.getElementById("ticketMessages");
+
+            db.ref(`supportTickets/${restaurantId}/${ticketId}/messages`).on("value", snap => {
+              const msgs = snap.val() || {};
+              msgBox.innerHTML = "";
+              if (Object.keys(msgs).length === 0) {
+                msgBox.innerHTML = `<div class="text-center text-gray-400 py-8"><div class="text-3xl mb-2">💬</div><p>No messages yet</p></div>`;
+                return;
+              }
+              Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp).forEach(([_, m]) => {
+                const who = m.sender === "owner" ? "👤 You" : "👨‍💼 Admin";
+                const time = new Date(m.timestamp).toLocaleTimeString();
+                const el = document.createElement("div");
+                el.className = `p-3 rounded-lg ${m.sender === "owner" ? "bg-blue-600/30 ml-4" : "bg-green-600/30 mr-4"} border border-white/10 hover:bg-opacity-40 transition-all`;
+                el.innerHTML = `<div class="font-semibold text-xs mb-1 text-gray-300">${who} — 🕒 ${time}</div><div class="text-white text-sm break-words">${m.text}</div>`;
+                msgBox.appendChild(el);
+              });
+              msgBox.scrollTop = msgBox.scrollHeight;
+            });
+
+            db.ref(`supportTickets/${restaurantId}/${ticketId}/status`).on("value", s => {
+              if (s.val() === "closed") {
+                alert("❌ This ticket has been closed by Admin.");
+                document.getElementById("replyMessage").disabled = true;
+              }
+            });
+          };
+
+          window.updateOrderStatus = (id, status) => {
+            db.ref(`restaurants/${restaurantId}/orders/${id}/status`).set(status).then(() => {
+              showNotification(`Order ${status}!`, "success");
+              if (status === "done") {
+                const order = ordersData[id];
+                if (order) {
+                  const updatedOrder = { ...order, status: "done" };
+                  db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(updatedOrder);
+                }
+              }
+            }).catch(error => {
+              showNotification("Failed to update order status", "error");
+            });
+          };
+
+          window.completeOrder = id => {
+            const order = ordersData[id];
+            if (order) {
+              const orderWithMetadata = { ...order, clearedAt: Date.now(), clearedFrom: 'dashboard', clearedBy: 'admin' };
+              db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(orderWithMetadata).then(() => {
+                return db.ref(`restaurants/${restaurantId}/orders/${id}`).remove();
+              }).then(() => {
+                showNotification("Order moved to history!", "success");
+              }).catch(error => {
+                showNotification("Failed to clear order", "error");
+              });
+            } else {
+              db.ref(`restaurants/${restaurantId}/orders/${id}`).remove().then(() => {
+                showNotification("Order cleared!", "success");
+              }).catch(error => {
+                showNotification("Failed to clear order", "error");
+              });
+            }
+          };
+
+          window.clearAllDoneOrders = () => {
+            if (!confirm("Clear all DONE orders? They will be moved to order history.")) return;
+            let clearedCount = 0;
+            const promises = [];
+            Object.entries(ordersData).forEach(([id, order]) => {
+              if (order.status === "done") {
+                const orderWithMetadata = { ...order, clearedAt: Date.now(), clearedFrom: 'dashboard', clearedBy: 'admin', bulkClear: true };
+                const promise = db.ref(`restaurants/${restaurantId}/orderHistory/${id}`).set(orderWithMetadata)
+                  .then(() => { return db.ref(`restaurants/${restaurantId}/orders/${id}`).remove(); })
+                  .then(() => { clearedCount++; })
+                promises.push(promise);
+              }
+            });
+            Promise.all(promises).then(() => {
+              if (clearedCount > 0) { showNotification(`Moved ${clearedCount} completed orders to history`, "success"); } 
+              else { showNotification("No completed orders to clear", "info"); }
+            });
+          };
+
+          // 👉 2. NEW TABLE FLAGGING LOGIC (PERFECT PLACEMENT)
+          function renderOrders(filter) {
+            const container = document.getElementById("ordersContainer");
+            if (!container) return;
+            container.innerHTML = "";
+
+            const searchQuery = (
+              document.getElementById("searchInput")?.value ||
+              document.getElementById("searchInputMobile")?.value ||
+              ""
+            ).toLowerCase();
+
+            const sortedIds = Object.keys(ordersData).sort((a, b) => {
+              return (ordersData[b].timestamp || 0) - (ordersData[a].timestamp || 0);
+            });
+
+            let displayedCount = 0;
+
+            const activeTableCounts = {};
+            Object.values(ordersData).forEach(o => {
+              const st = (o.status || 'new').toLowerCase();
+              if (st !== 'done' && st !== 'rejected' && o.tableNumber) {
+                activeTableCounts[o.tableNumber] = (activeTableCounts[o.tableNumber] || 0) + 1;
+              }
+            });
+
+            for (const id of sortedIds) {
+              const order = ordersData[id];
+              const status = (order.status || "new").toLowerCase();
+              const type = (order.type || order.orderType || order.order_type || "").toLowerCase().trim();
+              const name = (order.customerName || "").toLowerCase();
+              const table = (order.tableNumber || "").toLowerCase();
+
+              if (filter === "accepted" && status !== "accepted") continue;
+              if (filter === "rejected" && status !== "rejected") continue;
+              if (filter === "dinein" && !type.includes("dine")) continue;
+              if (filter === "takeaway" && !type.includes("take")) continue;
+              if (filter === "all" && status !== "new") continue;
+              if (searchQuery && !name.includes(searchQuery) && !table.includes(searchQuery)) continue;
+
+              displayedCount++;
+
+              let subtotal = 0;
+              (order.cartItems || []).forEach(item => {
+                subtotal += Number(item.totalPrice || 0);
+              });
+
+              let tableWarningHtml = '';
+              if (status !== 'done' && status !== 'rejected' && activeTableCounts[table] > 1) {
+                tableWarningHtml = `<div class="mt-2 p-2 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-xs font-bold animate-pulse text-center w-full">
+                  ⚠️ Table ${table} has ${activeTableCounts[table]} active orders! Ensure previous is served.
+                </div>`;
+              }
+
+              const time = order.timestamp ? new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+              const statusColors = { new: "from-blue-500 to-blue-600", accepted: "from-green-500 to-green-600", rejected: "from-red-500 to-red-600", done: "from-purple-500 to-purple-600" };
+              const typeIcon = type.includes("dine") ? "🏪" : "📦";
+
+              const card = document.createElement("div");
+              card.className = "order-card rounded-2xl p-3 lg:p-4 shadow-xl space-y-3 flex flex-col justify-between fade-in";
+
+              card.innerHTML = `
+              <div class="flex justify-between items-start">
+                <div class="space-y-1 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-sm lg:text-lg font-bold text-white">#${id}</h2>
+                    <span class="status-badge px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${statusColors[status]} text-white">${status.toUpperCase()}</span>
+                    ${getPaymentBadgeHTML(order)}
+                  </div>
+                  <div class="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
+                    <span class="flex items-center gap-1">🕒 ${time}</span>
+                  </div>
+                </div>
+                <div class="text-right ml-2">
+                  <div class="total-price text-sm lg:text-base font-bold text-white">₹${Number(order.totalAmount || subtotal).toFixed(2)}</div>
+                  <div class="text-xs text-gray-400">
+                    Subtotal: ₹${subtotal.toFixed(2)}<br>
+                    GST (${order.gstPercent || 0}%): ₹${Number(order.gstAmount || 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="glass-effect p-2 lg:p-3 rounded-xl flex-1 flex flex-col justify-between">
+                <div class="flex items-center gap-2 mb-2 flex-wrap text-xs lg:text-sm">
+                  <span>👤</span>
+                  <span class="font-semibold text-white">${order.customerName}</span>
+                  <span class="text-gray-400">|</span>
+                  <span class="text-gray-300">Table: ${order.tableNumber || "N/A"}</span>
+                  <span class="text-gray-400">|</span>
+                  <span class="px-2 py-0.5 rounded font-medium ${type.includes('dine') ? 'bg-purple-500/20 text-purple-300' : 'bg-yellow-500/20 text-yellow-300'}">
+                    ${typeIcon} ${type.includes('dine') ? 'Dine-In' : 'Takeaway'}
+                  </span>
+                </div>
+                
+                ${tableWarningHtml}
+                
+                <div class="space-y-1 max-h-32 lg:max-h-48 overflow-y-auto mt-2">
+                  ${(order.cartItems || []).map(item => {
+                    const unitPrice = Number(item.unitPrice || 0);
+                    const itemTotal = Number(item.totalPrice || (unitPrice * item.quantity) || 0);
+                    const vegTag = item.veg ? `<span class="text-xs px-1 py-0.5 rounded-full ${item.veg === 'Veg' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}">${item.veg}</span>` : '';
+                    return `
+                      <div class="order-item-row flex justify-between items-center py-1">
+                        <div class="flex items-center gap-1 flex-1 min-w-0">
+                          <span class="text-white font-medium text-xs truncate">${item.name}</span>
+                          ${vegTag}
+                        </div>
+                        <div class="order-item-quantity text-right ml-2 flex-shrink-0">
+                          <div class="text-white font-semibold text-xs">₹${itemTotal.toFixed(2)}</div>
+                          <div class="text-xs text-gray-400">
+                            ${(item.plateType && item.plateType !== 'undefined') ? item.plateType : 'Full'} × ${item.quantity}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+
+              <div class="mt-auto pt-3 space-y-2 w-full">
+                ${getVerifyButtonHTML(id, order)}
+                ${status === "new" ? `
+                  <div class="flex gap-2">
+                    <button onclick="updateOrderStatus('${id}', 'accepted')" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1"><span>✅</span> Accept</button>
+                    <button onclick="updateOrderStatus('${id}', 'rejected')" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1"><span>❌</span> Reject</button>
+                  </div>
+                ` : ""}
+                ${status === "accepted" ? `
+                  <div class="grid grid-cols-1 gap-2 w-full">
+                    <button onclick="updateOrderStatus('${id}', 'done')" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"><span>🎉</span> Mark as Done</button>
+                    <button onclick="printBill('${id}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"><span>🖨️</span> Print Bill</button>
+                  </div>
+                ` : ""}
+                ${(status === "done" || status === "rejected") ? `
+                  <div class="flex gap-2">
+                    <button onclick="printBill('${id}')" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1"><span>🖨️</span> Print Bill</button>
+                    <button onclick="completeOrder('${id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black btn-compact font-semibold hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1"><span>🗑️</span> Clear</button>
+                  </div>
+                ` : ""}
+              </div>
+              `;
+              container.appendChild(card);
+            }
+
+            if (displayedCount === 0) {
+              container.innerHTML = `
+              <div class="col-span-full flex flex-col items-center justify-center py-12 lg:py-16 text-center">
+                <div class="text-4xl lg:text-6xl mb-4 opacity-50">📋</div>
+                <h3 class="text-lg lg:text-xl font-semibold text-gray-300 mb-2">No orders found</h3>
+                <p class="text-gray-400 text-sm lg:text-base">Orders will appear here when customers place them</p>
+              </div>
+            `;
+            }
+          }
 
         }).catch(error => {
-          console.error("Error loading owner data:", error);
           setTimeout(() => {
             showNotification("Authentication error. Please login again.", "error");
             auth.signOut().then(() => window.location.href = "admin-login.html");
           }, 100);
         });
-
       } else {
-        console.warn("⚠️ No user logged in, redirecting to login...");
         window.location.href = "admin-login.html";
       }
     });
@@ -4067,7 +4413,7 @@
   </div>
 
 
-  </script>
+  
 </body>
 
 </html>

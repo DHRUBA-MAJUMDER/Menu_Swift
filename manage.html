@@ -10,23 +10,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              50: '#f0f9ff',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-              900: '#1e3a8a'
-            }
-          }
-        }
-      }
-    }
-  </script>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
   <!-- Header -->
@@ -89,7 +72,7 @@
     </div>
 
     <div class="flex gap-3">
-      <button onclick="savePaymentSettings()" id="savePaymentBtn" class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">Save Settings</button>
+     <button onclick="savePaymentSettings()" id="savePaymentBtn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">Save Settings</button>
       <button onclick="closePaymentSettings()" class="flex-1 bg-slate-200 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-300 transition-colors">Cancel</button>
     </div>
     <p id="paymentSaveStatus" class="text-center font-medium mt-4 hidden"></p>
@@ -255,9 +238,9 @@
         </div>
         
         <div class="flex gap-3 mt-8">
-          <button onclick="uploadItem()" class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-            Upload Item
-          </button>
+         <button onclick="uploadItem()" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+  Upload Item
+</button>
           <button onclick="toggleModal('addModal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-semibold transition-colors">
             Cancel
           </button>
@@ -421,19 +404,29 @@
   let selectedItems = new Set();
 
   // --- NAYA: Login Check Code ---
+  
+ // --- UPDATED: Strict Login Check Code ---
   auth.onAuthStateChanged((user) => {
-    if (user) {
+    // Check if user exists AND has a valid email
+    if (user && user.email) {
       console.log("Admin successfully logged in:", user.email);
-      // Data tabhi load hoga jab Admin ka login confirm ho jayega
+      // Data tabhi load hoga jab Admin ka valid email confirm ho jayega
       loadItems();
       loadGST();
     } else {
-      console.warn("No Admin logged in!");
-      alert("Aapka session expire ho gaya hai ya aap logged in nahi hain. Redirecting to Login...");
-      // Niche "login.html" ki jagah apne admin login page ka sahi naam likhein
-      window.location.href = "login.html"; 
+      console.warn("Invalid Admin session (Email is null). Forcing logout...");
+      
+      // Is corrupted/null session ko sign out karein
+      auth.signOut().then(() => {
+        alert("Yoursession is invalid . Redirecting to Login...");
+        window.location.href = "login.html"; 
+      }).catch((error) => {
+        console.error("Sign out error:", error);
+        window.location.href = "admin-login.html"; 
+      });
     }
   });
+  // -----------------------------
   // -----------------------------
 
   function toggleModal(id) {
@@ -599,9 +592,10 @@
             <div class="absolute top-2 left-2 flex items-center space-x-2">
               <input type="checkbox" class="item-checkbox w-3 h-3 sm:w-4 sm:h-4 text-primary-600 bg-white border-slate-300 rounded focus:ring-primary-500 focus:ring-2" data-item-id="${item.id}" onchange="updateBulkButtons()">
             </div>
-            <div class="absolute top-2 right-2">
+            <!-- Toggle Switch Top Right -->
+            <div class="absolute top-2 right-2 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm px-1.5 py-1 rounded-full shadow">
               <div class="toggle-switch">
-                <input type="checkbox" id="toggle-${item.id}" ${item.active ? "checked" : ""} onchange="toggleStatus('${item.id}', this.checked)" class="toggle-input">
+                <input type="checkbox" id="toggle-${item.id}" ${item.active === true ? "checked" : ""} onchange="toggleStatus('${item.id}', this.checked)" class="toggle-input">
                 <label for="toggle-${item.id}" class="toggle-label"></label>
               </div>
             </div>
@@ -642,10 +636,31 @@
     });
   }
 
-  function toggleStatus(itemId, status) {
-    db.ref(`restaurants/${restaurantId}/menuItems/${itemId}/active`).set(status);
-  }
+ function toggleStatus(itemId, status) {
+    // Check karein ki user logged in hai ya session active hai
+    const currentUser = firebase.auth().currentUser;
+    
+    if (!currentUser) {
+      console.warn("Session unauthenticated state caught!");
+      alert("Session validation failed. Please refresh or re-login.");
+      const toggleInput = document.getElementById(`toggle-${itemId}`);
+      if (toggleInput) toggleInput.checked = !status;
+      return;
+    }
 
+    // Database me status update karein securely
+    db.ref(`restaurants/${restaurantId}/menuItems/${itemId}/active`).set(status)
+      .then(() => {
+        console.log(`Status for ${itemId} updated to: ${status}`);
+      })
+      .catch((err) => {
+        console.error("Failed to update status:", err);
+        alert("Failed to update item status.");
+        // Agar database update fail ho to switch ko wapas reverse kar dein
+        const toggleInput = document.getElementById(`toggle-${itemId}`);
+        if (toggleInput) toggleInput.checked = !status;
+      });
+  }
   // ===== UPDATED: Delete item completely including image and offer references =====
   // ===== UPDATED: Delete item completely including image and offer references =====
   function deleteItem(itemId) {
@@ -1179,25 +1194,29 @@ async function savePaymentSettings() {
   /* Custom Toggle Switch */
   .toggle-switch {
     position: relative;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
   }
-
   .toggle-input {
     opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
   }
 
   .toggle-label {
     position: relative;
     display: block;
     width: 36px;
-    height: 18px;
+    height: 20px;
     background-color: #ef4444;
-    border-radius: 9px;
+    border-radius: 9999px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0;
   }
 
   @media (min-width: 640px) {
@@ -1210,13 +1229,13 @@ async function savePaymentSettings() {
   .toggle-label:before {
     content: "";
     position: absolute;
-    top: 1px;
-    left: 1px;
+    top: 2px;
+    left: 2px;
     width: 16px;
     height: 16px;
     background-color: white;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
@@ -1232,8 +1251,8 @@ async function savePaymentSettings() {
     background-color: #10b981;
   }
 
-  .toggle-input:checked + .toggle-label:before {
-    transform: translateX(18px);
+ .toggle-input:checked + .toggle-label:before {
+    transform: translateX(16px);
   }
 
   @media (min-width: 640px) {
