@@ -13,49 +13,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              50: '#f0f9ff',
-              400: '#60a5fa',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-              800: '#1e40af',
-              900: '#1e3a8a'
-            },
-            success: {
-              50: '#f0fdf4',
-              400: '#4ade80',
-              500: '#22c55e',
-              600: '#16a34a'
-            },
-            warning: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706'
-            },
-            error: {
-              400: '#f87171',
-              500: '#ef4444',
-              600: '#dc2626'
-            }
-          },
-          fontFamily: {
-            'inter': ['Inter', 'sans-serif']
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.5s ease-in-out',
-            'slide-up': 'slideUp 0.3s ease-out',
-            'pulse-soft': 'pulseSoft 2s infinite'
-          }
-        }
-      }
-    }
-  </script>
+<!-- Add Tailwind CDN and Config -->
+  
+  
 
   <style>
     * {
@@ -508,7 +468,7 @@
     </div>
   </main>
 
-  <div id="notificationContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+ <div id="notificationContainer" class="fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
   const firebaseConfig = {
@@ -891,7 +851,8 @@
             <p class="text-2xl lg:text-3xl font-bold text-slate-900 animate-fade-in">${totalOrders}</p>
             <p class="text-xs text-slate-500 mt-1">${completedOrders} completed</p>
           </div>
-          <div class="w-12 h-12 bg-primary-500 bg-opacity-10 rounded-xl flex items-center justify-center">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+  <svg class="w-6 h-6 text-blue-600" ...>   
             <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
@@ -1195,18 +1156,22 @@
     document.getElementById('completedOrdersCount').textContent = completed;
   }
 
-  function showLoadingState(show) {
+ function showLoadingState(show) {
     const loadingState = document.getElementById('loadingState');
     const mainContent = ['reportSummary', 'hotSellingItems', 'orderList'];
 
     if (show) {
-      loadingState.classList.remove('hidden');
+      // FIX: Force flex display directly via JS
+      loadingState.style.display = 'flex';
+      
       mainContent.forEach(id => {
         const element = document.getElementById(id);
         if (element) element.style.opacity = '0.5';
       });
     } else {
-      loadingState.classList.add('hidden');
+      // FIX: Force hide it completely so CSS cannot override it
+      loadingState.style.display = 'none';
+      
       mainContent.forEach(id => {
         const element = document.getElementById(id);
         if (element) element.style.opacity = '1';
@@ -1222,41 +1187,67 @@
     });
   }
 
-  function showNotification(message, type = 'info') {
+function showNotification(message, type = 'info') {
     const container = document.getElementById('notificationContainer');
+
+    if (container.children.length >= 3) {
+      container.removeChild(container.firstChild);
+    }
+
     const notification = document.createElement('div');
 
-    const colors = {
-      success: 'bg-gradient-to-r from-success-500 to-success-600 border-success-400 text-white',
-      error: 'bg-gradient-to-r from-error-500 to-error-600 border-error-400 text-white',
-      info: 'bg-gradient-to-r from-primary-500 to-primary-600 border-primary-400 text-white'
+    // FIX: Using direct HEX colors so Tailwind doesn't purge them
+    const styles = {
+      success: {
+        color: '#22c55e', // Green
+        icon: '<svg style="width: 20px; height: 20px; color: #22c55e;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+      },
+      error: {
+        color: '#ef4444', // Red
+        icon: '<svg style="width: 20px; height: 20px; color: #ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+      },
+      info: {
+        color: '#3b82f6', // Blue
+        icon: '<svg style="width: 20px; height: 20px; color: #3b82f6;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+      }
     };
 
-    const icons = {
-      success: '✅',
-      error: '❌',
-      info: 'ℹ️'
-    };
+    const config = styles[type] || styles.info;
 
-    notification.className = `notification p-4 rounded-xl shadow-2xl border transition-all duration-500 max-w-sm ${colors[type]}`;
+    // Hardcode the border color inline so it never disappears
+    notification.className = `pointer-events-auto bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-slate-200 border-l-4 flex items-start gap-3 transition-all duration-300 transform translate-x-full opacity-0`;
+    notification.style.borderLeftColor = config.color;
+    
     notification.innerHTML = `
-      <div class="flex items-center gap-3">
-        <span class="text-lg">${icons[type]}</span>
-        <span class="font-medium text-sm">${message}</span>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto opacity-70 hover:opacity-100">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
+      <div class="flex-shrink-0 mt-0.5">
+        ${config.icon}
       </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-slate-800 leading-snug">${message.replace(/^(✅|❌|ℹ️|🌐|📅|⚠️|🔄)\s*/, '')}</p>
+      </div>
+      <button onclick="this.closest('div').remove()" class="flex-shrink-0 ml-4 text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     `;
 
     container.appendChild(notification);
 
+    requestAnimationFrame(() => {
+      notification.classList.remove('translate-x-full', 'opacity-0');
+      notification.classList.add('translate-x-0', 'opacity-100');
+    });
+
     setTimeout(() => {
-      notification.style.transform = 'translateX(100%)';
-      setTimeout(() => notification.remove(), 500);
-    }, 5000);
+      if (notification.parentElement) {
+        notification.classList.remove('translate-x-0', 'opacity-100');
+        notification.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+          if (notification.parentElement) notification.remove();
+        }, 300);
+      }
+    }, 4000);
   }
 
   function downloadExcel() {
