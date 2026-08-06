@@ -1275,6 +1275,7 @@ const password = passwordInput.value.trim(); // Mobile password pasting issue fi
                 }
 
                 // 4. Success - Set LocalStorage variables
+                
                 loginAttempts = 0;
                 localStorage.setItem('loginAttempts', '0');
                 localStorage.removeItem('lockoutTime');
@@ -1282,9 +1283,12 @@ const password = passwordInput.value.trim(); // Mobile password pasting issue fi
                 const currentTime = new Date().toLocaleString();
                 localStorage.setItem('lastLoginTime', currentTime);
 
+                // 🔥 SAB KUCH LOCAL STORAGE MEIN SAVE KAREIN TAAKI DASHBOARD INSTANTLY BINA LOAD KIYE KHUL JAYE
                 localStorage.setItem("restaurantId", ownerRestId);
                 localStorage.setItem("restaurantName", restName);
                 localStorage.setItem("ownerUid", uid);
+                localStorage.setItem("ownerEmail", email); // Email bhi save kar dein
+                localStorage.setItem("menuswift_admin_auth", "authenticated"); // Yeh master admin jaisa flag hai
                 localStorage.setItem("authMethod", "firebase");
 
                 if (rememberMe) {
@@ -1342,11 +1346,13 @@ const password = passwordInput.value.trim(); // Mobile password pasting issue fi
                 setLoading('loginBtn', 'btnSpinner', 'btnText', false, 'Secure Login');
             }
         });
-        function closeWelcome() {
+       function closeWelcome() {
             welcomeModal.classList.add('hidden');
+            // Thoda sa delay dete hain taaki Firebase apna session set kar le
             setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 300);
+                // Ek timestamp bhi pass kar dete hain taaki naya page hamesha fresh cache le
+                window.location.href = "dashboard.html?t=" + new Date().getTime();
+            }, 500);
         }
 
         welcomeModal.addEventListener('click', function(e) {
