@@ -1543,7 +1543,7 @@
     // ===== Firebase imports =====
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, get, onValue, update, set, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+   import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // ===== Firebase config =====
     const firebaseConfig = {
@@ -3019,6 +3019,7 @@
     window._safeOwnerData = {};
 
     // ===== Load Owners (BULLETPROOF VERSION) =====
+   // ===== Load Owners (100% ERROR-FREE BULLETPROOF VERSION) =====
     function loadOwners() {
       if (!isAdminAuthenticated) return;
 
@@ -3033,32 +3034,14 @@
         </div>`;
 
       onValue(ownersRef, snap => {
-        const all = snap.val() || {};
-        const uniqueOwners = new Map();
+        // 🔥 SABSE PEHLE SPINNER HATAO (Taaki data aaye ya error ho, spinner atke nahi)
+        ownerList.innerHTML = "";
         window._safeOwnerData = {}; // Reset safe storage
 
-        Object.entries(all).forEach(([uid, owner]) => {
-          if (owner.migrated) return;
-          if (owner.restaurantId) {
-            const existing = uniqueOwners.get(owner.restaurantId);
-            if (existing) {
-              const existingTime = existing.owner.updatedAt || existing.owner.createdAt || 0;
-              const currentTime = owner.updatedAt || owner.createdAt || 0;
-              if (currentTime > existingTime) {
-                uniqueOwners.set(owner.restaurantId, { uid, owner });
-              }
-            } else {
-              uniqueOwners.set(owner.restaurantId, { uid, owner });
-            }
-          } else {
-            uniqueOwners.set(uid, { uid, owner });
-          }
-        });
-
-        ownerList.innerHTML = "";
-
+        const all = snap.val();
+        
         // 2. Show Empty State if no data
-        if (uniqueOwners.size === 0) {
+        if (!all || Object.keys(all).length === 0) {
             ownerList.innerHTML = `
               <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                 <div class="text-5xl mb-4">👥</div>
@@ -3068,10 +3051,38 @@
             return;
         }
 
-        // 3. Render Data Safely
+        const uniqueOwners = new Map();
+
+        // 3. Process Data Safely (Try-Catch lagaya hai taaki kharab data system na tode)
+        try {
+            Object.entries(all).forEach(([uid, owner]) => {
+              // Agar galti se null ya galat format ka data save ho gaya hai toh use skip karo
+              if (!owner || typeof owner !== 'object') return; 
+              if (owner.migrated) return;
+
+              if (owner.restaurantId) {
+                const existing = uniqueOwners.get(owner.restaurantId);
+                if (existing) {
+                  const existingTime = existing.owner.updatedAt || existing.owner.createdAt || 0;
+                  const currentTime = owner.updatedAt || owner.createdAt || 0;
+                  if (currentTime > existingTime) {
+                    uniqueOwners.set(owner.restaurantId, { uid, owner });
+                  }
+                } else {
+                  uniqueOwners.set(owner.restaurantId, { uid, owner });
+                }
+              } else {
+                uniqueOwners.set(uid, { uid, owner });
+              }
+            });
+        } catch (err) {
+            console.error("Error organizing owners:", err);
+        }
+
+        // 4. Render Data Safely
         uniqueOwners.forEach(({ uid, owner: o }) => {
           try {
-              window._safeOwnerData[uid] = o; // Store data safely in JS memory, NOT in HTML strings
+              window._safeOwnerData[uid] = o;
 
               const li = document.createElement("li");
               li.className = "bg-gray-50 p-4 rounded-lg border shadow-sm hover:shadow-md transition-shadow";
@@ -3080,6 +3091,9 @@
               const statusClass = o.revoked ? 'text-red-800' : (o.blocked ? 'text-red-600' : 'text-green-600');
               const authTypeIcon = o.hasFirebaseAuth ? "🔐" : "📝";
               const authTypeText = o.hasFirebaseAuth ? "Firebase Auth" : "Database Only";
+
+              // Password field ke HTML ko safe banaya gaya hai
+              const safePassword = (o.password || "N/A").replace(/"/g, '&quot;');
 
               li.innerHTML = `
                 <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -3093,7 +3107,7 @@
                     <div class="password-field flex items-center">
                       <strong class="text-gray-700 mr-2">Password:</strong>
                       <span class="password-display flex items-center bg-white px-2 py-1 rounded border">
-                        <input type="password" value="${o.password || 'N/A'}" readonly class="bg-transparent border-none p-0 text-sm w-32 focus:ring-0" id="ownerPass-${uid}">
+                        <input type="password" value="${safePassword}" readonly class="bg-transparent border-none p-0 text-sm w-32 focus:ring-0" id="ownerPass-${uid}">
                         <button type="button" onclick="toggleOwnerPasswordDisplay('${uid}')" class="ml-2 text-gray-500 hover:text-blue-600 transition-colors">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -3122,7 +3136,7 @@
               `;
               ownerList.appendChild(li);
 
-              // Secure Event Listeners attachment
+              // Event Listeners for actions
               const blockBtn = li.querySelector(".owner-block-btn");
               blockBtn.addEventListener("click", async () => {
                 const newBlocked = !o.blocked;
@@ -3159,9 +3173,18 @@
               console.error("Error rendering owner ID:", uid, e);
           }
         });
+      }, (error) => {
+        // 🔥 Agar internet ya permission ka koi bada issue aata hai tab bhi loop nahi atkega
+        console.error("Firebase Read Error on /owners:", error);
+        ownerList.innerHTML = `
+          <div class="text-center py-12 bg-red-50 rounded-xl border-2 border-dashed border-red-200">
+            <div class="text-5xl mb-4 text-red-500">❌</div>
+            <h3 class="text-xl font-semibold text-red-700">Error Fetching Owners Data</h3>
+            <p class="text-red-500 text-sm mt-2">${error.message}</p>
+            <button onclick="loadOwners()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition-all">Retry</button>
+          </div>`;
       });
     }
-
     window.toggleOwnerPasswordDisplay = (uid) => {
       const passwordInput = document.getElementById(`ownerPass-${uid}`);
       if (passwordInput.type === 'password') {
