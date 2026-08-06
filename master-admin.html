@@ -1543,7 +1543,7 @@
     // ===== Firebase imports =====
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, get, onValue, update, set, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-   import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+   import { getAuth, initializeAuth, inMemoryPersistence, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // ===== Firebase config =====
     const firebaseConfig = {
@@ -1889,7 +1889,11 @@
         try {
           const appName = "SecondaryApp_" + Date.now(); // Unique name to avoid conflicts
           const secondaryApp = initializeApp(firebaseConfig, appName);
-          const secondaryAuth = getAuth(secondaryApp);
+          
+          // 🔥 FIX: Use inMemoryPersistence so it DOES NOT overwrite Master Admin's login session
+          const secondaryAuth = initializeAuth(secondaryApp, {
+            persistence: inMemoryPersistence
+          });
           
           const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
           firebaseUid = userCredential.user.uid;
