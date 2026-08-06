@@ -1866,26 +1866,7 @@
       <!-- Orders will be inserted here -->
     </div>
   </div>
-      <!-- Desktop Layout -->
-      <div class="hidden lg:flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 gap-4">
-        <div class="w-full lg:w-1/3">
-          <div class="relative">
-           
-              </svg>
-            </div>
-          </div>
-        </div>
-
-  
-
-      
-
-    <!-- Orders Grid -->
-    <div id="ordersContainer"
-      class="orders-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
-      <!-- Orders will be inserted here -->
-    </div>
-  </div>
+     
 
   <!-- Hidden Bill Template for Printing -->
   <div id="billTemplate" style="
@@ -2692,23 +2673,96 @@
     };
 
     // Clear all broadcasts function
+    // Clear Broadcasts Function Fix
     window.clearAllBroadcasts = () => {
-      if (!confirm("Are you sure you want to clear all admin announcements? This action cannot be undone.")) {
+      if (!confirm("Are you sure you want to clear all admin announcements from view?")) {
         return;
       }
-
-      // Clear from local storage to persist across sessions
-      localStorage.setItem('clearedBroadcasts', 'true');
-
+      // Ab permanent true nahi, balki current Time set karenge
+      localStorage.setItem('clearedBroadcastTime_' + restaurantId, Date.now());
+      
       document.getElementById("broadcastMessages").innerHTML = `
       <div class="text-center text-gray-400 py-4">
         <div class="text-2xl mb-2">📢</div>
-        <p>All announcements cleared locally</p>
-      </div>
-    `;
+        <p>No new announcements</p>
+      </div>`;
       showNotification("Announcements cleared from view", "success");
     };
 
+    // 👉 NEW FULL-SCREEN BROADCAST LOGIC & SUPPORT SECTION FIX
+    let lastSeenBroadcast = localStorage.getItem('lastSeenBroadcast_' + restaurantId) || 0;
+
+    db.ref("adminBroadcasts").on("value", snap => {
+      const box = document.getElementById("broadcastMessages");
+      const data = snap.val() || {};
+      
+      // Clear time check karo
+      const clearTime = Number(localStorage.getItem('clearedBroadcastTime_' + restaurantId)) || 0;
+      
+      // 1. Support section mein list update
+      if (box) {
+        box.innerHTML = "";
+        // Sirf wahi message dikhao jo Clear dabane ke baad aaye hain
+        const validBroadcasts = Object.entries(data).filter(([ts]) => Number(ts) > clearTime).sort((a, b) => b[0] - a[0]);
+        
+        if (validBroadcasts.length === 0) {
+          box.innerHTML = '<div class="text-center text-gray-400 py-4">No new announcements at this time</div>';
+        } else {
+          validBroadcasts.forEach(([ts, msg]) => {
+            const div = document.createElement("div");
+            const time = new Date(+ts).toLocaleString();
+            div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
+            div.innerHTML = `<div class="font-semibold text-blue-400 text-xs mb-1">📅 ${time}</div><div class="text-gray-200 text-sm">${msg}</div>`;
+            box.appendChild(div);
+          });
+        }
+      }
+
+      // 2. Full-Screen Popup Check Logic
+      if (Object.keys(data).length > 0) {
+        const broadcasts = Object.entries(data).sort((a, b) => b[0] - a[0]);
+        const newestTimestamp = broadcasts[0][0];
+        const newestMessage = broadcasts[0][1];
+
+        // Agar yeh naya message hai
+        if (Number(newestTimestamp) > Number(lastSeenBroadcast)) {
+          const fsModal = document.getElementById("fullScreenBroadcast");
+          const fsMessage = document.getElementById("fsBroadcastMessage");
+          
+          if (fsModal && fsMessage) {
+            fsMessage.textContent = newestMessage;
+            
+            fsModal.classList.remove("hidden");
+            fsModal.classList.add("flex");
+            
+            setTimeout(() => {
+              document.getElementById("broadcastModalContent").classList.remove("scale-95");
+              document.getElementById("broadcastModalContent").classList.add("scale-100");
+            }, 50);
+
+            window.activeBroadcastTimestamp = newestTimestamp;
+          }
+        }
+      }
+    });
+
+    // Full-Screen Pop-up Band karne ka function
+    window.closeFullScreenBroadcast = () => {
+      const fsModal = document.getElementById("fullScreenBroadcast");
+      
+      document.getElementById("broadcastModalContent").classList.remove("scale-100");
+      document.getElementById("broadcastModalContent").classList.add("scale-95");
+      
+      setTimeout(() => {
+        fsModal.classList.add("hidden");
+        fsModal.classList.remove("flex");
+      }, 200);
+
+      if (window.activeBroadcastTimestamp) {
+        localStorage.setItem('lastSeenBroadcast_' + restaurantId, window.activeBroadcastTimestamp);
+        lastSeenBroadcast = window.activeBroadcastTimestamp;
+      }
+    };
     // Print Bill Function
 
     window.printBill = (orderId) => {
@@ -2997,39 +3051,84 @@
         }
 
         // Load Admin Broadcasts with persistence
-        db.ref("adminBroadcasts").on("value", snap => {
-          const box = document.getElementById("broadcastMessages");
-          const data = snap.val() || {};
+       // 👉 NEW FULL-SCREEN BROADCAST LOGIC (ONE-TIME POPUP)
+          let lastSeenBroadcast = localStorage.getItem('lastSeenBroadcast_' + restaurantId) || 0;
 
-          // Check if user has cleared broadcasts
-          if (localStorage.getItem('clearedBroadcasts') === 'true') {
-            box.innerHTML = `
-            <div class="text-center text-gray-400 py-4">
-              <div class="text-2xl mb-2">📢</div>
-              <p>All announcements cleared locally</p>
-            </div>
-          `;
-            return;
-          }
+          db.ref("adminBroadcasts").on("value", snap => {
+            const box = document.getElementById("broadcastMessages");
+            const data = snap.val() || {};
+            
+            // 1. Support section mein list update karne ka logic (Purana wala)
+            if (box) {
+              if (localStorage.getItem('clearedBroadcasts') === 'true') {
+                box.innerHTML = `<div class="text-center text-gray-400 py-4"><div class="text-2xl mb-2">📢</div><p>All announcements cleared locally</p></div>`;
+              } else {
+                box.innerHTML = "";
+                if (Object.keys(data).length === 0) {
+                  box.innerHTML = '<div class="text-center text-gray-400 py-4">No announcements at this time</div>';
+                } else {
+                  Object.entries(data).sort((a, b) => b[0] - a[0]).forEach(([ts, msg]) => {
+                    const div = document.createElement("div");
+                    const time = new Date(+ts).toLocaleString();
+                    div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
+                    div.innerHTML = `<div class="font-semibold text-blue-300 text-xs mb-1">📅 ${time}</div><div class="text-white text-sm">${msg}</div>`;
+                    box.appendChild(div);
+                  });
+                }
+              }
+            }
 
-          box.innerHTML = "";
+            // 2. Full-Screen Popup Check Logic
+            if (Object.keys(data).length > 0) {
+              // Sabse naya message nikalo
+              const broadcasts = Object.entries(data).sort((a, b) => b[0] - a[0]);
+              const newestTimestamp = broadcasts[0][0];
+              const newestMessage = broadcasts[0][1];
 
-          if (Object.keys(data).length === 0) {
-            box.innerHTML = '<div class="text-center text-gray-400 py-4">No announcements at this time</div>';
-            return;
-          }
+              // Agar yeh message naya hai (pehle nahi dekha gaya)
+              if (Number(newestTimestamp) > Number(lastSeenBroadcast)) {
+                const fsModal = document.getElementById("fullScreenBroadcast");
+                const fsMessage = document.getElementById("fsBroadcastMessage");
+                
+                if (fsModal && fsMessage) {
+                  fsMessage.textContent = newestMessage;
+                  
+                  // Modal ko dikhao
+                  fsModal.classList.remove("hidden");
+                  fsModal.classList.add("flex");
+                  
+                  // Animation effect
+                  setTimeout(() => {
+                    document.getElementById("broadcastModalContent").classList.remove("scale-95");
+                    document.getElementById("broadcastModalContent").classList.add("scale-100");
+                  }, 50);
 
-          Object.entries(data).sort((a, b) => b[0] - a[0]).forEach(([ts, msg]) => {
-            const div = document.createElement("div");
-            const time = new Date(+ts).toLocaleString();
-            div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
-            div.innerHTML = `
-            <div class="font-semibold text-blue-300 text-xs mb-1">📅 ${time}</div>
-            <div class="text-white text-sm">${msg}</div>
-          `;
-            box.appendChild(div);
+                  // Timestamp ko globally save karo taaki button dabaane par mark-as-read ho sake
+                  window.activeBroadcastTimestamp = newestTimestamp;
+                }
+              }
+            }
           });
-        });
+
+          // Full-Screen Pop-up Band karne ka function
+          window.closeFullScreenBroadcast = () => {
+            const fsModal = document.getElementById("fullScreenBroadcast");
+            
+            // Animation reverse
+            document.getElementById("broadcastModalContent").classList.remove("scale-100");
+            document.getElementById("broadcastModalContent").classList.add("scale-95");
+            
+            setTimeout(() => {
+              fsModal.classList.add("hidden");
+              fsModal.classList.remove("flex");
+            }, 200);
+
+            // "One time" ke liye memory mein save kar lo ki user ne padh liya hai
+            if (window.activeBroadcastTimestamp) {
+              localStorage.setItem('lastSeenBroadcast_' + restaurantId, window.activeBroadcastTimestamp);
+              lastSeenBroadcast = window.activeBroadcastTimestamp;
+            }
+          };
 
         // Check if there's an active ticket
         db.ref(`supportTickets/${restaurantId}`).once("value").then(ticketSnap => {
@@ -3974,26 +4073,97 @@ firebase.auth().onAuthStateChanged(user => {
             }
           }
 
-          db.ref("adminBroadcasts").on("value", snap => {
-            const box = document.getElementById("broadcastMessages");
-            const data = snap.val() || {};
-            if (localStorage.getItem('clearedBroadcasts') === 'true') {
-              box.innerHTML = `<div class="text-center text-gray-400 py-4"><div class="text-2xl mb-2">📢</div><p>All announcements cleared locally</p></div>`;
-              return;
-            }
-            box.innerHTML = "";
-            if (Object.keys(data).length === 0) {
-              box.innerHTML = '<div class="text-center text-gray-400 py-4">No announcements at this time</div>';
-              return;
-            }
-            Object.entries(data).sort((a, b) => b[0] - a[0]).forEach(([ts, msg]) => {
-              const div = document.createElement("div");
-              const time = new Date(+ts).toLocaleString();
-              div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
-              div.innerHTML = `<div class="font-semibold text-blue-300 text-xs mb-1">📅 ${time}</div><div class="text-white text-sm">${msg}</div>`;
-              box.appendChild(div);
-            });
+      // 👉 SUPPORT SECTION & FULL-SCREEN BROADCAST FIX
+    window.clearAllBroadcasts = () => {
+      if (!confirm("Are you sure you want to clear all admin announcements from view?")) return;
+      
+      localStorage.setItem('clearedBroadcastTime_' + restaurantId, Date.now());
+      
+      const box = document.getElementById("broadcastMessages");
+      if(box) {
+        box.innerHTML = '<div class="text-center text-gray-400 py-4"><div class="text-2xl mb-2">📢</div><p>No new announcements</p></div>';
+      }
+      showNotification("Announcements cleared from view", "success");
+    };
+
+    // Use window object to prevent any variable redeclaration errors
+    window.lastSeenBroadcastMsg = localStorage.getItem('lastSeenBroadcast_' + restaurantId) || 0;
+
+    db.ref("adminBroadcasts").on("value", snap => {
+      const box = document.getElementById("broadcastMessages");
+      const data = snap.val() || {};
+      const clearTime = Number(localStorage.getItem('clearedBroadcastTime_' + restaurantId)) || 0;
+      
+      // 1. Support section list update
+      if (box) {
+        box.innerHTML = "";
+        const validBroadcasts = Object.entries(data)
+          .filter(([ts]) => Number(ts) > clearTime)
+          .sort((a, b) => b[0] - a[0]);
+        
+        if (validBroadcasts.length === 0) {
+          box.innerHTML = '<div class="text-center text-gray-400 py-4">No new announcements at this time</div>';
+        } else {
+          validBroadcasts.forEach(([ts, msg]) => {
+            const div = document.createElement("div");
+            const time = new Date(+ts).toLocaleString();
+            div.className = "bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-all";
+            div.innerHTML = `<div class="font-semibold text-blue-400 text-xs mb-1">📅 ${time}</div><div class="text-gray-200 text-sm">${msg}</div>`;
+            box.appendChild(div);
           });
+        }
+      }
+
+      // 2. Full-Screen Popup Check
+      if (Object.keys(data).length > 0) {
+        const broadcasts = Object.entries(data).sort((a, b) => b[0] - a[0]);
+        const newestTimestamp = broadcasts[0][0];
+        const newestMessage = broadcasts[0][1];
+
+        if (Number(newestTimestamp) > Number(window.lastSeenBroadcastMsg)) {
+          const fsModal = document.getElementById("fullScreenBroadcast");
+          const fsMessage = document.getElementById("fsBroadcastMessage");
+          
+          if (fsModal && fsMessage) {
+            fsMessage.textContent = newestMessage;
+            fsModal.classList.remove("hidden");
+            fsModal.classList.add("flex");
+            
+            setTimeout(() => {
+              const content = document.getElementById("broadcastModalContent");
+              if(content){
+                content.classList.remove("scale-95");
+                content.classList.add("scale-100");
+              }
+            }, 50);
+
+            window.activeBroadcastTimestamp = newestTimestamp;
+          }
+        }
+      }
+    });
+
+    window.closeFullScreenBroadcast = () => {
+      const fsModal = document.getElementById("fullScreenBroadcast");
+      const content = document.getElementById("broadcastModalContent");
+      
+      if(content){
+        content.classList.remove("scale-100");
+        content.classList.add("scale-95");
+      }
+      
+      setTimeout(() => {
+        if(fsModal){
+          fsModal.classList.add("hidden");
+          fsModal.classList.remove("flex");
+        }
+      }, 200);
+
+      if (window.activeBroadcastTimestamp) {
+        localStorage.setItem('lastSeenBroadcast_' + restaurantId, window.activeBroadcastTimestamp);
+        window.lastSeenBroadcastMsg = window.activeBroadcastTimestamp;
+      }
+    };
 
           db.ref(`supportTickets/${restaurantId}`).once("value").then(ticketSnap => {
             const tickets = ticketSnap.val() || {};
@@ -4413,7 +4583,27 @@ firebase.auth().onAuthStateChanged(user => {
   </div>
 
 
-  
+<!-- FULL SCREEN BROADCAST NOTICE (Professional Look) -->
+  <div id="fullScreenBroadcast" class="fixed inset-0 z-[10000] bg-slate-900/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300">
+    <div class="bg-slate-900 border border-slate-700 p-8 lg:p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center transform scale-95 transition-transform duration-300 relative overflow-hidden" id="broadcastModalContent">
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+      
+      <div class="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-5 bg-blue-500/10 rounded-full flex items-center justify-center border border-blue-500/20">
+        <svg class="w-8 h-8 lg:w-10 lg:h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+        </svg>
+      </div>
+      
+      <h2 class="text-xl lg:text-2xl font-bold text-white mb-3 tracking-wide">Admin Announcement</h2>
+      
+      <p id="fsBroadcastMessage" class="text-sm lg:text-base text-gray-300 mb-8 leading-relaxed">
+        <!-- Message yahan aayega -->
+      </p>
+      
+      <button onclick="closeFullScreenBroadcast()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-xl transition-all border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+        Acknowledge & Close
+      </button>
+    </div>
+  </div> 
 </body>
-
 </html>
