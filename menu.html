@@ -532,7 +532,11 @@
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 640px) {
-      .toolbar-inner { flex-direction: column; gap: 0.5rem; }
+      .toolbar-inner {
+      background: #f7f5f5 !important; /* Yahan aap apna color badal sakte hain */
+      border: 1px solid #020202 !important; /* Border ka color */
+      box-shadow: 0 4px 15px rgba(8, 66, 192, 0.08) !important; /* Halka sa blue shadow */
+    }
       .search-box { min-width: 100%; }
       .filter-row { display: flex; gap: 0.625rem; overflow-x: auto; width: 100%; padding-bottom: 4px; align-items: center; }
       .filter-row::-webkit-scrollbar { display: none; }
@@ -568,14 +572,16 @@
         border-radius: 24px !important; 
       }
     }
-    /* --- FIX: Mobile Filter Row Wrap --- */
+    /* --- FIX: Mobile Filter Row Wrap (Compact 2 Lines) --- */
     @media (max-width: 640px) {
       .filter-row { 
         flex-wrap: wrap !important; 
-        overflow-x: visible !important; 
-        justify-content: center;
+        justify-content: center !important; /* Center mai align karega */
+        gap: 8px 16px !important; /* Buttons ke beech ki jagah ko compact karega */
       }
-      .filter-group { margin-bottom: 4px; }
+      .filter-group { 
+        margin-bottom: 0px !important; 
+      }
     }
 
     /* --- ADD: Flying Cart Animation CSS --- */
@@ -707,7 +713,7 @@
         </div>
         <div class="filter-row" style="display:flex; gap:0.625rem; align-items:center; overflow-x:auto; flex:1;">
           <div class="filter-group">
-            <span class="filter-label">Sections:</span>
+           
             <div id="categoriesContainer" style="display:flex; gap:4px;">
               <button data-cat="all" class="cat-btn active">All</button>
               <button data-cat="drinks" class="cat-btn">Drinks</button>
@@ -903,7 +909,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    firebase.auth().signInAnonymously().catch(e => console.error("Auth error:", e));
+    // firebase.auth().signInAnonymously().catch(e => console.error("Auth error:", e));
 
     // State
     const urlParams = new URLSearchParams(window.location.search);
@@ -1567,12 +1573,33 @@
         updateCartDisplay(); closeRecommend();
       };
 
+      // ✅ NAYA FIREBASE "SAFE INIT" CODE YAHAN AAYEGA
+      let isMenuInitialized = false;
+
+      function safeInit() {
+        if (!isMenuInitialized) {
+          isMenuInitialized = true;
+          init(); // Start fetching menu and showing cached data
+        }
+      }
+
+      // 1. Try to sign in
+      firebase.auth().signInAnonymously().catch(e => {
+        console.error("Auth error:", e);
+        safeInit(); // If auth fails, load the menu anyway!
+      });
+
+      // 2. Wait for auth state
       firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
           console.log("Login successful! Fetching menu data...");
-          init(); // Menu loading start
+          safeInit();
         }
       });
+
+      // 3. SAFETY TIMEOUT: If Firebase takes more than 3 seconds on a slow 
+      // mobile network, force the menu to load from cache.
+      setTimeout(safeInit, 3000);
     });
 
     // Function for direct "Add to Cart" from Fullscreen Offers Popup
@@ -1740,17 +1767,19 @@
       });
     }
 
-    // 💥 Splash Screen Logic (Hides exactly after 2 seconds)
-   // 💥 Instant Splash Screen Removal
-    window.addEventListener("load", function() {
-      // Ab hum 2 second wait nahi karenge. Page load hote hi turant hata denge.
+   // 💥 Splash Screen Logic (Guaranteed 2-second branding, network independent)
+    document.addEventListener("DOMContentLoaded", function() {
       var splash = document.getElementById('splashScreen');
       if (splash) {
-        splash.style.opacity = '0'; 
+        // Show the logo for exactly 2 seconds
         setTimeout(function() {
-          splash.style.visibility = 'hidden';
-          splash.style.display = 'none'; 
-        }, 300); 
+          splash.style.opacity = '0'; 
+          // Wait for your 0.5s CSS fade transition to finish, then hide the element
+          setTimeout(function() {
+            splash.style.visibility = 'hidden';
+            splash.style.display = 'none'; 
+          }, 500); 
+        }, 2000); 
       }
     });
   </script>
