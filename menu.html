@@ -1021,7 +1021,7 @@
           });
         }
 
-        return db.ref('/restaurants/' + restaurantId + '/trending').once('value').then(function(trendSnap) {
+       return db.ref('/restaurants/' + restaurantId + '/trending').once('value').then(function(trendSnap) {
             var tempTrendingData = {};
             if (trendSnap.exists()) {
               trendSnap.forEach(function(child) {
@@ -1047,11 +1047,15 @@
                trendingData: trendingData
             };
             
-            // 💥 SAFE CACHE WRITE
-            try { localStorage.setItem('offersData_' + restaurantId, JSON.stringify(cacheObject)); } catch(e){} 
+            // 🔥 FIX 1: Ab faltu ka refresh nahi hoga. Sirf tabhi refresh hoga jab Offer change hua ho.
+            var newCacheString = JSON.stringify(cacheObject);
+            var oldCacheString = localStorage.getItem('offersData_' + restaurantId);
             
-            renderBanners();
-            if (originalItems.length > 0) applyFilters(); 
+            if (newCacheString !== oldCacheString) {
+                try { localStorage.setItem('offersData_' + restaurantId, newCacheString); } catch(e){} 
+                renderBanners();
+                if (originalItems.length > 0) applyFilters(); 
+            }
         });
       }).catch(function(err) { console.error("Error fetching offers:", err); });
     }
@@ -1697,7 +1701,7 @@
         }
       } catch(e) { console.warn("Mobile storage blocked, skipping cache."); }
 
-      db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
+    db.ref('/restaurants/' + restaurantId + '/menuItems').once('value').then(function(snap) {
         var data = snap.val();
         var skeleton = document.getElementById('skeletonLoader');
         
@@ -1712,9 +1716,12 @@
           .map(function(entry) { return Object.assign({ id: entry[0] }, entry[1]); })
           .filter(function(i) { return i.name && i.active !== false; });
           
-        if (JSON.stringify(freshItems) !== JSON.stringify(originalItems)) {
+        // 🔥 FIX 2: Items ko sort karke properly match karenge taaki bina matlab re-draw na ho
+        freshItems.sort(function(a, b) { return a.id.localeCompare(b.id); });
+        var currentItemsSorted = [...originalItems].sort(function(a, b) { return a.id.localeCompare(b.id); });
+          
+        if (JSON.stringify(freshItems) !== JSON.stringify(currentItemsSorted)) {
           originalItems = freshItems;
-          // 💥 SAFE CACHE WRITE
           try { localStorage.setItem('menuData_' + restaurantId, JSON.stringify(originalItems)); } catch(e){} 
           buildCategories(); 
           applyFilters();
