@@ -28,7 +28,8 @@ module.exports = async (req, res) => {
       total_count: 120, // 10 years
       customer_notify: 1,
       notes: {
-        restaurantId: restaurantId
+        source: "MenuSwift",
+        restaurantId: String(restaurantId)
       }
     });
 

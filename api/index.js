@@ -68,29 +68,31 @@ app.post('/create-order', async (req, res) => {
 // 2. Create Razorpay Subscription
 app.post('/create-subscription', async (req, res) => {
   try {
-    const { plan_id } = req.body;
+    const planId = req.body.planId || req.body.plan_id;
+    const restaurantId = req.body.restaurantId;
 
-    if (!plan_id) {
-        return res.status(400).json({
-            success: false,
-            error: "Plan ID is required"
-        });
+    if (!planId || !restaurantId) {
+      return res.status(400).json({
+        success: false,
+        error: "Plan ID and restaurant ID are required"
+      });
     }
 
     const subscription = await razorpay.subscriptions.create({
-        plan_id,
-        total_count: 120, // 120 monthly renewals
-        quantity: 1,
-        customer_notify: 1,
-        notes: {
-            source: "MenuSwift"
-        }
+      plan_id: planId,
+      total_count: 120,
+      quantity: 1,
+      customer_notify: 1,
+      notes: {
+        source: "MenuSwift",
+        restaurantId: String(restaurantId)
+      }
     });
 
-    res.json(subscription);
+    return res.json(subscription);
   } catch (err) {
     console.error(err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: err.error?.description || err.message
     });
@@ -99,9 +101,12 @@ app.post('/create-subscription', async (req, res) => {
 
 // 3. Razorpay Webhook
 app.post("/razorpay-webhook", (req, res) => {
-    console.log(req.body);
-    res.json({
-        status: "ok"
+    // Do not silently accept Razorpay events here.
+    // The verified production webhook is the dedicated Vercel function:
+    // /api/razorpay-webhook
+    return res.status(410).json({
+        status: "wrong_webhook_endpoint",
+        message: "Use /api/razorpay-webhook"
     });
 });
 
