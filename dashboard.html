@@ -2113,38 +2113,23 @@
           "subscription_id": subData.id,
 
           "handler": function (response) {
-            // PAYMENT SUCCESS (Mandate Created)
-            console.log("Subscription Auto-Pay Set!", response);
+            // Checkout success only confirms Razorpay authorization/payment on the client.
+            // Subscription expiry and approved payment records are updated ONLY by the
+            // verified server-side subscription.charged webhook.
+            console.log("Subscription Auto-Pay authorized!", response);
 
             currentPayment.paymentReference = response.razorpay_payment_id;
             currentPayment.subscriptionId = response.razorpay_subscription_id;
             currentPayment.method = "razorpay_autopay";
-            currentPayment.status = "approved";
+            currentPayment.status = "processing";
             currentPayment.submittedAt = new Date().toISOString();
             currentPayment.isRecurring = true;
 
-            // Firebase mein save karein
-            db.ref('subscriptionPayments/' + restaurantId + '/' + currentPayment.id).set(currentPayment)
-              .then(() => {
-                showNotification('Auto-pay setup successful!', 'success');
-                closeSubscriptionModal();
-
-                // Restaurant ka expiry date 30 din aage badhayein
-                db.ref("restaurants/" + restaurantId).once("value")
-                  .then((snapshot) => {
-                    const restaurant = snapshot.val() || {};
-                    const currentExpiry = Number(restaurant.subscriptionExpiry || 0);
-                    const now = Date.now();
-                    const baseTime = currentExpiry > now ? currentExpiry : now;
-                    const newExpiry = baseTime + (30 * 24 * 60 * 60 * 1000);
-
-                    return db.ref("restaurants/" + restaurantId).update({
-                      subscriptionExpiry: newExpiry,
-                      subscriptionPlan: amount,
-                      razorpaySubscriptionId: response.razorpay_subscription_id
-                    });
-                  });
-              });
+            showNotification(
+              'Auto-pay authorized successfully. Subscription is updating automatically.',
+              'success'
+            );
+            closeSubscriptionModal();
           },
 
           "prefill": {
