@@ -3,8 +3,8 @@ const Razorpay = require("razorpay");
 
 // Initialize Razorpay with your Test Keys
 const razorpay = new Razorpay({
-  key_id: "rzp_live_TAUHvjsB1yJexf", // Yahan apna Razorpay Test Key ID daalein
-  key_secret: "0ZgeKVn09kUyC8v6Yb61Y0HS" // Yahan apna Razorpay Test Secret Key daalein
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 // Frontend se request aane par ye secure order generate karega
