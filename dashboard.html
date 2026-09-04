@@ -1325,6 +1325,17 @@
       animation: shimmerDark 1.5s infinite;
     }
   </style>
+
+    <!-- MenuSwift PWA -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="application-name" content="MenuSwift">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuSwift">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
@@ -4590,5 +4601,16 @@ firebase.auth().onAuthStateChanged(user => {
       </button>
     </div>
   </div> 
+
+    <script>
+      // Register the MenuSwift service worker without changing existing app logic.
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch((error) => console.warn('MenuSwift PWA service worker registration failed:', error));
+        });
+      }
+    </script>
+
 </body>
 </html>

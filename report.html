@@ -330,6 +330,17 @@
       background: linear-gradient(135deg, #2563eb, #7c3aed);
     }
   </style>
+
+    <!-- MenuSwift PWA -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="application-name" content="MenuSwift">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuSwift">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen font-inter">
@@ -1472,5 +1483,16 @@ function showNotification(message, type = 'info') {
     updateConnectionStatus();
   });
 </script>
+
+    <script>
+      // Register the MenuSwift service worker without changing existing app logic.
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch((error) => console.warn('MenuSwift PWA service worker registration failed:', error));
+        });
+      }
+    </script>
+
 </body>
 </html>

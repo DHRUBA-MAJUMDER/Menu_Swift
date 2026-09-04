@@ -7,6 +7,17 @@
    <link rel="icon" href="images/Blue Black Minimal Initial Letter Company Technology Logo-photoaidcom-cropped.png">
 
   <link rel="stylesheet" href="output.css">
+
+    <!-- MenuSwift PWA -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="application-name" content="MenuSwift">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuSwift">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
 </head>
 <body class="bg-gradient-to-b from-gray-50 to-gray-100 text-gray-800">
 
@@ -82,6 +93,17 @@
   <footer class="bg-gray-100 text-center py-8 mt-20 border-t">
     <p class="text-sm text-gray-500">&copy; 2025 MenuSwift. All rights reserved.</p>
   </footer>
+
+
+    <script>
+      // Register the MenuSwift service worker without changing existing app logic.
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch((error) => console.warn('MenuSwift PWA service worker registration failed:', error));
+        });
+      }
+    </script>
 
 </body>
 </html>

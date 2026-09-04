@@ -13,6 +13,17 @@
   button:hover { background: #1ebe5d; }
   #log { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; height: 250px; overflow-y: auto; background: #f9f9f9; font-family: monospace; white-space: pre-wrap; }
 </style>
+
+    <!-- MenuSwift PWA -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="application-name" content="MenuSwift">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MenuSwift">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
 </head>
 <body>
   <h1>💬 WhatsApp Bulk Sender (Official Meta API)</h1>
@@ -89,5 +100,16 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
   log.textContent += "\n✅ Bulk messaging complete.\n";
 });
 </script>
+
+    <script>
+      // Register the MenuSwift service worker without changing existing app logic.
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch((error) => console.warn('MenuSwift PWA service worker registration failed:', error));
+        });
+      }
+    </script>
+
 </body>
 </html>
